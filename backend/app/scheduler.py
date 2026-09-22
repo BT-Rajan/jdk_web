@@ -22,7 +22,7 @@ import logging
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-logger = logging.getLogger("perennia.calendar_sync")
+logger = logging.getLogger("jdk.calendar_sync")
 
 _scheduler: BackgroundScheduler | None = None
 _DRIFT_JOB_ID = "calendar_drift_poll"

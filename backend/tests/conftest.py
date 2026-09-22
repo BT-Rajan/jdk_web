@@ -22,7 +22,7 @@ import secrets
 import tempfile
 from pathlib import Path
 
-_TEST_DB_PATH = Path(tempfile.mkdtemp(prefix="perennia-test-")) / "test.db"
+_TEST_DB_PATH = Path(tempfile.mkdtemp(prefix="jdk-test-")) / "test.db"
 os.environ["DATABASE_URL"] = f"sqlite:///{_TEST_DB_PATH}"
 os.environ["ENVIRONMENT"] = "development"  # keeps _validate()'s dev branch, which auto-generates SECRET_KEY/ENCRYPTION_KEY
 os.environ["COOKIE_SECURE"] = "false"      # TestClient isn't https; a Secure cookie would be silently dropped

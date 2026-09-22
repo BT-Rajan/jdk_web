@@ -2,14 +2,14 @@
 
 Reference app: [`BT-Rajan/calendar-sample`](https://github.com/BT-Rajan/calendar-sample)
 (a Cal.com / Calendso fork — Next.js + Prisma + tRPC)
-Target app: `perennia-v2` (FastAPI + SQLAlchemy + Pydantic backend, Vite + React
+Target app: `jdk-v2` (FastAPI + SQLAlchemy + Pydantic backend, Vite + React
 public site, separate Vite + React admin dashboard)
 
 This document has two parts:
 
 1. **What `calendar-sample` actually does** — a feature inventory, read directly
    out of its Prisma schema, routers, and pages.
-2. **How we bring the useful parts into `perennia-v2`** — mapped onto our stack
+2. **How we bring the useful parts into `jdk-v2`** — mapped onto our stack
    and our existing `booking.*` module, delivered as a sequence of passes in
    the style of `backend/PASS1_NOTES.md` … `PASS7_NOTES.md`.
 
@@ -133,13 +133,13 @@ Multi-tenant SaaS billing (`UserPlan`, Stripe *subscriptions* as opposed
 to one-off event payments), the `ee/` licensing split itself, and
 `next-auth` as an auth system (we already have our own admin session
 model in `app/security.py`) are all artifacts of "this is a
-multi-tenant, sign-up-your-own-account product." Perennia is a single
+multi-tenant, sign-up-your-own-account product." JDK is a single
 business's site; there's one calendar, not one per signed-up user. We
 port the *scheduling* feature set, not the SaaS shell around it.
 
 ---
 
-## 2. Mapping onto `perennia-v2`
+## 2. Mapping onto `jdk-v2`
 
 ### 2.1 What we already have
 `app/models.py::Appointment` + `app/booking_service.py` is a *complete but
@@ -502,7 +502,7 @@ trigger points plus Pass 10's new ones):
   async framework introduced).
 - Payload: `{"event": ..., "appointment": {...same shape as
   booking_service._serialize...}, "sent_at": iso8601}`.
-- Signature header `X-Perennia-Signature: sha256=<hmac hex>` computed
+- Signature header `X-JDK-Signature: sha256=<hmac hex>` computed
   over the raw JSON body with the webhook's `secret` — same scheme
   `calendar-sample`'s `sendPayload.tsx` uses, so it's a familiar
   integration shape for anyone who's consumed a Cal.com webhook before.
@@ -677,7 +677,7 @@ admin 2FA, a separate already-tracked backlog item), **and
 video-conferencing integration (Zoom/Daily/any embedded meeting
 provider)** all stay out of scope. Video conferencing in particular was
 considered and dropped from this plan: `Service.location_type` covers
-"this is a remote appointment" without Perennia taking on an OAuth
+"this is a remote appointment" without JDK taking on an OAuth
 relationship with a meeting provider or a dependency on that provider's
 uptime for its own booking flow to work. If a real business need for
 in-app video links appears later, it re-enters as its own scoped pass

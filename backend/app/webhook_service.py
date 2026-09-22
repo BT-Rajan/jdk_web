@@ -193,7 +193,7 @@ def _deliver_one(db: Session, webhook: Webhook, event: str, payload: dict) -> We
         resp = httpx.post(
             webhook.url,
             content=raw_body,
-            headers={"Content-Type": "application/json", "X-Perennia-Signature": signature},
+            headers={"Content-Type": "application/json", "X-JDK-Signature": signature},
             timeout=REQUEST_TIMEOUT_SECONDS,
             follow_redirects=False,  # a redirect could otherwise be used to reach a blocked address post-check
         )
@@ -232,7 +232,7 @@ def dispatch_event(db: Session, event: str, appointment: dict) -> None:
             # last-resort guard (e.g. a corrupt secret) so one broken
             # webhook can never take down delivery to the others.
             import logging
-            logging.getLogger("perennia.webhooks").exception(
+            logging.getLogger("jdk.webhooks").exception(
                 "Webhook delivery raised unexpectedly for webhook %s", webhook.id
             )
 

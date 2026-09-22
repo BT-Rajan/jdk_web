@@ -26,7 +26,7 @@ export default function DashboardLayout() {
       <aside className="sidebar">
         <div className="sidebar-brand">
           <span className="sidebar-mark">P</span>
-          <span>Perennia</span>
+          <span>JDK</span>
         </div>
         <nav className="sidebar-nav">
           {NAV_ITEMS.map((item) => (

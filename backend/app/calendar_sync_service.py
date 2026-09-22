@@ -237,7 +237,7 @@ def create_event_for_appointment(db: Session, appt_id: str) -> str | None:
         return event_id
     except Exception:
         import logging
-        logging.getLogger("perennia.calendar_sync").exception(
+        logging.getLogger("jdk.calendar_sync").exception(
             "Google Calendar event creation failed for appointment %s", appt_id
         )
         return None
@@ -291,7 +291,7 @@ def update_event_for_appointment(db: Session, appt_id: str) -> str | None:
         return appt.external_event_id
     except google.GoogleCalendarError as e:
         import logging
-        logger = logging.getLogger("perennia.calendar_sync")
+        logger = logging.getLogger("jdk.calendar_sync")
         if e.status_code == 404:
             logger.exception(
                 "Google Calendar event %s for appointment %s is gone (404) — recreating it",
@@ -312,7 +312,7 @@ def update_event_for_appointment(db: Session, appt_id: str) -> str | None:
         # own failure modes (decrypt error, refresh failure). Same
         # reasoning as the branch above: don't recreate, just report.
         import logging
-        logging.getLogger("perennia.calendar_sync").exception(
+        logging.getLogger("jdk.calendar_sync").exception(
             "Google Calendar event update failed unexpectedly for appointment %s", appt_id
         )
         return None
@@ -337,7 +337,7 @@ def delete_event_for_appointment(db: Session, appt_id: str) -> None:
         db.flush()
     except Exception:
         import logging
-        logging.getLogger("perennia.calendar_sync").exception(
+        logging.getLogger("jdk.calendar_sync").exception(
             "Google Calendar event deletion failed for appointment %s", appt_id
         )
 
@@ -526,5 +526,5 @@ def detect_drift(db: Session) -> dict:
         return {"ok": True, "checked": len(items), "flagged": flagged}
     except Exception:
         import logging
-        logging.getLogger("perennia.calendar_sync").exception("Calendar drift detection failed")
+        logging.getLogger("jdk.calendar_sync").exception("Calendar drift detection failed")
         return {"ok": False, "error": "sync_failed", "checked": 0, "flagged": 0}

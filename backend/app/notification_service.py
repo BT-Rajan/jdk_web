@@ -20,7 +20,7 @@ from sqlalchemy.orm import Session
 from app import whatsapp_client
 from app.settings_service import get_setting
 
-logger = logging.getLogger("perennia.notifications")
+logger = logging.getLogger("jdk.notifications")
 
 
 def _lang_value(value, lang: str):

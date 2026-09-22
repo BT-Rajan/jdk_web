@@ -154,7 +154,7 @@ def extract_from_url(url: str, *, max_chars: int) -> tuple[str, bool, str, str]:
 
     try:
         with httpx.stream("GET", url, follow_redirects=True, timeout=URL_FETCH_TIMEOUT_SECONDS,
-                           headers={"User-Agent": "PerenniaKnowledgeBaseBot/1.0"}) as resp:
+                           headers={"User-Agent": "JDKKnowledgeBaseBot/1.0"}) as resp:
             resp.raise_for_status()
             # Re-validate the final URL after redirects — a redirect
             # could otherwise be used to reach a blocked address.

@@ -116,7 +116,7 @@ export default function WebhookDetailPanel({ mode, webhook, onClose, onCreated, 
 
       <label className="webhook-panel-label">Endpoint URL</label>
       <input value={form.url} onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))}
-             placeholder="https://your-system.example.com/hooks/perennia" />
+             placeholder="https://your-system.example.com/hooks/jdk" />
 
       <label className="webhook-panel-label">Events</label>
       <div className="webhook-events-list">

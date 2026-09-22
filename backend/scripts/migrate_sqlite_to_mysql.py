@@ -10,14 +10,14 @@ creates the tables on the MySQL side itself before copying rows.
 
 Usage:
     # DATABASE_URL in .env must already point at the target mysql+pymysql:// URL
-    python scripts/migrate_sqlite_to_mysql.py --sqlite-path ./data/perennia.db
+    python scripts/migrate_sqlite_to_mysql.py --sqlite-path ./data/jdk.db
 
     # Preview row counts without writing anything:
-    python scripts/migrate_sqlite_to_mysql.py --sqlite-path ./data/perennia.db --dry-run
+    python scripts/migrate_sqlite_to_mysql.py --sqlite-path ./data/jdk.db --dry-run
 
     # If the target tables already have rows (e.g. you ran init_db.py's
     # bootstrap-admin step against MySQL first), wipe them before copying:
-    python scripts/migrate_sqlite_to_mysql.py --sqlite-path ./data/perennia.db --truncate
+    python scripts/migrate_sqlite_to_mysql.py --sqlite-path ./data/jdk.db --truncate
 
 Safe to re-run in --dry-run mode any number of times. Without
 --truncate, the script refuses to touch a target table that already
@@ -45,7 +45,7 @@ from app.models import (  # noqa: F401 — import registers every table on Base.
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--sqlite-path", required=True, help="Path to the source .db file, e.g. ./data/perennia.db")
+    parser.add_argument("--sqlite-path", required=True, help="Path to the source .db file, e.g. ./data/jdk.db")
     parser.add_argument("--dry-run", action="store_true", help="Only print row counts, write nothing")
     parser.add_argument("--truncate", action="store_true", help="Delete existing rows in each target table before copying")
     args = parser.parse_args()

@@ -22,7 +22,7 @@ export const THEME_PRESETS = [
   {
     id: "midnight-gold",
     name: "Midnight Gold",
-    description: "Deep navy with a warm gold signature — the original Perennia look.",
+    description: "Deep navy with a warm gold signature — the original JDK look.",
     values: {
       "theme.background_color": "#0a0e27",
       "theme.primary_color": "#fbbf24",

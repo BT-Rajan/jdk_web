@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
 
   // Relative base so the production build works when dropped into any
-  // subfolder — e.g. XAMPP's htdocs/perennia/ — on any port, without
+  // subfolder — e.g. XAMPP's htdocs/jdk/ — on any port, without
   // rebuilding or editing asset paths.
   base: "./",
 

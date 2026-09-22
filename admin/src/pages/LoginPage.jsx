@@ -29,7 +29,7 @@ export default function LoginPage() {
     <div className="login-screen">
       <form className="login-card" onSubmit={handleSubmit}>
         <div className="login-mark">P</div>
-        <h1>Perennia Admin</h1>
+        <h1>JDK Admin</h1>
         <p className="login-sub">Sign in to manage bookings, leads, and site settings.</p>
 
         <label>

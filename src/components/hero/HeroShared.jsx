@@ -153,7 +153,7 @@ const HOLD_AFTER_TYPE_MS = 1100; // beat before handing off to the permanent tag
 
 /**
  * The homepage's H1: types out the admin-configured `statement`
- * (copy.home.heroStatement — "what Perennia does"), then hands off to
+ * (copy.home.heroStatement — "what JDK does"), then hands off to
  * the permanent two-line brand tagline (copy.home.taglineLine1/2),
  * which stays on screen for good (no looping/repeating — see the
  * brief). Both layers are mounted for the entire lifetime of this

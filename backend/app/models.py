@@ -490,7 +490,7 @@ class Lead(Base):
 class KnowledgeSource(Base):
     """A document (uploaded file) or web page an admin has added so the
     chat assistant can ground its answers in real, current information
-    instead of only what's baked into the system prompt — a Perennia
+    instead of only what's baked into the system prompt — a JDK
     org chart, a pricing sheet, a policy document, a page from the
     live site, etc. No embeddings/vector search: chat_service.py
     concatenates the (capped) text of every active source into the

@@ -50,7 +50,7 @@ class InfraSettings(BaseSettings):
     # SQLite by default (zero-config local/dev). Point this at a
     # postgres:// or mysql:// URL in production — nothing else in the
     # codebase assumes a specific engine, SQLAlchemy handles the dialect.
-    DATABASE_URL: str = f"sqlite:///{BASE_DIR / 'data' / 'perennia.db'}"
+    DATABASE_URL: str = f"sqlite:///{BASE_DIR / 'data' / 'jdk.db'}"
 
     # --- Network ---------------------------------------------------------
     HOST: str = "127.0.0.1"

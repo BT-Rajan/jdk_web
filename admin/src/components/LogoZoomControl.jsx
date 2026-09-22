@@ -44,7 +44,7 @@ export default function LogoZoomControl({ logoUrl, scale, onScaleChange }) {
         ) : (
           <span className="logo-zoom-preview-empty">No logo set</span>
         )}
-        <span className="logo-zoom-preview-text">Perennia</span>
+        <span className="logo-zoom-preview-text">JDK</span>
       </div>
 
       <div className="logo-zoom-controls">

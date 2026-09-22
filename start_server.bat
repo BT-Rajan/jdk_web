@@ -1,6 +1,6 @@
 @echo off
 REM ============================================================
-REM  Starts the already-installed Perennia v2 backend (which also
+REM  Starts the already-installed JDK v2 backend (which also
 REM  serves the built public site and admin dashboard). Run
 REM  installer.bat first if you haven't yet - this just starts
 REM  what it already set up.
@@ -8,7 +8,7 @@ REM
 REM      start_server.bat
 REM ============================================================
 setlocal
-title Perennia Server
+title JDK Server
 
 set "ROOT_DIR=%~dp0"
 set "ROOT_DIR=%ROOT_DIR:~0,-1%"
@@ -24,7 +24,7 @@ if not exist "%VENV_PY%" (
 )
 
 cd /d "%BACKEND_DIR%"
-echo Perennia server starting...
+echo JDK server starting...
 echo.
 echo   Public site        http://localhost:8001/
 echo   Admin dashboard    http://localhost:8001/admin

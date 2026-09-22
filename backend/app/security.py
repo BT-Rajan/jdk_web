@@ -26,7 +26,7 @@ _signer = URLSafeTimedSerializer(settings.SECRET_KEY, salt="admin-session")
 _oauth_state_signer = URLSafeTimedSerializer(settings.SECRET_KEY, salt="calendar-sync-oauth-state")
 _fernet = Fernet(settings.ENCRYPTION_KEY.encode() if isinstance(settings.ENCRYPTION_KEY, str) else settings.ENCRYPTION_KEY)
 
-SESSION_COOKIE_NAME = "perennia_admin_session"
+SESSION_COOKIE_NAME = "jdk_admin_session"
 
 
 # ── Passwords ──────────────────────────────────────────────────────────

@@ -39,7 +39,7 @@ ADMIN_DIST = PROJECT_ROOT / "admin" / "dist"  # `npm run build` output (admin/)
 
 def create_app() -> FastAPI:
     app = FastAPI(
-        title="Perennia API",
+        title="JDK API",
         version="0.1.0",
         docs_url="/api/docs" if not settings.is_production else None,
         redoc_url=None,
@@ -72,7 +72,7 @@ def create_app() -> FastAPI:
         # Never leak stack traces / internals to the client — log server
         # side (Pass 10 wires structured logging), return a flat 500.
         import logging
-        logging.getLogger("perennia").exception("Unhandled error on %s %s", request.method, request.url.path)
+        logging.getLogger("jdk").exception("Unhandled error on %s %s", request.method, request.url.path)
         return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
     app.include_router(admin_auth.router)

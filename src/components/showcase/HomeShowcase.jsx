@@ -18,14 +18,15 @@ const TITLE = { en: "Showcase", ar: "معرض الصور" };
  * there is at least one active photo, so a fresh install (or an
  * unreachable backend) shows no empty box.
  *
- * It sits in normal page flow below the hero, entirely separate from the
- * chat: it doesn't touch the quick-chat composer, the floating chat
- * widget, or the sticky buttons.
+ * Sits beside the hero's chat/nav content (see Hero.jsx/Hero.css) and
+ * carries no background or title of its own — just the photo, a soft
+ * top-down light, and (in RTL) the mirrored position — so it reads as
+ * part of the page rather than a separate boxed panel.
  *
  * Crossfade technique: the incoming photo fades 0 -> 1 *on top of* the
  * outgoing one, which stays fully opaque underneath until the fade is
- * done. Fading both at once would dip through the dark background at the
- * midpoint (two half-transparent layers don't add up to opaque).
+ * done. Fading both at once would dip through the page background at
+ * the midpoint (two half-transparent layers don't add up to opaque).
  *
  * Only the current, previous, and next photos are mounted, so a large
  * gallery never downloads every photo at once — the "next" one is
@@ -99,9 +100,11 @@ export default function HomeShowcase() {
       aria-label={title}
       style={{ "--showcase-fade-ms": `${FADE_MS}ms` }}
     >
-      <h2 className="home-showcase-title">{title}</h2>
-
       <div className="home-showcase-frame">
+        {/* Soft light falling from above, over whichever photo is on
+            top — purely decorative (aria-hidden), so it never blocks
+            or gets read alongside the photo/caption underneath it. */}
+        <div className="home-showcase-light" aria-hidden="true" />
         {images.map((img, i) => {
           if (!mounted.has(i)) return null;
           const state = i === current ? "is-active" : i === prev ? "is-prev" : "";
@@ -111,11 +114,6 @@ export default function HomeShowcase() {
               className={`home-showcase-slide ${state}`.trim()}
               aria-hidden={i !== current}
             >
-              {/* Blurred copy of the same photo fills the frame, so any
-                  aspect ratio (a tall phone photo, a wide panorama) sits
-                  in a full, tasteful frame instead of hard letterbox bars.
-                  Same URL as the <img>, so the browser fetches it once. */}
-              <div className="home-showcase-backdrop" style={{ backgroundImage: `url("${img.url}")` }} />
               <img
                 className="home-showcase-img"
                 src={img.url}

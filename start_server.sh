@@ -4,7 +4,13 @@
 #  the built public site and admin dashboard) under gunicorn +
 #  uvicorn workers — the standard Linux production combo, and
 #  what systemd should point at (see deploy/jdk-web.service).
-#  Run install.sh first if you haven't yet.
+#
+#  First-time setup (no installer — do this once, by hand):
+#    npm install && npm run build
+#    cd backend && python3 -m venv venv && venv/bin/pip install -r requirements.txt
+#    cp backend/.env.example backend/.env   # then edit DATABASE_URL, ALLOWED_ORIGINS
+#    cd backend && venv/bin/python scripts/gen_secrets.py --write-env .env
+#    cd backend && venv/bin/python scripts/init_db.py
 #
 #      ./start_server.sh
 #
@@ -18,7 +24,7 @@ VENV_PY="$BACKEND_DIR/venv/bin/python"
 
 if [ ! -x "$VENV_PY" ]; then
   echo "ERROR: backend virtualenv not found at $VENV_PY" >&2
-  echo "        Run ./install.sh first." >&2
+  echo "        Run: cd backend && python3 -m venv venv && venv/bin/pip install -r requirements.txt" >&2
   exit 1
 fi
 

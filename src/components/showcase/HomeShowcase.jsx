@@ -111,9 +111,9 @@ export default function HomeShowcase() {
         <svg viewBox="0 0 64 120" width="56" height="105" focusable="false">
           <defs>
             <radialGradient id="hs-bulb-glass" cx="50%" cy="55%" r="55%">
-              <stop offset="0%" stopColor="#fffdf0" />
-              <stop offset="55%" stopColor="#ffe9a8" />
-              <stop offset="100%" stopColor="#f2c14e" />
+              <stop offset="0%" stopColor="#ffffff" />
+              <stop offset="60%" stopColor="#fffaf0" />
+              <stop offset="100%" stopColor="#ffeecb" />
             </radialGradient>
             <linearGradient id="hs-bulb-cap" x1="0" x2="1">
               <stop offset="0%" stopColor="#5b5b5b" />
@@ -130,7 +130,7 @@ export default function HomeShowcase() {
             fill="url(#hs-bulb-glass)"
             className="home-showcase-bulb-glass"
           />
-          <path d="M26 96c2-8 4-8 6-14 2 6 4 6 6 14" fill="none" stroke="#c98a1a" strokeWidth="1.4" strokeLinecap="round" />
+          <path d="M26 96c2-8 4-8 6-14 2 6 4 6 6 14" fill="none" stroke="#e6c27a" strokeWidth="1.4" strokeLinecap="round" />
         </svg>
         <span className="home-showcase-bulb-halo" />
       </div>

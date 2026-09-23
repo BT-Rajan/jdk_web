@@ -39,17 +39,21 @@
      content itself instead, with generous but bounded breathing room,
      so identity/statement/tagline/CTA/composer land together in the
      first viewport instead of floating in the middle of one. */
-  min-height: min(78dvh, 720px);
+  /* Top-aligned (was vertically centred inside a ~78dvh box, which
+     pushed the headline a long way down the page). The row's own
+     min-height (.hero-body-row) keeps the showcase tall, so shrinking
+     this block doesn't shrink the bag. */
+  min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   text-align: center;
   gap: var(--space-5);
   max-width: 640px;
   width: 100%;
   position: relative;
-  padding-block: var(--space-7);
+  padding-block: 0 var(--space-7);
 }
 
 /* ── Headline — the page's signature visual now: a single-line,
@@ -73,15 +77,26 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
 }
+/* Hand-off from the typed statement to the permanent tagline.
+   Not a plain same-time crossfade (two half-transparent texts stacked
+   on each other is what made the switch noticeable): the statement
+   eases out and softens slightly, and the tagline starts a beat later,
+   easing in from the same softness — so at no point are two sharp
+   texts fighting for the same spot. Same sine in-out curve on both,
+   one shared duration (admin: theme.headlineDissolveMs). */
 .hero-headline-layer {
+  --hl-ease: cubic-bezier(0.45, 0, 0.55, 1);
   grid-area: 1 / 1;
   opacity: 1;
-  /* Admin-configurable — theme.headline_dissolve_ms (see applyTheme.js),
-     falls back to the site's original 2500ms if unset. */
-  transition: opacity var(--headline-dissolve-ms, 2500ms) var(--ease);
+  filter: blur(0);
+  transition:
+    opacity var(--headline-dissolve-ms, 2500ms) var(--hl-ease),
+    filter var(--headline-dissolve-ms, 2500ms) var(--hl-ease);
+  will-change: opacity, filter;
 }
 .hero-headline-layer.is-hidden {
   opacity: 0;
+  filter: blur(6px);
 }
 .hero-tagline-layer {
   display: flex;
@@ -89,11 +104,18 @@
   align-items: center;
   gap: 0.08em;
   opacity: 0;
-  transition: opacity var(--headline-dissolve-ms, 2500ms) var(--ease);
+  filter: blur(6px);
+  transform: translateY(6px);
+  transition:
+    opacity var(--headline-dissolve-ms, 2500ms) var(--hl-ease) calc(var(--headline-dissolve-ms, 2500ms) * 0.3),
+    filter var(--headline-dissolve-ms, 2500ms) var(--hl-ease) calc(var(--headline-dissolve-ms, 2500ms) * 0.3),
+    transform var(--headline-dissolve-ms, 2500ms) var(--hl-ease) calc(var(--headline-dissolve-ms, 2500ms) * 0.3);
   pointer-events: none;
 }
 .hero-tagline-layer.is-visible {
   opacity: 1;
+  filter: blur(0);
+  transform: translateY(0);
 }
 .hero-welcome-left .hero-tagline-layer { align-items: flex-start; }
 [dir="rtl"] .hero-welcome-left .hero-tagline-layer { align-items: flex-end; }
@@ -152,6 +174,8 @@
   .hero-tagline-layer {
     transition: none;
     animation: none;
+    filter: none;
+    transform: none;
   }
 }
 
@@ -533,6 +557,7 @@
    inner edge instead of leaving a visible band between them. */
 .hero-body-row {
   width: 100%;
+  min-height: min(78dvh, 720px);
   max-width: var(--content-max);
   display: flex;
   align-items: stretch;

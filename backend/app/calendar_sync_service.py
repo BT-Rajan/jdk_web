@@ -522,9 +522,16 @@ def detect_drift(db: Session) -> dict:
 
         credential.sync_token = next_token
         credential.last_synced_at = dt.datetime.now(dt.timezone.utc)
+        credential.last_sync_error = None  # this run succeeded — clear any previously-flagged failure
         db.flush()
         return {"ok": True, "checked": len(items), "flagged": flagged}
-    except Exception:
+    except Exception as e:
         import logging
         logging.getLogger("jdk.calendarSync").exception("Calendar drift detection failed")
+        # Surfaced in the admin Calendar Sync UI (StatusOut.last_sync_error)
+        # so a broken connection — expired/revoked token, API error — is
+        # visible there instead of only in server logs. str(e) rather than
+        # a full traceback: this is shown to an admin, not a developer.
+        credential.last_sync_error = str(e) or e.__class__.__name__
+        db.flush()
         return {"ok": False, "error": "sync_failed", "checked": 0, "flagged": 0}

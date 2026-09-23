@@ -460,6 +460,12 @@ class CalendarCredential(Base):
     # null and falls back to a fresh time-bounded listing.
     sync_token: Mapped[str | None] = mapped_column(Text, nullable=True)
     last_synced_at: Mapped[dt.datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    # Set whenever detect_drift's try/except catches a failure (token
+    # refresh, API error, decrypt failure, ...), cleared on the next
+    # success — surfaced in the admin Calendar Sync UI so a broken
+    # connection (expired/revoked token, etc) is visible there instead
+    # of only in server logs, which nobody but a developer ever reads.
+    last_sync_error: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
 

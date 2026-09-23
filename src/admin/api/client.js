@@ -143,7 +143,7 @@ export const adminApi = {
     request(`admin/api/calendar-sync/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`),
   selectCalendarSyncCalendar: (credentialId, calendarId) =>
     request("admin/api/calendar-sync/select", {
-      method: "POST", body: JSON.stringify({ credential_id: credentialId, calendar_id: calendarId }),
+      method: "POST", body: JSON.stringify({ credentialId, calendarId }),
     }),
   disconnectCalendarSync: () => request("admin/api/calendar-sync/disconnect", { method: "POST" }),
   syncCalendarNow: () => request("admin/api/calendar-sync/sync-now", { method: "POST" }),
@@ -153,7 +153,7 @@ export const adminApi = {
   //    the connected account's calendar, not just this app's own
   //    appointment-linked events --
   listCalendarEvents: (dateFrom, dateTo) =>
-    request(`admin/api/calendar-events?date_from=${encodeURIComponent(dateFrom)}&date_to=${encodeURIComponent(dateTo)}`),
+    request(`admin/api/calendar-events?dateFrom=${encodeURIComponent(dateFrom)}&dateTo=${encodeURIComponent(dateTo)}`),
   createCalendarEvent: (body) => request("admin/api/calendar-events", { method: "POST", body: JSON.stringify(body) }),
   updateCalendarEvent: (id, body) => request(`admin/api/calendar-events/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
   deleteCalendarEvent: (id) => request(`admin/api/calendar-events/${id}`, { method: "DELETE" }),

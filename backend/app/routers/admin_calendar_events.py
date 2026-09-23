@@ -3,18 +3,19 @@ from __future__ import annotations
 import datetime as dt
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from pydantic import BaseModel, Field
+from pydantic import Field
 from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.deps import get_current_admin, require_csrf
 from app.google_calendar_client import GoogleCalendarError
 from app.models import AdminUser
+from app.schema_base import CamelModel
 
 router = APIRouter(prefix="/admin/api/calendar-events", tags=["admin-calendar-events"], dependencies=[Depends(require_csrf)])
 
 
-class EventOut(BaseModel):
+class EventOut(CamelModel):
     id: str
     summary: str
     description: str = ""
@@ -24,7 +25,7 @@ class EventOut(BaseModel):
     html_link: str | None = None
 
 
-class EventIn(BaseModel):
+class EventIn(CamelModel):
     summary: str = Field(min_length=1, max_length=300)
     description: str = Field(default="", max_length=2000)
     start: str  # ISO datetime, e.g. 2026-08-20T14:00:00
@@ -43,8 +44,8 @@ def _handle_not_configured_or_google_error(e: Exception) -> None:
 
 @router.get("", response_model=list[EventOut])
 def list_events(
-    date_from: str = Query(..., description="ISO date, e.g. 2026-08-01"),
-    date_to: str = Query(..., description="ISO date, e.g. 2026-08-31"),
+    date_from: str = Query(..., alias="dateFrom", description="ISO date, e.g. 2026-08-01"),
+    date_to: str = Query(..., alias="dateTo", description="ISO date, e.g. 2026-08-31"),
     admin: AdminUser = Depends(get_current_admin), db: Session = Depends(get_db),
 ):
     """Every event on the connected calendar in the window — this is
@@ -55,7 +56,7 @@ def list_events(
         time_min = dt.datetime.fromisoformat(date_from).replace(tzinfo=dt.timezone.utc)
         time_max = dt.datetime.fromisoformat(date_to).replace(tzinfo=dt.timezone.utc) + dt.timedelta(days=1)
     except ValueError:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "date_from/date_to must be ISO dates")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "dateFrom/dateTo must be ISO dates")
     try:
         return calendar_sync_service.list_manual_events(db, time_min=time_min, time_max=time_max)
     except Exception as e:

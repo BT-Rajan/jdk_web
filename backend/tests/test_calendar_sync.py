@@ -121,19 +121,19 @@ def test_full_connect_flow(logged_in_client, monkeypatch):
     assert callback.status_code == 200, callback.text
     body = callback.json()
     assert body["calendars"] == [{"id": "primary", "summary": "Primary", "primary": True}]
-    credential_id = body["credential_id"]
+    credential_id = body["credentialId"]
 
     status_before = logged_in_client.get("/admin/api/calendar-sync/status").json()
     assert status_before["connected"] is False  # calendar not chosen yet
 
     select = logged_in_client.post("/admin/api/calendar-sync/select", json={
-        "credential_id": credential_id, "calendar_id": "primary",
+        "credentialId": credential_id, "calendarId": "primary",
     })
     assert select.status_code == 200
 
     status_after = logged_in_client.get("/admin/api/calendar-sync/status").json()
     assert status_after["connected"] is True
-    assert status_after["calendar_id"] == "primary"
+    assert status_after["calendarId"] == "primary"
 
 
 def test_reconnect_keeps_old_credential_active_until_new_one_is_selected(logged_in_client, monkeypatch):
@@ -163,20 +163,20 @@ def test_reconnect_keeps_old_credential_active_until_new_one_is_selected(logged_
 
     callback = logged_in_client.get(f"/admin/api/calendar-sync/callback?code=abc123&state={state}")
     assert callback.status_code == 200, callback.text
-    new_credential_id = callback.json()["credential_id"]
+    new_credential_id = callback.json()["credentialId"]
 
     # The admin hasn't picked a calendar for the new connection yet -
     # the old one must still be the one in effect.
     status_mid_flow = logged_in_client.get("/admin/api/calendar-sync/status").json()
     assert status_mid_flow["connected"] is True
-    assert status_mid_flow["calendar_id"] == "old-calendar@group.calendar.google.com"
+    assert status_mid_flow["calendarId"] == "old-calendar@group.calendar.google.com"
 
     with session_scope() as db:
         old = db.get(CalendarCredential, old_credential_id)
         assert old.is_active is True
 
     select = logged_in_client.post("/admin/api/calendar-sync/select", json={
-        "credential_id": new_credential_id, "calendar_id": "new-calendar@group.calendar.google.com",
+        "credentialId": new_credential_id, "calendarId": "new-calendar@group.calendar.google.com",
     })
     assert select.status_code == 200
 
@@ -189,7 +189,7 @@ def test_reconnect_keeps_old_credential_active_until_new_one_is_selected(logged_
 
     status_after = logged_in_client.get("/admin/api/calendar-sync/status").json()
     assert status_after["connected"] is True
-    assert status_after["calendar_id"] == "new-calendar@group.calendar.google.com"
+    assert status_after["calendarId"] == "new-calendar@group.calendar.google.com"
 
 
 def test_callback_without_refresh_token_rejected(logged_in_client, monkeypatch):
@@ -591,7 +591,7 @@ def test_manual_event_crud(logged_in_client, monkeypatch):
     assert create_resp.json()["id"] == "manual-evt-1"
     assert len(created_calls) == 1
 
-    list_resp = logged_in_client.get("/admin/api/calendar-events?date_from=2026-09-01&date_to=2026-09-07")
+    list_resp = logged_in_client.get("/admin/api/calendar-events?dateFrom=2026-09-01&dateTo=2026-09-07")
     assert list_resp.status_code == 200, list_resp.text
     events = list_resp.json()
     assert len(events) == 1
@@ -667,7 +667,7 @@ def test_sync_now_flags_externally_changed_time(logged_in_client, client, monkey
     # leaves its own flagged appointment in place, since the drift
     # column has no reason to be cleared by an unrelated test's
     # teardown — this test only needs to know its own flag landed.
-    assert status["flagged_count"] >= 1
+    assert status["flaggedCount"] >= 1
 
     lookup = client.post("/api/booking/appointments/lookup", json={
         "id": created["id"], "email": VALID_APPT["email"],

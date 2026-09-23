@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import RedirectResponse
-from pydantic import BaseModel, Field
+from pydantic import Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -10,39 +10,44 @@ from app.db import get_db
 from app.deps import get_current_admin, require_csrf
 from app.google_calendar_client import GoogleCalendarError
 from app.models import AdminUser
+from app.schema_base import CamelModel
 from app.settings_service import get_setting
 
 router = APIRouter(prefix="/admin/api/calendar-sync", tags=["admin-calendar-sync"], dependencies=[Depends(require_csrf)])
 
 
-class StatusOut(BaseModel):
+class StatusOut(CamelModel):
     connected: bool
     provider: str | None = None
     calendar_id: str | None = None
     connected_at: str | None = None
     last_synced_at: str | None = None
+    # Set whenever the last detect_drift run (manual "Sync now" or the
+    # scheduled poll) failed — see calendar_sync_service.detect_drift.
+    # None means either it's never run yet or the last run succeeded.
+    last_sync_error: str | None = None
     flagged_count: int = 0
 
 
-class SyncNowOut(BaseModel):
+class SyncNowOut(CamelModel):
     ok: bool
     error: str | None = None
     checked: int = 0
     flagged: int = 0
 
 
-class SelectCalendarIn(BaseModel):
+class SelectCalendarIn(CamelModel):
     credential_id: str
     calendar_id: str = Field(min_length=1, max_length=512)
 
 
-class CalendarChoiceOut(BaseModel):
+class CalendarChoiceOut(CamelModel):
     id: str
     summary: str
     primary: bool
 
 
-class CallbackOut(BaseModel):
+class CallbackOut(CamelModel):
     credential_id: str
     calendars: list[CalendarChoiceOut]
 
@@ -68,6 +73,7 @@ def sync_status(admin: AdminUser = Depends(get_current_admin), db: Session = Dep
         connected=True, provider=credential.provider, calendar_id=credential.calendar_id,
         connected_at=credential.connected_at.isoformat(),
         last_synced_at=credential.last_synced_at.isoformat() if credential.last_synced_at else None,
+        last_sync_error=credential.last_sync_error,
         flagged_count=flagged_count,
     )
 

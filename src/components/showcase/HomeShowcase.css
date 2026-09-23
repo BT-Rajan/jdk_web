@@ -19,9 +19,16 @@
   flex-direction: column;
   padding: 0 0 var(--section-padding-block);
   animation: fade-in 0.8s var(--ease);
+  /* Sits behind hero-body-main (see Hero.css) and outdented toward the
+     row's own start edge — logical margin, so it's further left in
+     English and further right in Arabic automatically — to keep the
+     two from crowding the middle of the row. */
+  position: relative;
+  z-index: 1;
+  margin-inline-start: clamp(-56px, -3vw, -16px);
 }
 @media (max-width: 900px) {
-  .home-showcase { padding-top: 0; }
+  .home-showcase { padding-top: 0; margin-inline-start: 0; }
 }
 
 .home-showcase-frame {

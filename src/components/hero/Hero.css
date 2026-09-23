@@ -518,20 +518,38 @@
    showcase, never with the quick-chat composer inside it. When there's
    no showcase (no active photos — HomeShowcase renders null) this
    flex row has a single grown child and looks exactly like the old
-   single-column page. */
+   single-column page.
+
+   The showcase is the row's first child (see Hero.jsx), so it sits at
+   the row's *start* edge — outdented further toward the true page
+   edge via margin-inline-start below, to give the chat/nav content
+   more breathing room instead of the two crowding each other in the
+   middle. Being a logical (inline-start) margin, this pushes the image
+   further left in English and — since the page flips dir="rtl" for
+   Arabic — further right in Arabic, automatically, with no separate
+   rule needed per language. */
 .hero-body-row {
   width: 100%;
   max-width: var(--content-max);
   display: flex;
   align-items: stretch;
-  gap: var(--section-gap);
+  gap: clamp(var(--section-gap), 6vw, 96px);
   padding-top: var(--section-gap);
+  position: relative;
 }
 .hero-body-main {
   flex: 1 1 560px;
   min-width: 0;
   display: flex;
   flex-direction: column;
+  /* Sits visually in front of, and slightly above, the showcase —
+     it's the content the visitor acts on, so it should read as the
+     top layer of the two rather than two panels pinned at the same
+     height. Transform, not margin, so it doesn't change the row's own
+     stretch-driven height. */
+  position: relative;
+  z-index: 2;
+  transform: translateY(calc(-1 * var(--space-4)));
 }
 /* hero-body-main's own children (hero-center, hero-split-wrap, ...)
    size themselves; stretch them to fill this column rather than
@@ -542,7 +560,7 @@
    underneath the layout content, same as it always used to sit. */
 @media (max-width: 900px) {
   .hero-body-row { flex-direction: column; gap: var(--space-6); padding-top: 0; }
-  .hero-body-main { flex-basis: auto; }
+  .hero-body-main { flex-basis: auto; transform: none; z-index: auto; }
 }
 
 @media (max-width: 480px) {

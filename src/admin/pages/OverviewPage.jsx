@@ -27,13 +27,13 @@ export default function OverviewPage() {
       <PageHeader title="Overview" subtitle="What's happening across bookings and leads." />
 
       <div className="stat-grid">
-        <Link to="/leads" className="stat-card-link">
+        <Link to="/admin/leads" className="stat-card-link">
           <StatCard label="Leads" value={stats.leads_total} detail={`${stats.leads_by_status.new ?? 0} new`} />
         </Link>
-        <Link to="/appointments" className="stat-card-link">
+        <Link to="/admin/appointments" className="stat-card-link">
           <StatCard label="Appointments" value={stats.appointments_total} detail={`${stats.appointments_upcoming} upcoming`} />
         </Link>
-        <Link to="/appointments" className="stat-card-link">
+        <Link to="/admin/appointments" className="stat-card-link">
           <StatCard label="This week" value={stats.appointments_this_week} detail="confirmed appointments" />
         </Link>
       </div>
@@ -42,7 +42,7 @@ export default function OverviewPage() {
         <section className="card overview-panel">
           <div className="overview-panel-head">
             <h2>Upcoming appointments</h2>
-            <Link to="/appointments">View all →</Link>
+            <Link to="/admin/appointments">View all →</Link>
           </div>
           {stats.upcoming_appointments.length === 0 ? (
             <p className="overview-empty">Nothing booked yet.</p>
@@ -50,7 +50,7 @@ export default function OverviewPage() {
             <table>
               <tbody>
                 {stats.upcoming_appointments.map((a) => (
-                  <tr key={a.id} className="overview-row" onClick={() => navigate(`/appointments/${a.id}`)}>
+                  <tr key={a.id} className="overview-row" onClick={() => navigate(`/admin/appointments/${a.id}`)}>
                     <td><span className="mono-chip">{a.id}</span></td>
                     <td>{a.name}</td>
                     <td>{a.date} · {a.time}</td>
@@ -64,7 +64,7 @@ export default function OverviewPage() {
         <section className="card overview-panel">
           <div className="overview-panel-head">
             <h2>Recent leads</h2>
-            <Link to="/leads">View all →</Link>
+            <Link to="/admin/leads">View all →</Link>
           </div>
           {stats.recent_leads.length === 0 ? (
             <p className="overview-empty">No leads captured yet.</p>
@@ -72,7 +72,7 @@ export default function OverviewPage() {
             <table>
               <tbody>
                 {stats.recent_leads.map((l) => (
-                  <tr key={l.id} className="overview-row" onClick={() => navigate(`/leads/${l.id}`)}>
+                  <tr key={l.id} className="overview-row" onClick={() => navigate(`/admin/leads/${l.id}`)}>
                     <td>{l.name || l.email}</td>
                     <td><span className={`status-pill ${l.status}`}>{l.status}</span></td>
                     <td>{l.source}</td>

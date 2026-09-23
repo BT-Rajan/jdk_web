@@ -5,10 +5,14 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
 
-  // Relative base so the production build works when dropped into any
-  // subfolder — e.g. XAMPP's htdocs/jdk/ — on any port, without
-  // rebuilding or editing asset paths.
-  base: "./",
+  // Absolute base: the public site and the admin dashboard are now one
+  // build served from one FastAPI process at the domain root (see
+  // backend/app/main.py's SPA fallback), and the admin routes live at
+  // arbitrary depth (e.g. /admin/leads/42) — a relative "./" base would
+  // resolve asset URLs against that depth instead of the real root on a
+  // hard refresh. If you ever need to drop the build into a subfolder
+  // again, override with `vite build --base=/subfolder/`.
+  base: "/",
 
   server: {
     port: 5173,
@@ -16,14 +20,24 @@ export default defineConfig({
     strictPort: false,
     open: false,
     proxy: {
-      // During `npm run dev`, forward /api calls to the Python backend
-      // (see backend/README / PASS1_NOTES.md) so the same relative-path
-      // fetch("api/...") calls work both in dev and in the built app.
+      // Public site API calls (see backend/README / PASS1_NOTES.md) so
+      // the same relative-path fetch("api/...") calls work both in dev
+      // and in the built app.
       "/api": {
         target: "http://localhost:8001",
         changeOrigin: true,
         // Don't hard-fail dev server startup if the backend isn't running;
         // the client already falls back to bundled content on error.
+        configure: (proxy) => {
+          proxy.on("error", () => {});
+        },
+      },
+      // Admin dashboard API calls (see src/admin/api/client.js) — a
+      // separate prefix from "/api" above since the admin's session
+      // cookie/CSRF flow is scoped under /admin/api on the backend.
+      "/admin/api": {
+        target: "http://localhost:8001",
+        changeOrigin: true,
         configure: (proxy) => {
           proxy.on("error", () => {});
         },

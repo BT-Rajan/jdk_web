@@ -8,7 +8,12 @@ html, body, #root {
   height: 100%;
 }
 
-body {
+/* Scoped to .admin-shell (see ../App.jsx) — the public site's
+   global.css sets these same bare-element selectors (body,
+   input/textarea/select/button, a, button, :focus-visible) with
+   different values, and both are now loaded in one bundle. */
+.admin-shell {
+  min-height: 100%;
   margin: 0;
   font-family: var(--font-ui);
   background: var(--bg);
@@ -16,20 +21,20 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-input, textarea, select, button {
+.admin-shell input, .admin-shell textarea, .admin-shell select, .admin-shell button {
   font-family: inherit;
   font-size: 14px;
 }
 
-a {
+.admin-shell a {
   color: inherit;
 }
 
-button {
+.admin-shell button {
   cursor: pointer;
 }
 
-:focus-visible {
+.admin-shell :focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: 2px;
 }
@@ -65,11 +70,11 @@ button {
   border-radius: var(--radius-md);
 }
 
-table {
+.admin-shell table {
   width: 100%;
   border-collapse: collapse;
 }
-th {
+.admin-shell th {
   text-align: left;
   font-size: 12px;
   text-transform: uppercase;
@@ -79,14 +84,14 @@ th {
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--border);
 }
-td {
+.admin-shell td {
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--border);
   font-size: 14px;
 }
-tbody tr:hover {
+.admin-shell tbody tr:hover {
   background: var(--surface-hover);
 }
-tbody tr:last-child td {
+.admin-shell tbody tr:last-child td {
   border-bottom: none;
 }

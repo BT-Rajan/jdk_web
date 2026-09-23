@@ -3,13 +3,13 @@ import { useAuth } from "../context/AuthContext.jsx";
 import "./DashboardLayout.css";
 
 const NAV_ITEMS = [
-  { to: "/", label: "Overview", end: true },
-  { to: "/appointments", label: "Appointments" },
-  { to: "/calendar", label: "Calendar" },
-  { to: "/services", label: "Services" },
-  { to: "/leads", label: "Leads" },
-  { to: "/knowledge", label: "Knowledge Base" },
-  { to: "/settings", label: "Settings" },
+  { to: "/admin", label: "Overview", end: true },
+  { to: "/admin/appointments", label: "Appointments" },
+  { to: "/admin/calendar", label: "Calendar" },
+  { to: "/admin/services", label: "Services" },
+  { to: "/admin/leads", label: "Leads" },
+  { to: "/admin/knowledge", label: "Knowledge Base" },
+  { to: "/admin/settings", label: "Settings" },
 ];
 
 export default function DashboardLayout() {
@@ -18,14 +18,14 @@ export default function DashboardLayout() {
 
   async function handleLogout() {
     await logout();
-    navigate("/login", { replace: true });
+    navigate("/admin/login", { replace: true });
   }
 
   return (
     <div className="dashboard-shell">
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <span className="sidebar-mark">P</span>
+          <span className="sidebar-mark">J</span>
           <span>JDK</span>
         </div>
         <nav className="sidebar-nav">

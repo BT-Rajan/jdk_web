@@ -4,10 +4,28 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body, #root { height: 100%; width: 100%; }
 
+/* Neutral fallback so mobile overscroll/rubber-band bounce (which can
+   briefly reveal the real <body> background past either shell's own
+   background) doesn't flash white. Whichever shell is mounted paints
+   over this immediately for normal in-viewport content. */
+body { background: #07060a; }
+
 html { -webkit-text-size-adjust: 100%; }
 
-body {
+#root { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100%; }
+
+/* Everything below here used to live on the bare <body>/<html> element.
+   Now that the public site shares one document (and one #root) with
+   the admin dashboard (see src/admin/), it's scoped to .site-shell —
+   the public site's own top-level wrapper (see ../SiteApp.jsx) — so
+   none of it leaks into .admin-shell (src/admin/styles/global.css),
+   which has its own equivalents with different values. */
+.site-shell {
+  position: relative;
+  z-index: 1;
   min-height: 100%;
+  width: 100%;
+  overflow-x: hidden;
   font-family: var(--font-body);
   color: var(--white-pure);
   -webkit-font-smoothing: antialiased;
@@ -16,8 +34,6 @@ body {
      multi-hued gradient mesh. The faint grid-weave overlay below adds
      just enough texture to keep it from reading as flat. */
   background: var(--brand-bg);
-  position: relative;
-  overflow-x: hidden;
 }
 
 /* Subtle grid-mesh overlay for texture, same on every screen size.
@@ -27,7 +43,7 @@ body {
    glow, solid) override this rule in themeVariants.css. Opacity reads
    --bg-texture-opacity (theme.background_intensity), also overridden
    there per intensity level. */
-body::before {
+.site-shell::before {
   content: "";
   position: fixed;
   inset: 0;
@@ -40,23 +56,25 @@ body::before {
   z-index: 0;
 }
 
-#root { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100%; }
+.site-shell button, .site-shell input, .site-shell textarea, .site-shell select { font-family: inherit; color: inherit; }
+.site-shell button { cursor: pointer; background: none; border: none; }
+.site-shell a { color: inherit; text-decoration: none; }
+.site-shell img { max-width: 100%; display: block; }
 
-button, input, textarea, select { font-family: inherit; color: inherit; }
-button { cursor: pointer; background: none; border: none; }
-a { color: inherit; text-decoration: none; }
-img { max-width: 100%; display: block; }
-
-button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
+.site-shell button:focus-visible, .site-shell a:focus-visible, .site-shell [tabindex]:focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: 2px;
 }
 
-[dir="rtl"] { font-family: var(--font-ar); }
+.site-shell [dir="rtl"] { font-family: var(--font-ar); }
 
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: var(--radius-pill); }
-::-webkit-scrollbar-track { background: transparent; }
+/* ::-webkit-scrollbar only takes effect on an element that's actually
+   the page's scrolling box — a plain wrapper div like .site-shell
+   never is, so this stays on body (shared, and low-risk: a thin white
+   scrollbar is a reasonable default for the admin dashboard too). */
+body::-webkit-scrollbar { width: 8px; height: 8px; }
+body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 999px; }
+body::-webkit-scrollbar-track { background: transparent; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }

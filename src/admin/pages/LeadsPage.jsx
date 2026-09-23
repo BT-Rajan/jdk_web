@@ -38,12 +38,12 @@ export default function LeadsPage() {
   function handleCreated(lead) {
     setLeads((prev) => [lead, ...(prev ?? [])]);
     setCreating(false);
-    navigate(`/leads/${lead.id}`);
+    navigate(`/admin/leads/${lead.id}`);
   }
 
   function handleDeleted() {
     setLeads((prev) => prev.filter((l) => l.id !== selectedId));
-    navigate("/leads");
+    navigate("/admin/leads");
   }
 
   const selectedLead = leads?.find((l) => l.id === selectedId) ?? null;
@@ -54,7 +54,7 @@ export default function LeadsPage() {
         title="Leads"
         subtitle="Everyone who's booked a call or left an email in chat."
         actions={
-          <button className="row-action primary" onClick={() => { setCreating(true); navigate("/leads"); }}>
+          <button className="row-action primary" onClick={() => { setCreating(true); navigate("/admin/leads"); }}>
             + New lead
           </button>
         }
@@ -97,7 +97,7 @@ export default function LeadsPage() {
                 <tr
                   key={l.id}
                   className={selectedId === l.id ? "row-selected" : ""}
-                  onClick={() => { setCreating(false); navigate(`/leads/${l.id}`); }}
+                  onClick={() => { setCreating(false); navigate(`/admin/leads/${l.id}`); }}
                   style={{ cursor: "pointer" }}
                 >
                   <td>
@@ -121,7 +121,7 @@ export default function LeadsPage() {
           <LeadDetailPanel
             key={selectedLead.id}
             lead={selectedLead}
-            onClose={() => navigate("/leads")}
+            onClose={() => navigate("/admin/leads")}
             onUpdated={handleUpdated}
             onDeleted={handleDeleted}
           />

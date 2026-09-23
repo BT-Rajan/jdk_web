@@ -10,7 +10,12 @@
    throughout (JetBrains Mono) — a quiet, recurring nod to the
    confirmation codes visitors receive on the public site, and a
    genuinely useful convention for an admin scanning tables of them. */
-:root {
+/* Scoped to .admin-shell (see ../App.jsx) rather than :root — the
+   public site defines its own, different values for several of these
+   same variable names (--gold, --gold-dim, --radius-sm, --radius-md),
+   and now that both apps share one bundle/runtime, a :root definition
+   here would leak into (or be overridden by) the site's tokens. */
+.admin-shell {
   --navy-950: #0a0e27;
   --navy-800: #141a3d;
   --navy-700: #1d2550;

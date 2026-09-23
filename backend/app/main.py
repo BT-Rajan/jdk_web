@@ -33,8 +33,10 @@ from app.routers import (
 
 # repo_root/backend/app/main.py -> repo_root
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-PUBLIC_DIST = PROJECT_ROOT / "dist"          # `npm run build` output (root)
-ADMIN_DIST = PROJECT_ROOT / "admin" / "dist"  # `npm run build` output (admin/)
+# `npm run build` output — one Vite app now covers both the public
+# site and the admin dashboard (mounted client-side at /admin/*, see
+# src/App.jsx), so there's a single dist/ to serve instead of two.
+FRONTEND_DIST = PROJECT_ROOT / "dist"
 
 
 def create_app() -> FastAPI:
@@ -121,38 +123,26 @@ def create_app() -> FastAPI:
         return {"status": "ok"}
 
     # ── Single-port production serving ──────────────────────────────
-    # If the frontends have been built (`npm run build` at the repo
-    # root and in admin/), serve them straight from this FastAPI
-    # process so the whole app — public site, admin dashboard, and
-    # API — runs behind one port. Falls back to nothing (404) if a
-    # dist/ folder isn't there yet, e.g. in a dev checkout that only
-    # runs `npm run dev` separately. Registered last so it never
-    # shadows the /api/* and /admin/api/* routers above.
-    if ADMIN_DIST.is_dir():
-        admin_assets = ADMIN_DIST / "assets"
-        if admin_assets.is_dir():
-            app.mount("/admin/assets", StaticFiles(directory=str(admin_assets)), name="admin-assets")
-
-        @app.get("/admin", include_in_schema=False)
-        @app.get("/admin/{full_path:path}", include_in_schema=False)
-        async def admin_spa(full_path: str = "") -> FileResponse:
-            candidate = ADMIN_DIST / full_path
-            if full_path and candidate.is_file():
-                return FileResponse(candidate)
-            return FileResponse(ADMIN_DIST / "index.html")
-
-    if PUBLIC_DIST.is_dir():
-        public_assets = PUBLIC_DIST / "assets"
-        if public_assets.is_dir():
-            app.mount("/assets", StaticFiles(directory=str(public_assets)), name="public-assets")
+    # If the frontend has been built (`npm run build` at the repo
+    # root), serve it straight from this FastAPI process so the whole
+    # app — public site, admin dashboard (client-side routes under
+    # /admin/*, see src/App.jsx), and API — runs behind one port.
+    # Falls back to nothing (404) if dist/ isn't there yet, e.g. in a
+    # dev checkout that only runs `npm run dev` separately. Registered
+    # last so it never shadows the /api/* and /admin/api/* routers
+    # above.
+    if FRONTEND_DIST.is_dir():
+        assets_dir = FRONTEND_DIST / "assets"
+        if assets_dir.is_dir():
+            app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
 
         @app.get("/", include_in_schema=False)
         @app.get("/{full_path:path}", include_in_schema=False)
-        async def public_spa(full_path: str = "") -> FileResponse:
-            candidate = PUBLIC_DIST / full_path
+        async def spa(full_path: str = "") -> FileResponse:
+            candidate = FRONTEND_DIST / full_path
             if full_path and candidate.is_file():
                 return FileResponse(candidate)
-            return FileResponse(PUBLIC_DIST / "index.html")
+            return FileResponse(FRONTEND_DIST / "index.html")
 
     return app
 

@@ -91,7 +91,7 @@ export default function AppointmentsPage() {
         title="Appointments"
         subtitle="Every booking made through the site."
         actions={
-          <button className="row-action primary" onClick={() => { setCreating(true); navigate("/appointments"); }}>
+          <button className="row-action primary" onClick={() => { setCreating(true); navigate("/admin/appointments"); }}>
             + New appointment
           </button>
         }
@@ -144,7 +144,7 @@ export default function AppointmentsPage() {
                 <tr
                   key={a.id}
                   className={selectedId === a.id ? "row-selected" : ""}
-                  onClick={() => { setCreating(false); navigate(`/appointments/${a.id}`); }}
+                  onClick={() => { setCreating(false); navigate(`/admin/appointments/${a.id}`); }}
                   style={{ cursor: "pointer" }}
                 >
                   <td><span className="mono-chip">{a.id}</span></td>
@@ -198,7 +198,7 @@ export default function AppointmentsPage() {
           <AppointmentDetailPanel
             key={selectedAppointment.id}
             appointment={selectedAppointment}
-            onClose={() => navigate("/appointments")}
+            onClose={() => navigate("/admin/appointments")}
             onUpdated={handlePanelUpdated}
           />
         )}

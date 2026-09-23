@@ -13,7 +13,13 @@
    before (or without) a backend connection; see LangContext.jsx /
    applyTheme.js for how these get overridden at runtime.
    ────────────────────────────────────────────────────────── */
-:root {
+.site-shell {
+  /* Scoped here (see ./App.jsx's .site-shell wrapper) rather than
+     :root — now that the public site and the admin dashboard
+     (src/admin/) share one bundle/runtime, keeping each app's design
+     tokens scoped to its own root class keeps them from colliding
+     (several names — --gold, --gold-dim, --radius-sm, --radius-md —
+     are reused by admin's tokens.css with different values). */
   /* ---- Base tokens (admin-configurable) --------------------------- */
   /* Gold-on-near-black editorial palette, matched to k-g-i.com's design
      language (single gold accent family rather than a separate hue,

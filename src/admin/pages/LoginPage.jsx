@@ -17,7 +17,7 @@ export default function LoginPage() {
     setSubmitting(true);
     try {
       await login(username, password);
-      navigate("/", { replace: true });
+      navigate("/admin", { replace: true });
     } catch (err) {
       setError(err.message || "Invalid username or password.");
     } finally {

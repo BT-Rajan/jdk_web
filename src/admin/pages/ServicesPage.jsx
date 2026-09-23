@@ -30,7 +30,7 @@ export default function ServicesPage() {
   function handleCreated(service) {
     setServices((prev) => [...(prev ?? []), service]);
     setCreating(false);
-    navigate(`/services/${service.id}`);
+    navigate(`/admin/services/${service.id}`);
   }
 
   function handleUpdated(updated) {
@@ -49,7 +49,7 @@ export default function ServicesPage() {
         title="Services"
         subtitle="What visitors can book — each service has its own duration, buffer time, and intake questions."
         actions={
-          <button className="row-action primary" onClick={() => { setCreating(true); navigate("/services"); }}>
+          <button className="row-action primary" onClick={() => { setCreating(true); navigate("/admin/services"); }}>
             + New service
           </button>
         }
@@ -80,7 +80,7 @@ export default function ServicesPage() {
                 <tr
                   key={s.id}
                   className={selectedId === s.id ? "row-selected" : ""}
-                  onClick={() => { setCreating(false); navigate(`/services/${s.id}`); }}
+                  onClick={() => { setCreating(false); navigate(`/admin/services/${s.id}`); }}
                   style={{ cursor: "pointer" }}
                 >
                   <td>
@@ -110,7 +110,7 @@ export default function ServicesPage() {
             key={selectedService.id}
             mode="edit"
             service={selectedService}
-            onClose={() => navigate("/services")}
+            onClose={() => navigate("/admin/services")}
             onUpdated={handleUpdated}
             onDeactivated={handleDeactivated}
           />

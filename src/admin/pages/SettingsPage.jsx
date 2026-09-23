@@ -81,7 +81,7 @@ export default function SettingsPage() {
       .then((cats) => {
         setCategories(cats);
         if (!categoryParam && cats.length > 0) {
-          navigate(`/settings/${cats[0]}`, { replace: true });
+          navigate(`/admin/settings/${cats[0]}`, { replace: true });
         }
       })
       .catch((e) => (e.status === 401 ? handleSessionExpired() : setError(e.message)));
@@ -176,7 +176,7 @@ export default function SettingsPage() {
             <button
               key={c}
               className={c === categoryParam ? "settings-nav-item active" : "settings-nav-item"}
-              onClick={() => navigate(`/settings/${c}`)}
+              onClick={() => navigate(`/admin/settings/${c}`)}
             >
               {labelFor(c)}
             </button>
@@ -185,7 +185,7 @@ export default function SettingsPage() {
             <button
               key={key}
               className={key === categoryParam ? "settings-nav-item active" : "settings-nav-item"}
-              onClick={() => navigate(`/settings/${key}`)}
+              onClick={() => navigate(`/admin/settings/${key}`)}
             >
               {labelFor(key)}
             </button>

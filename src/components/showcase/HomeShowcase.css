@@ -8,7 +8,7 @@
    No title, no border, no fill — the frame's background stays fully
    transparent (see .home-showcase-frame) and its edges fade toward
    transparent via a mask, so the photo dissolves into the page instead
-   of sitting in a boxed panel on top of it. A visible light falls over
+   of sitting in a boxed panel on top of it. A soft light falls over
    the top of the photo (.home-showcase-light), and the frame carries a
    very mild drop-shadow so the lit photo reads as gently lifted off
    the page rather than flat against it. */
@@ -65,24 +65,27 @@
   50% { transform: translateY(-6px); }
 }
 
-/* A visible spotlight falling from directly above, over the current
-   photo — the "focus light". Sits above the slides (z-index 4, above
-   .is-active's 2) and blends with mix-blend-mode instead of covering
-   them, so it reads as light hitting the image rather than a tinted
-   overlay sitting on top of it. */
+/* A soft light wash falling from directly above, over the current
+   photo — the "focus light". Deliberately plain alpha (no blend mode):
+   mix-blend-mode composites against the *backdrop*, and this frame's
+   backdrop is transparent (no fill of its own — see above), which
+   blend functions like overlay/soft-light treat as black, painting a
+   dark patch instead of light. Plain, low-opacity white/gold over the
+   photo reads as a gentle glow with no such risk, and stays equally
+   subtle over the fully transparent letterbox margins (object-fit:
+   contain) where the photo itself doesn't reach. */
 .home-showcase-light {
   position: absolute;
-  inset: -12% -15% auto -15%;
-  height: 78%;
+  inset: -8% -12% auto -12%;
+  height: 55%;
   z-index: 4;
   pointer-events: none;
   background: radial-gradient(
-    ellipse 65% 100% at 50% 0%,
-    color-mix(in srgb, var(--white-soft) 75%, transparent) 0%,
-    color-mix(in srgb, var(--gold) 45%, transparent) 40%,
-    transparent 80%
+    ellipse 60% 100% at 50% 0%,
+    color-mix(in srgb, var(--white-soft) 38%, transparent) 0%,
+    color-mix(in srgb, var(--gold) 20%, transparent) 45%,
+    transparent 85%
   );
-  mix-blend-mode: overlay;
 }
 
 /* Slides stack in one spot and are shown purely by opacity/z-index:

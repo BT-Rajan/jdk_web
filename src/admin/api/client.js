@@ -83,7 +83,7 @@ export const adminApi = {
   // Public slot-availability check, reused here so the admin's manual
   // "Add appointment" form can only pick a slot the grid actually allows.
   getSlots: (date, serviceId) =>
-    request(`api/booking/slots?date=${encodeURIComponent(date)}${serviceId ? `&service_id=${encodeURIComponent(serviceId)}` : ""}`),
+    request(`api/booking/slots?date=${encodeURIComponent(date)}${serviceId ? `&serviceId=${encodeURIComponent(serviceId)}` : ""}`),
   cancelAppointment: (id) => request(`admin/api/booking/appointments/${id}/cancel`, { method: "POST" }),
   acceptAppointment: (id) => request(`admin/api/booking/appointments/${id}/accept`, { method: "POST" }),
   rejectAppointment: (id, reason) =>
@@ -125,7 +125,7 @@ export const adminApi = {
     request(`admin/api/services/${serviceId}/questions/${questionId}`, { method: "DELETE" }),
   reorderServiceQuestions: (serviceId, orderedIds) =>
     request(`admin/api/services/${serviceId}/questions/reorder`, {
-      method: "POST", body: JSON.stringify({ ordered_ids: orderedIds }),
+      method: "POST", body: JSON.stringify({ orderedIds }),
     }),
 
   // -- calendar module: webhooks (Pass 11, see docs/CALENDAR_MODULE_PLAN.md) --
@@ -169,7 +169,7 @@ export const adminApi = {
   addKnowledgeUrl: (url) => request("admin/api/knowledge/url", { method: "POST", body: JSON.stringify({ url }) }),
   refreshKnowledgeSource: (id) => request(`admin/api/knowledge/${id}/refresh`, { method: "POST" }),
   setKnowledgeSourceActive: (id, isActive) =>
-    request(`admin/api/knowledge/${id}`, { method: "PATCH", body: JSON.stringify({ is_active: isActive }) }),
+    request(`admin/api/knowledge/${id}`, { method: "PATCH", body: JSON.stringify({ isActive: isActive }) }),
   deleteKnowledgeSource: (id) => request(`admin/api/knowledge/${id}`, { method: "DELETE" }),
 
   // -- content: pages + FAQ (admin-editable, served publicly via /api/content) --

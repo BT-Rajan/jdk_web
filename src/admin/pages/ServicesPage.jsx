@@ -87,10 +87,10 @@ export default function ServicesPage() {
                     <div>{s.name}</div>
                     <div className="table-subtext mono-chip-inline">{s.slug}</div>
                   </td>
-                  <td>{s.duration_minutes} min</td>
-                  <td>{LOCATION_LABEL[s.location_type] ?? s.location_type}</td>
-                  <td>{s.requires_confirmation ? <span className="status-pill contacted">requires approval</span> : <span className="table-subtext">auto-confirms</span>}</td>
-                  <td><span className={`status-pill ${s.is_active ? "confirmed" : "cancelled"}`}>{s.is_active ? "active" : "inactive"}</span></td>
+                  <td>{s.durationMinutes} min</td>
+                  <td>{LOCATION_LABEL[s.locationType] ?? s.locationType}</td>
+                  <td>{s.requiresConfirmation ? <span className="status-pill contacted">requires approval</span> : <span className="table-subtext">auto-confirms</span>}</td>
+                  <td><span className={`status-pill ${s.isActive ? "confirmed" : "cancelled"}`}>{s.isActive ? "active" : "inactive"}</span></td>
                 </tr>
               ))}
             </tbody>

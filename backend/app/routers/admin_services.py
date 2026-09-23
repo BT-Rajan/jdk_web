@@ -3,19 +3,20 @@ from __future__ import annotations
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, Field
+from pydantic import Field
 from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.deps import get_current_admin, require_csrf
 from app.models import AdminUser
+from app.schema_base import CamelModel
 
 router = APIRouter(prefix="/admin/api/services", tags=["admin-services"], dependencies=[Depends(require_csrf)])
 
 
 # ── Schemas ──────────────────────────────────────────────────────────
 
-class QuestionOut(BaseModel):
+class QuestionOut(CamelModel):
     id: str
     kind: str
     label: str
@@ -23,7 +24,7 @@ class QuestionOut(BaseModel):
     position: int
 
 
-class ServiceOut(BaseModel):
+class ServiceOut(CamelModel):
     id: str
     name: str
     slug: str
@@ -39,7 +40,7 @@ class ServiceOut(BaseModel):
     questions: list[QuestionOut] = []
 
 
-class ServiceCreateIn(BaseModel):
+class ServiceCreateIn(CamelModel):
     name: str = Field(min_length=1, max_length=120)
     slug: str | None = Field(default=None, max_length=64)
     duration_minutes: int = Field(ge=5, le=480)
@@ -53,7 +54,7 @@ class ServiceCreateIn(BaseModel):
     translations: dict[str, dict[str, str]] = Field(default_factory=dict)
 
 
-class ServiceUpdateIn(BaseModel):
+class ServiceUpdateIn(CamelModel):
     name: str | None = Field(default=None, min_length=1, max_length=120)
     slug: str | None = Field(default=None, max_length=64)
     duration_minutes: int | None = Field(default=None, ge=5, le=480)
@@ -67,21 +68,21 @@ class ServiceUpdateIn(BaseModel):
     translations: dict[str, dict[str, str]] | None = None
 
 
-class QuestionCreateIn(BaseModel):
+class QuestionCreateIn(CamelModel):
     kind: str
     label: str = Field(min_length=1, max_length=200)
     required: bool = False
     position: int = 0
 
 
-class QuestionUpdateIn(BaseModel):
+class QuestionUpdateIn(CamelModel):
     kind: str | None = None
     label: str | None = Field(default=None, min_length=1, max_length=200)
     required: bool | None = None
     position: int | None = None
 
 
-class QuestionReorderIn(BaseModel):
+class QuestionReorderIn(CamelModel):
     ordered_ids: list[str]
 
 

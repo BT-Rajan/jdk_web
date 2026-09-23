@@ -65,18 +65,18 @@ def test_stale_pending_stops_blocking_the_slot():
     with session_scope() as db:
         set_setting(db, "booking.pendingExpiryHours", 1, actor_id=None, actor_username="test-setup")
 
-    service_id = _make_confirmation_required_service()
+    serviceId = _make_confirmation_required_service()
     date = _nth_future_workday(60)
     c = TestClient(app)
 
     created = c.post("/api/booking/appointments", json={
-        **VALID_APPT, "date": date, "slot": "09:00", "service_id": service_id,
+        **VALID_APPT, "date": date, "slot": "09:00", "serviceId": serviceId,
     }).json()
     assert created["ok"] is True, created
     assert created["pending"] is True
 
     # Still fresh — blocks the slot exactly like before this fix.
-    slots = c.get(f"/api/booking/slots?date={date}&service_id={service_id}").json()
+    slots = c.get(f"/api/booking/slots?date={date}&serviceId={serviceId}").json()
     assert "09:00" not in slots["slots"]
 
     # Backdate it past the 1-hour expiry window.
@@ -84,7 +84,7 @@ def test_stale_pending_stops_blocking_the_slot():
         appt = db.get(Appointment, created["id"])
         appt.created_at = dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=2)
 
-    slots = c.get(f"/api/booking/slots?date={date}&service_id={service_id}").json()
+    slots = c.get(f"/api/booking/slots?date={date}&serviceId={serviceId}").json()
     assert "09:00" in slots["slots"]
 
 
@@ -92,12 +92,12 @@ def test_expire_stale_pending_appointments_declines_it():
     with session_scope() as db:
         set_setting(db, "booking.pendingExpiryHours", 1, actor_id=None, actor_username="test-setup")
 
-    service_id = _make_confirmation_required_service()
+    serviceId = _make_confirmation_required_service()
     date = _nth_future_workday(61)
     c = TestClient(app)
 
     created = c.post("/api/booking/appointments", json={
-        **VALID_APPT, "date": date, "slot": "09:00", "service_id": service_id,
+        **VALID_APPT, "date": date, "slot": "09:00", "serviceId": serviceId,
     }).json()
 
     with session_scope() as db:
@@ -131,12 +131,12 @@ def test_pending_expiry_disabled_by_zero_never_expires():
     with session_scope() as db:
         set_setting(db, "booking.pendingExpiryHours", 0, actor_id=None, actor_username="test-setup")
 
-    service_id = _make_confirmation_required_service()
+    serviceId = _make_confirmation_required_service()
     date = _nth_future_workday(62)
     c = TestClient(app)
 
     created = c.post("/api/booking/appointments", json={
-        **VALID_APPT, "date": date, "slot": "09:00", "service_id": service_id,
+        **VALID_APPT, "date": date, "slot": "09:00", "serviceId": serviceId,
     }).json()
 
     with session_scope() as db:
@@ -144,7 +144,7 @@ def test_pending_expiry_disabled_by_zero_never_expires():
         appt.created_at = dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=365)
 
     # Disabled (0) means indefinite, exactly as it always behaved before this setting existed.
-    slots = c.get(f"/api/booking/slots?date={date}&service_id={service_id}").json()
+    slots = c.get(f"/api/booking/slots?date={date}&serviceId={serviceId}").json()
     assert "09:00" not in slots["slots"]
 
     with session_scope() as db:

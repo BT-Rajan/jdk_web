@@ -237,7 +237,7 @@ def _tool_book_appointment(db: Session, lang: str, args: dict[str, Any]) -> dict
         webhook_service.dispatch_event(db, "booking.confirmed", appt)
         event_id = calendar_sync_service.create_event_for_appointment(db, result["id"])
         if event_id:
-            appt["external_event_id"] = event_id
+            appt["externalEventId"] = event_id
     db.commit()
     return result
 
@@ -261,7 +261,7 @@ def _tool_cancel_appointment(db: Session, args: dict[str, Any]) -> dict[str, Any
         notification_service.notify_booking_cancelled(db, result["appointment"])
         webhook_service.dispatch_event(db, "booking.cancelled", result["appointment"])
         calendar_sync_service.delete_event_for_appointment(db, appt_id)
-        result["appointment"]["external_event_id"] = None
+        result["appointment"]["externalEventId"] = None
         db.commit()
     return result
 
@@ -280,10 +280,10 @@ def _tool_reschedule_appointment(db: Session, args: dict[str, Any]) -> dict[str,
         webhook_service.dispatch_event(db, "booking.rescheduled", result["appointment"])
         if result["appointment"]["status"] != "pending":
             event_id = calendar_sync_service.update_event_for_appointment(db, appt_id)
-            result["appointment"]["external_event_id"] = event_id
+            result["appointment"]["externalEventId"] = event_id
         else:
             calendar_sync_service.delete_event_for_appointment(db, appt_id)
-            result["appointment"]["external_event_id"] = None
+            result["appointment"]["externalEventId"] = None
         db.commit()
     return result
 

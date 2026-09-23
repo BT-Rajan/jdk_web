@@ -86,11 +86,11 @@ export default function AppointmentDetailPanel({ appointment, onClose, onUpdated
       <div className="appt-panel-row"><span>Email</span>{appointment.email}</div>
       {appointment.phone && <div className="appt-panel-row"><span>Phone</span>{appointment.phone}</div>}
       <div className="appt-panel-row"><span>When</span>{appointment.date} · {appointment.time}</div>
-      <div className="appt-panel-row"><span>Service</span>{appointment.service_name || appointment.service || "—"}</div>
+      <div className="appt-panel-row"><span>Service</span>{appointment.serviceName || appointment.service || "—"}</div>
 
-      {appointment.calendar_drift && (
+      {appointment.calendarDrift && (
         <div className="appt-panel-drift">
-          ⚠ Google Calendar mismatch: {appointment.calendar_drift} Rescheduling or editing here will push this
+          ⚠ Google Calendar mismatch: {appointment.calendarDrift} Rescheduling or editing here will push this
           appointment's time back to Google and clear this warning.
         </div>
       )}
@@ -115,7 +115,7 @@ export default function AppointmentDetailPanel({ appointment, onClose, onUpdated
           <label className="appt-panel-label">Intake answers</label>
           <div className="appt-answers-list">
             {appointment.answers.map((ans) => (
-              <div key={ans.question_id ?? ans.label} className="appt-answer-item">
+              <div key={ans.questionId ?? ans.label} className="appt-answer-item">
                 <span className="appt-answer-label">{ans.label}</span>
                 <span>{ans.answer}</span>
               </div>

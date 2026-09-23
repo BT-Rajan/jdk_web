@@ -353,7 +353,7 @@ def test_event_created_on_confirmed_booking(client, monkeypatch):
     resp = client.post("/api/booking/appointments", json={"date": date, "slot": "09:00", **VALID_APPT})
     body = resp.json()
     assert body["ok"] is True
-    assert body["appointment"]["external_event_id"] == "gcal-evt-1"
+    assert body["appointment"]["externalEventId"] == "gcal-evt-1"
     assert len(created) == 1
 
 
@@ -372,14 +372,14 @@ def test_event_creation_failure_does_not_break_booking(client, monkeypatch):
     resp = client.post("/api/booking/appointments", json={"date": date, "slot": "09:00", **VALID_APPT})
     body = resp.json()
     assert body["ok"] is True
-    assert body["appointment"]["external_event_id"] is None
+    assert body["appointment"]["externalEventId"] is None
 
 
 def test_event_created_only_on_confirmation_accept_not_on_pending_request(logged_in_client, client, monkeypatch):
     _enable_sync()
     _create_active_credential()
     svc = logged_in_client.post("/admin/api/services", json={
-        "name": "Sync Confirmation Service", "duration_minutes": 30, "requires_confirmation": True,
+        "name": "Sync Confirmation Service", "durationMinutes": 30, "requiresConfirmation": True,
     }).json()
     date = _nth_future_workday(258)
 
@@ -388,9 +388,9 @@ def test_event_created_only_on_confirmation_accept_not_on_pending_request(logged
     monkeypatch.setattr("app.google_calendar_client.create_event", lambda *a, **kw: created.append(kw) or "gcal-evt-2")
 
     booked = client.post("/api/booking/appointments", json={
-        "date": date, "slot": "09:00", "service_id": svc["id"], **VALID_APPT,
+        "date": date, "slot": "09:00", "serviceId": svc["id"], **VALID_APPT,
     }).json()["appointment"]
-    assert booked["external_event_id"] is None
+    assert booked["externalEventId"] is None
     assert len(created) == 0  # pending - no event yet
 
     logged_in_client.post(f"/admin/api/booking/appointments/{booked['id']}/accept")
@@ -432,7 +432,7 @@ def test_event_updated_in_place_on_reschedule(client, monkeypatch):
     monkeypatch.setattr("app.google_calendar_client.delete_event", lambda *a, **kw: delete_calls.append(kw))
 
     created = client.post("/api/booking/appointments", json={"date": date, "slot": "09:00", **VALID_APPT}).json()
-    assert created["appointment"]["external_event_id"] == "gcal-evt-1"
+    assert created["appointment"]["externalEventId"] == "gcal-evt-1"
 
     resp = client.post("/api/booking/appointments/reschedule", json={
         "id": created["id"], "email": VALID_APPT["email"], "date": new_date, "time": "10:00",
@@ -445,7 +445,7 @@ def test_event_updated_in_place_on_reschedule(client, monkeypatch):
     assert update_calls[0]["event_id"] == "gcal-evt-1"
     assert len(create_calls) == 1  # only the original creation, never a second
     assert len(delete_calls) == 0
-    assert body["appointment"]["external_event_id"] == "gcal-evt-1"
+    assert body["appointment"]["externalEventId"] == "gcal-evt-1"
 
 
 def test_event_recreated_on_reschedule_if_update_fails(client, monkeypatch):
@@ -470,7 +470,7 @@ def test_event_recreated_on_reschedule_if_update_fails(client, monkeypatch):
     monkeypatch.setattr("app.google_calendar_client.update_event", boom_update)
 
     created = client.post("/api/booking/appointments", json={"date": date, "slot": "09:00", **VALID_APPT}).json()
-    assert created["appointment"]["external_event_id"] == "gcal-evt-1"
+    assert created["appointment"]["externalEventId"] == "gcal-evt-1"
 
     resp = client.post("/api/booking/appointments/reschedule", json={
         "id": created["id"], "email": VALID_APPT["email"], "date": new_date, "time": "10:00",
@@ -478,7 +478,7 @@ def test_event_recreated_on_reschedule_if_update_fails(client, monkeypatch):
     body = resp.json()
     assert body["ok"] is True
     assert len(create_calls) == 2  # original + the fallback recreate
-    assert body["appointment"]["external_event_id"] == "gcal-evt-2"
+    assert body["appointment"]["externalEventId"] == "gcal-evt-2"
 
 
 def test_event_not_recreated_on_reschedule_if_update_fails_for_other_reason(client, monkeypatch):
@@ -507,7 +507,7 @@ def test_event_not_recreated_on_reschedule_if_update_fails_for_other_reason(clie
     monkeypatch.setattr("app.google_calendar_client.update_event", boom_update)
 
     created = client.post("/api/booking/appointments", json={"date": date, "slot": "09:00", **VALID_APPT}).json()
-    assert created["appointment"]["external_event_id"] == "gcal-evt-1"
+    assert created["appointment"]["externalEventId"] == "gcal-evt-1"
 
     resp = client.post("/api/booking/appointments/reschedule", json={
         "id": created["id"], "email": VALID_APPT["email"], "date": new_date, "time": "10:00",
@@ -519,7 +519,7 @@ def test_event_not_recreated_on_reschedule_if_update_fails_for_other_reason(clie
     assert len(create_calls) == 1  # only the original — no duplicate
     # The stale link is left alone (not cleared, not repointed) so a
     # retry or the next drift check has something to act on.
-    assert body["appointment"]["external_event_id"] == "gcal-evt-1"
+    assert body["appointment"]["externalEventId"] == "gcal-evt-1"
 
 
 # ── Admin-side reschedule/edit ───────────────────────────────────────
@@ -641,7 +641,7 @@ def test_sync_now_flags_externally_deleted_event(logged_in_client, client, monke
     lookup = client.post("/api/booking/appointments/lookup", json={
         "id": created["id"], "email": VALID_APPT["email"],
     }).json()
-    assert lookup["appointment"]["calendar_drift"]
+    assert lookup["appointment"]["calendarDrift"]
 
 
 def test_sync_now_flags_externally_changed_time(logged_in_client, client, monkeypatch):
@@ -672,7 +672,7 @@ def test_sync_now_flags_externally_changed_time(logged_in_client, client, monkey
     lookup = client.post("/api/booking/appointments/lookup", json={
         "id": created["id"], "email": VALID_APPT["email"],
     }).json()
-    assert lookup["appointment"]["calendar_drift"]
+    assert lookup["appointment"]["calendarDrift"]
 
 
 def test_sync_now_not_connected(logged_in_client):
@@ -726,6 +726,6 @@ def test_drift_check_uses_appointment_own_timezone_not_live_setting(logged_in_cl
     lookup = client.post("/api/booking/appointments/lookup", json={
         "id": created["id"], "email": VALID_APPT["email"],
     }).json()
-    assert not lookup["appointment"]["calendar_drift"]
+    assert not lookup["appointment"]["calendarDrift"]
 
 

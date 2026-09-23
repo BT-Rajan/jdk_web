@@ -157,7 +157,7 @@ def notify_booking_requested(db: Session, appt: dict) -> None:
     being unconfigured or failing never blocks the other."""
     ctx = {
         "name": appt["name"], "email": appt["email"], "date": appt["date"], "time": appt["time"],
-        "id": appt["id"], "service": appt.get("service_name") or appt.get("service") or "general enquiry",
+        "id": appt["id"], "service": appt.get("serviceName") or appt.get("service") or "general enquiry",
     }
 
     to_email = _admin_email(db)

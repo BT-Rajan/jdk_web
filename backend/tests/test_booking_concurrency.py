@@ -8,7 +8,9 @@ import threading
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
 
+from app import booking_service
 from app.db import session_scope
 from app.main import app
 from app.settings_service import set_setting
@@ -117,3 +119,42 @@ def test_reschedule_race_against_new_booking_only_one_wins():
 
     oks = [r["ok"] for r in results]
     assert oks.count(True) == 1, f"expected exactly one of reschedule/fresh-book to win, got {results}"
+
+
+def test_lock_acquired_before_any_other_db_write(monkeypatch):
+    """Structural regression test for the invariant booking_lock()/
+    _acquire_booking_lock's docstrings both call out: the lock must be
+    the very first thing the caller does with `db`. The race tests
+    above only prove the *outcome* is correct under real concurrency —
+    they'd stay green even if a future edit moved the lock later, as
+    long as it still landed before the actual conflicting write in
+    whatever interleaving happened to occur that run. This instruments
+    call order directly, so a regression (the lock call sinking below
+    some other db.add()) fails deterministically, on every run, not
+    only on an unlucky thread interleaving."""
+    call_order: list[str] = []
+
+    real_acquire = booking_service._acquire_booking_lock
+
+    def _spy_acquire(db):
+        call_order.append("lock")
+        return real_acquire(db)
+
+    real_add = Session.add
+
+    def _spy_add(self, instance, *a, **kw):
+        call_order.append("add")
+        return real_add(self, instance, *a, **kw)
+
+    monkeypatch.setattr(booking_service, "_acquire_booking_lock", _spy_acquire)
+    monkeypatch.setattr(Session, "add", _spy_add)
+
+    date_str = _nth_future_workday(42)
+    c = TestClient(app)
+    resp = c.post("/api/booking/appointments", json={**VALID_APPT, "date": date_str, "slot": "09:00"})
+    assert resp.json()["ok"] is True
+
+    assert "lock" in call_order, "booking_lock/_acquire_booking_lock was never called"
+    assert call_order[0] == "lock", (
+        f"expected the lock to be acquired before any db.add(), got call order: {call_order}"
+    )

@@ -25,6 +25,7 @@ from __future__ import annotations
 import datetime as dt
 import re
 import secrets
+from contextlib import contextmanager
 from zoneinfo import ZoneInfo
 
 from sqlalchemy import select, text
@@ -280,7 +281,9 @@ def _acquire_booking_lock(db: Session) -> None:
     first thing the caller does with `db` — before any other read or
     write in that request — and the caller's transaction must not
     commit until after its own insert/update, since committing is what
-    releases the lock.
+    releases the lock. Prefer calling this via the booking_lock(db)
+    context manager below rather than directly — its docstring explains
+    why.
 
     Implemented as a real write (UPDATE, not SELECT ... FOR UPDATE)
     against a single sentinel row (BookingLock id=1), because SQLite —
@@ -294,9 +297,10 @@ def _acquire_booking_lock(db: Session) -> None:
 
     The sentinel row is seeded lazily (first call in the process's
     lifetime, memoized in _lock_seeded so later calls skip straight to
-    the UPDATE) rather than only in app.db.sync_schema, since a test DB
-    built directly with Base.metadata.create_all never runs sync_schema
-    at all. That seeding deliberately happens on connections of its own,
+    the UPDATE) rather than as part of schema setup, since a test DB
+    built directly with Base.metadata.create_all (or a fresh install
+    before `alembic upgrade head` has ever run) has the table but no
+    row in it yet. That seeding deliberately happens on connections of its own,
     fully opened and closed *before* `db` is touched at all — not just
     committed independently. On SQLite, even a read against `db` starts
     an implicit transaction that's held open (and holds a file-level
@@ -323,6 +327,21 @@ def _acquire_booking_lock(db: Session) -> None:
     db.execute(text("UPDATE booking_lock SET touched_at = :now WHERE id = 1"), {"now": now})
 
 
+@contextmanager
+def booking_lock(db: Session):
+    """Wraps _acquire_booking_lock (see its docstring for the full
+    correctness reasoning) as a context manager, so each of the 3 call
+    sites below reads as `with booking_lock(db): <all the availability-
+    check-then-write work>` — one visually-scoped block — instead of a
+    bare function call at the top of a function body that a later edit
+    could accidentally end up above. Doesn't (can't) stop a caller from
+    touching `db` before entering the `with`, but makes doing so a
+    visible break in the block's shape rather than an easy-to-miss
+    reordering of two independent-looking statements."""
+    _acquire_booking_lock(db)
+    yield
+
+
 def _generate_code(db: Session) -> str:
     for _ in range(10):
         code = "PRN-" + "".join(secrets.choice(_CODE_ALPHABET) for _ in range(8))
@@ -344,59 +363,59 @@ def create_appointment(
     # _acquire_booking_lock's docstring. Held until the router's
     # subsequent db.commit() persists (or a raised exception rolls
     # back) the appointment this call is about to create.
-    _acquire_booking_lock(db)
-    try:
-        slots = available_slots(db, date_str, service_id=service_id)
-    except ValueError:
-        return {"ok": False, "error": "invalid_date"}
-    except InvalidServiceError:
-        return {"ok": False, "error": "invalid_service"}
+    with booking_lock(db):
+        try:
+            slots = available_slots(db, date_str, service_id=service_id)
+        except ValueError:
+            return {"ok": False, "error": "invalid_date"}
+        except InvalidServiceError:
+            return {"ok": False, "error": "invalid_service"}
 
-    if time_str not in slots:
-        return {"ok": False, "error": "slot_unavailable"}
+        if time_str not in slots:
+            return {"ok": False, "error": "slot_unavailable"}
 
-    svc = db.get(Service, service_id) if service_id else None
-    answer_map: dict[str, str] = {}
-    if svc is not None:
-        answer_map = {a.get("question_id"): (a.get("answer") or "").strip() for a in (answers or [])}
-        known_ids = {q.id for q in svc.questions}
-        if set(answer_map) - known_ids:
-            return {"ok": False, "error": "invalid_question"}
-        if any(q.required and not answer_map.get(q.id) for q in svc.questions):
-            return {"ok": False, "error": "missing_required_answer"}
+        svc = db.get(Service, service_id) if service_id else None
+        answer_map: dict[str, str] = {}
+        if svc is not None:
+            answer_map = {a.get("question_id"): (a.get("answer") or "").strip() for a in (answers or [])}
+            known_ids = {q.id for q in svc.questions}
+            if set(answer_map) - known_ids:
+                return {"ok": False, "error": "invalid_question"}
+            if any(q.required and not answer_map.get(q.id) for q in svc.questions):
+                return {"ok": False, "error": "missing_required_answer"}
 
-    appt = Appointment(
-        id=_generate_code(db), date=date_str, time=time_str, lang=lang or "en",
-        # Snapshotted at booking time (see Appointment.timezone's
-        # docstring) - a separate read of booking.timezone from the one
-        # inside available_slots() above, but get_setting is
-        # process-cached (settings_service.py), so this costs nothing
-        # extra in practice.
-        timezone=_booking_config(db)["timezone"],
-        name=name.strip(), email=email.strip(), phone=phone.strip(),
-        service=service.strip(), service_id=service_id, notes=notes.strip(),
-        status="pending" if (svc is not None and svc.requires_confirmation) else "confirmed",
-    )
-    db.add(appt)
-    db.flush()
+        appt = Appointment(
+            id=_generate_code(db), date=date_str, time=time_str, lang=lang or "en",
+            # Snapshotted at booking time (see Appointment.timezone's
+            # docstring) - a separate read of booking.timezone from the one
+            # inside available_slots() above, but get_setting is
+            # process-cached (settings_service.py), so this costs nothing
+            # extra in practice.
+            timezone=_booking_config(db)["timezone"],
+            name=name.strip(), email=email.strip(), phone=phone.strip(),
+            service=service.strip(), service_id=service_id, notes=notes.strip(),
+            status="pending" if (svc is not None and svc.requires_confirmation) else "confirmed",
+        )
+        db.add(appt)
+        db.flush()
 
-    if svc is not None:
-        for q in svc.questions:
-            ans = answer_map.get(q.id, "")
-            if ans:
-                db.add(AppointmentQuestionAnswer(
-                    appointment_id=appt.id, question_id=q.id, question_label=q.label, answer=ans
-                ))
+        if svc is not None:
+            for q in svc.questions:
+                ans = answer_map.get(q.id, "")
+                if ans:
+                    db.add(AppointmentQuestionAnswer(
+                        appointment_id=appt.id, question_id=q.id, question_label=q.label, answer=ans
+                    ))
 
-    # A booking is a strong, unambiguous signal — always worth a lead
-    # record, whether or not this person ever chatted first.
-    from app import leads_service
-    booked_what = svc.name if svc is not None else (appt.service or "general enquiry")
-    leads_service.capture_lead(
-        db, email=appt.email, source="booking", name=appt.name, phone=appt.phone,
-        transcript_entry={"from": "system", "text": f"Booked {appt.date} {appt.time} ({booked_what})"},
-    )
-    return {"ok": True, "id": appt.id, "pending": appt.status == "pending", "appointment": _serialize(db, appt)}
+        # A booking is a strong, unambiguous signal — always worth a lead
+        # record, whether or not this person ever chatted first.
+        from app import leads_service
+        booked_what = svc.name if svc is not None else (appt.service or "general enquiry")
+        leads_service.capture_lead(
+            db, email=appt.email, source="booking", name=appt.name, phone=appt.phone,
+            transcript_entry={"from": "system", "text": f"Booked {appt.date} {appt.time} ({booked_what})"},
+        )
+        return {"ok": True, "id": appt.id, "pending": appt.status == "pending", "appointment": _serialize(db, appt)}
 
 
 def _find_by_id_and_email(db: Session, appt_id: str, email: str) -> Appointment | None:
@@ -450,36 +469,36 @@ def reschedule_appointment(db: Session, appt_id: str, email: str, new_date_str: 
     # prevent another request's create/reschedule from slipping in
     # between this function's read of available_slots() and its own
     # write further down.
-    _acquire_booking_lock(db)
-    appt = _find_by_id_and_email(db, appt_id, email)
-    if appt is None:
-        return {"ok": False, "error": "not_found"}
-    if appt.status == "cancelled":
-        return {"ok": False, "error": "already_cancelled"}
-    if not _has_enough_notice(db, appt):
-        return {"ok": False, "error": "notice_window_passed"}
+    with booking_lock(db):
+        appt = _find_by_id_and_email(db, appt_id, email)
+        if appt is None:
+            return {"ok": False, "error": "not_found"}
+        if appt.status == "cancelled":
+            return {"ok": False, "error": "already_cancelled"}
+        if not _has_enough_notice(db, appt):
+            return {"ok": False, "error": "notice_window_passed"}
 
-    try:
-        # Reschedule keeps whatever service the booking was originally
-        # made under (it isn't something the visitor picks again here)
-        # — if that service was deactivated since, this fails cleanly
-        # rather than silently re-slotting the appointment as generic.
-        slots = available_slots(db, new_date_str, service_id=appt.service_id, exclude_id=appt.id)
-    except ValueError:
-        return {"ok": False, "error": "invalid_date"}
-    except InvalidServiceError:
-        return {"ok": False, "error": "invalid_service"}
-    if new_time_str not in slots:
-        return {"ok": False, "error": "slot_unavailable"}
+        try:
+            # Reschedule keeps whatever service the booking was originally
+            # made under (it isn't something the visitor picks again here)
+            # — if that service was deactivated since, this fails cleanly
+            # rather than silently re-slotting the appointment as generic.
+            slots = available_slots(db, new_date_str, service_id=appt.service_id, exclude_id=appt.id)
+        except ValueError:
+            return {"ok": False, "error": "invalid_date"}
+        except InvalidServiceError:
+            return {"ok": False, "error": "invalid_service"}
+        if new_time_str not in slots:
+            return {"ok": False, "error": "slot_unavailable"}
 
-    appt.date = new_date_str
-    appt.time = new_time_str
-    # Re-snapshot: the new date/time was just chosen from slots computed
-    # under the *current* live booking.timezone (available_slots above),
-    # so that's what this appointment's stored timezone should become
-    # too — see Appointment.timezone's docstring.
-    appt.timezone = _booking_config(db)["timezone"]
-    return {"ok": True, "appointment": _serialize(db, appt)}
+        appt.date = new_date_str
+        appt.time = new_time_str
+        # Re-snapshot: the new date/time was just chosen from slots computed
+        # under the *current* live booking.timezone (available_slots above),
+        # so that's what this appointment's stored timezone should become
+        # too — see Appointment.timezone's docstring.
+        appt.timezone = _booking_config(db)["timezone"]
+        return {"ok": True, "appointment": _serialize(db, appt)}
 
 
 def admin_reschedule_appointment(db: Session, appt_id: str, new_date_str: str, new_time_str: str) -> dict:
@@ -490,25 +509,25 @@ def admin_reschedule_appointment(db: Session, appt_id: str, new_date_str: str, n
     so it can't create a double-booking."""
     # See _acquire_booking_lock's docstring — same reasoning as
     # reschedule_appointment above.
-    _acquire_booking_lock(db)
-    appt = db.get(Appointment, appt_id)
-    if appt is None:
-        return {"ok": False, "error": "not_found"}
-    if appt.status == "cancelled":
-        return {"ok": False, "error": "already_cancelled"}
-    try:
-        slots = available_slots(db, new_date_str, service_id=appt.service_id, exclude_id=appt.id)
-    except ValueError:
-        return {"ok": False, "error": "invalid_date"}
-    except InvalidServiceError:
-        return {"ok": False, "error": "invalid_service"}
-    if new_time_str not in slots:
-        return {"ok": False, "error": "slot_unavailable"}
+    with booking_lock(db):
+        appt = db.get(Appointment, appt_id)
+        if appt is None:
+            return {"ok": False, "error": "not_found"}
+        if appt.status == "cancelled":
+            return {"ok": False, "error": "already_cancelled"}
+        try:
+            slots = available_slots(db, new_date_str, service_id=appt.service_id, exclude_id=appt.id)
+        except ValueError:
+            return {"ok": False, "error": "invalid_date"}
+        except InvalidServiceError:
+            return {"ok": False, "error": "invalid_service"}
+        if new_time_str not in slots:
+            return {"ok": False, "error": "slot_unavailable"}
 
-    appt.date = new_date_str
-    appt.time = new_time_str
-    appt.timezone = _booking_config(db)["timezone"]  # re-snapshot — same reasoning as reschedule_appointment above
-    return {"ok": True, "appointment": _serialize(db, appt)}
+        appt.date = new_date_str
+        appt.time = new_time_str
+        appt.timezone = _booking_config(db)["timezone"]  # re-snapshot — same reasoning as reschedule_appointment above
+        return {"ok": True, "appointment": _serialize(db, appt)}
 
 
 def _serialize(db: Session, appt: Appointment) -> dict:
@@ -517,7 +536,7 @@ def _serialize(db: Session, appt: Appointment) -> dict:
         svc = db.get(Service, appt.service_id)
         service_name = svc.name if svc is not None else None
     answers = [
-        {"question_id": a.question_id, "label": a.question_label, "answer": a.answer}
+        {"questionId": a.question_id, "label": a.question_label, "answer": a.answer}
         for a in db.scalars(
             select(AppointmentQuestionAnswer).where(AppointmentQuestionAnswer.appointment_id == appt.id)
         )
@@ -526,11 +545,11 @@ def _serialize(db: Session, appt: Appointment) -> dict:
         "id": appt.id, "date": appt.date, "time": appt.time, "slot": appt.time,
         "timezone": appt.timezone,  # the IANA zone date/time above should be read in — see Appointment.timezone
         "name": appt.name, "email": appt.email, "phone": appt.phone,
-        "service": appt.service, "service_id": appt.service_id, "service_name": service_name,
+        "service": appt.service, "serviceId": appt.service_id, "serviceName": service_name,
         "notes": appt.notes, "status": appt.status,
-        "confirmed_at": appt.confirmed_at.isoformat() if appt.confirmed_at else None,
-        "external_event_id": appt.external_event_id,
-        "calendar_drift": appt.calendar_drift,
+        "confirmedAt": appt.confirmed_at.isoformat() if appt.confirmed_at else None,
+        "externalEventId": appt.external_event_id,
+        "calendarDrift": appt.calendar_drift,
         "answers": answers,
     }
 

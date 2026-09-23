@@ -12,16 +12,16 @@ const LOCATION_TYPES = [
 const QUESTION_KINDS = ["text", "textarea", "number", "bool", "phone"];
 
 const EMPTY_FORM = {
-  name: "", slug: "", duration_minutes: 30, buffer_before_minutes: 0, buffer_after_minutes: 0,
-  location_type: "in_person", requires_confirmation: false, payment_required: false, is_active: true,
+  name: "", slug: "", durationMinutes: 30, bufferBeforeMinutes: 0, bufferAfterMinutes: 0,
+  locationType: "in_person", requiresConfirmation: false, paymentRequired: false, isActive: true,
 };
 
 function serviceToForm(service) {
   return {
-    name: service.name, slug: service.slug, duration_minutes: service.duration_minutes,
-    buffer_before_minutes: service.buffer_before_minutes, buffer_after_minutes: service.buffer_after_minutes,
-    location_type: service.location_type, requires_confirmation: service.requires_confirmation,
-    payment_required: service.payment_required, is_active: service.is_active,
+    name: service.name, slug: service.slug, durationMinutes: service.durationMinutes,
+    bufferBeforeMinutes: service.bufferBeforeMinutes, bufferAfterMinutes: service.bufferAfterMinutes,
+    locationType: service.locationType, requiresConfirmation: service.requiresConfirmation,
+    paymentRequired: service.paymentRequired, isActive: service.isActive,
   };
 }
 
@@ -62,7 +62,7 @@ export default function ServiceDetailPanel({ mode, service, onClose, onCreated, 
     if (!confirm(`Deactivate "${service.name}"? It will stop appearing as bookable — this can be reversed.`)) return;
     try {
       const updated = await adminApi.deleteService(service.id);
-      onDeactivated(updated ?? { ...service, is_active: false });
+      onDeactivated(updated ?? { ...service, isActive: false });
     } catch (e) {
       handleApiError(e);
     }
@@ -84,12 +84,12 @@ export default function ServiceDetailPanel({ mode, service, onClose, onCreated, 
       <div className="service-panel-row-2">
         <div>
           <label className="service-panel-label">Duration (minutes)</label>
-          <input type="number" min={5} max={480} value={form.duration_minutes}
-                 onChange={(e) => set("duration_minutes", Number(e.target.value))} />
+          <input type="number" min={5} max={480} value={form.durationMinutes}
+                 onChange={(e) => set("durationMinutes", Number(e.target.value))} />
         </div>
         <div>
           <label className="service-panel-label">Location</label>
-          <select value={form.location_type} onChange={(e) => set("location_type", e.target.value)}>
+          <select value={form.locationType} onChange={(e) => set("locationType", e.target.value)}>
             {LOCATION_TYPES.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
           </select>
         </div>
@@ -98,28 +98,28 @@ export default function ServiceDetailPanel({ mode, service, onClose, onCreated, 
       <div className="service-panel-row-2">
         <div>
           <label className="service-panel-label">Buffer before (min)</label>
-          <input type="number" min={0} max={120} value={form.buffer_before_minutes}
-                 onChange={(e) => set("buffer_before_minutes", Number(e.target.value))} />
+          <input type="number" min={0} max={120} value={form.bufferBeforeMinutes}
+                 onChange={(e) => set("bufferBeforeMinutes", Number(e.target.value))} />
         </div>
         <div>
           <label className="service-panel-label">Buffer after (min)</label>
-          <input type="number" min={0} max={120} value={form.buffer_after_minutes}
-                 onChange={(e) => set("buffer_after_minutes", Number(e.target.value))} />
+          <input type="number" min={0} max={120} value={form.bufferAfterMinutes}
+                 onChange={(e) => set("bufferAfterMinutes", Number(e.target.value))} />
         </div>
       </div>
 
       <label className="service-panel-check">
-        <input type="checkbox" checked={form.requires_confirmation}
-               onChange={(e) => set("requires_confirmation", e.target.checked)} />
+        <input type="checkbox" checked={form.requiresConfirmation}
+               onChange={(e) => set("requiresConfirmation", e.target.checked)} />
         Requires admin confirmation before it's booked
       </label>
       <label className="service-panel-check">
-        <input type="checkbox" checked={form.payment_required}
-               onChange={(e) => set("payment_required", e.target.checked)} />
+        <input type="checkbox" checked={form.paymentRequired}
+               onChange={(e) => set("paymentRequired", e.target.checked)} />
         Payment required (not yet enforced — reserved for a later pass)
       </label>
       <label className="service-panel-check">
-        <input type="checkbox" checked={form.is_active} onChange={(e) => set("is_active", e.target.checked)} />
+        <input type="checkbox" checked={form.isActive} onChange={(e) => set("isActive", e.target.checked)} />
         Active (visible as bookable)
       </label>
 
@@ -132,7 +132,7 @@ export default function ServiceDetailPanel({ mode, service, onClose, onCreated, 
       {mode === "edit" && (
         <>
           <QuestionsEditor service={service} onSessionExpired={handleSessionExpired} onChanged={onUpdated} />
-          {service.is_active && (
+          {service.isActive && (
             <button className="service-panel-delete" onClick={handleDeactivate}>Deactivate service</button>
           )}
         </>

@@ -1,27 +1,28 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import Field
 from sqlalchemy.orm import Session
 
 from app import booking_service, calendar_sync_service, notification_service, webhook_service
 from app.db import get_db
 from app.deps import get_current_admin, require_csrf
 from app.models import AdminUser
+from app.schema_base import CamelModel
 
 router = APIRouter(prefix="/admin/api/booking", tags=["admin-booking"], dependencies=[Depends(require_csrf)])
 
 
-class RejectIn(BaseModel):
+class RejectIn(CamelModel):
     reason: str = Field(default="", max_length=500)
 
 
-class RescheduleIn(BaseModel):
+class RescheduleIn(CamelModel):
     date: str
     time: str
 
 
-class AdminAppointmentCreateIn(BaseModel):
+class AdminAppointmentCreateIn(CamelModel):
     date: str
     time: str
     name: str
@@ -35,7 +36,9 @@ class AdminAppointmentCreateIn(BaseModel):
 
 @router.get("/appointments")
 def list_appointments(
-    date_from: str | None = None, date_to: str | None = None, status_filter: str | None = None,
+    date_from: str | None = Query(default=None, alias="dateFrom"),
+    date_to: str | None = Query(default=None, alias="dateTo"),
+    status_filter: str | None = Query(default=None, alias="statusFilter"),
     admin: AdminUser = Depends(get_current_admin), db: Session = Depends(get_db),
 ):
     return booking_service.list_appointments(db, date_from=date_from, date_to=date_to, status=status_filter)
@@ -106,7 +109,7 @@ def admin_reschedule(
         # conditional on a truthy event_id, not unconditional.
         event_id = calendar_sync_service.update_event_for_appointment(db, appt_id)
         if event_id:
-            result["appointment"]["external_event_id"] = event_id
+            result["appointment"]["externalEventId"] = event_id
     db.commit()
     return result
 
@@ -129,7 +132,7 @@ def admin_accept(appt_id: str, admin: AdminUser = Depends(get_current_admin), db
     webhook_service.dispatch_event(db, "booking.accepted", result["appointment"])
     event_id = calendar_sync_service.create_event_for_appointment(db, appt_id)
     if event_id:
-        result["appointment"]["external_event_id"] = event_id
+        result["appointment"]["externalEventId"] = event_id
     db.commit()
     return result
 

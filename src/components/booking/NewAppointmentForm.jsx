@@ -72,11 +72,11 @@ export default function NewAppointmentForm({ onCancel, onBooked }) {
       date: form.date, slot: form.slot, name: form.name, email: form.email,
       phone: form.phone, notes: form.notes, lang,
       service: usingCatalog ? (selectedService?.name || "") : form.service,
-      service_id: form.serviceId || null,
+      serviceId: form.serviceId || null,
       answers: selectedService
         ? selectedService.questions
             .filter((q) => (answers[q.id] || "").trim())
-            .map((q) => ({ question_id: q.id, answer: answers[q.id].trim() }))
+            .map((q) => ({ questionId: q.id, answer: answers[q.id].trim() }))
         : [],
     };
     const result = await api.createAppointment(payload);
@@ -95,7 +95,7 @@ export default function NewAppointmentForm({ onCancel, onBooked }) {
           <select value={form.serviceId} onChange={(e) => handleServiceChange(e.target.value)}>
             <option value="">{t.selectService}</option>
             {services.map((s) => (
-              <option key={s.id} value={s.id}>{s.name} ({s.duration_minutes} {t.minutesShort})</option>
+              <option key={s.id} value={s.id}>{s.name} ({s.durationMinutes} {t.minutesShort})</option>
             ))}
           </select>
         </Field>

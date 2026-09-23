@@ -1,22 +1,23 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from pydantic import Field
 from sqlalchemy.orm import Session
 
 from app import booking_service, calendar_sync_service, notification_service, webhook_service
 from app.config import settings
 from app.db import get_db
 from app.rate_limit import limiter
+from app.schema_base import CamelModel
 from app.settings_service import get_setting
 
 router = APIRouter(prefix="/api/booking", tags=["public-booking"])
 
 
-class AnswerIn(BaseModel):
+class AnswerIn(CamelModel):
     question_id: str
     answer: str = Field(default="", max_length=2000)
 
 
-class CreateAppointmentRequest(BaseModel):
+class CreateAppointmentRequest(CamelModel):
     date: str
     slot: str
     name: str = Field(min_length=1, max_length=120)
@@ -29,17 +30,17 @@ class CreateAppointmentRequest(BaseModel):
     answers: list[AnswerIn] = Field(default_factory=list)
 
 
-class LookupRequest(BaseModel):
+class LookupRequest(CamelModel):
     id: str = Field(max_length=16)
     email: str = Field(max_length=254)
 
 
-class CancelRequest(BaseModel):
+class CancelRequest(CamelModel):
     id: str = Field(max_length=16)
     email: str = Field(max_length=254)
 
 
-class RescheduleRequest(BaseModel):
+class RescheduleRequest(CamelModel):
     id: str = Field(max_length=16)
     email: str = Field(max_length=254)
     date: str
@@ -55,8 +56,8 @@ def list_services(db: Session = Depends(get_db)):
     from app import services_service
     return [
         {
-            "id": s.id, "name": s.name, "slug": s.slug, "duration_minutes": s.duration_minutes,
-            "location_type": s.location_type,
+            "id": s.id, "name": s.name, "slug": s.slug, "durationMinutes": s.duration_minutes,
+            "locationType": s.location_type,
             "questions": [
                 {"id": q.id, "kind": q.kind, "label": q.label, "required": q.required}
                 for q in s.questions
@@ -67,7 +68,7 @@ def list_services(db: Session = Depends(get_db)):
 
 
 @router.get("/slots")
-def get_slots(date: str, service_id: str | None = None, db: Session = Depends(get_db)):
+def get_slots(date: str, service_id: str | None = Query(default=None, alias="serviceId"), db: Session = Depends(get_db)):
     if not get_setting(db, "features.bookingEnabled"):
         return {"slots": []}
     try:
@@ -106,7 +107,7 @@ def create_appointment(request: Request, body: CreateAppointmentRequest, db: Ses
             webhook_service.dispatch_event(db, "booking.confirmed", result["appointment"])
             event_id = calendar_sync_service.create_event_for_appointment(db, result["id"])
             if event_id:
-                result["appointment"]["external_event_id"] = event_id
+                result["appointment"]["externalEventId"] = event_id
         db.commit()  # notification/webhook/calendar-sync activity may have touched the session
     return result
 
@@ -126,7 +127,7 @@ def cancel_appointment(request: Request, body: CancelRequest, db: Session = Depe
         notification_service.notify_booking_cancelled(db, result["appointment"])
         webhook_service.dispatch_event(db, "booking.cancelled", result["appointment"])
         calendar_sync_service.delete_event_for_appointment(db, body.id)
-        result["appointment"]["external_event_id"] = None
+        result["appointment"]["externalEventId"] = None
         db.commit()
     return result
 
@@ -154,9 +155,9 @@ def reschedule_appointment(request: Request, body: RescheduleRequest, db: Sessio
             # the client.
             event_id = calendar_sync_service.update_event_for_appointment(db, body.id)
             if event_id:
-                result["appointment"]["external_event_id"] = event_id
+                result["appointment"]["externalEventId"] = event_id
         else:
             calendar_sync_service.delete_event_for_appointment(db, body.id)
-            result["appointment"]["external_event_id"] = None
+            result["appointment"]["externalEventId"] = None
         db.commit()
     return result

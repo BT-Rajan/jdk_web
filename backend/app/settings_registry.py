@@ -153,6 +153,11 @@ _DEFS: list[SettingDef] = [
                help_text="Display size of the logo image relative to its default — logos with a lot "
                           "of built-in padding often look small next to the header text at 1.0x.",
                validator=_float_range(0.5, 3.0)),
+    SettingDef("branding.logoGlow", "branding", "Logo glow", SettingType.FLOAT, 0.0,
+               help_text="Soft glow around the header logo. 0 = off; 1 = strongest.",
+               validator=_float_range(0.0, 1.0)),
+    SettingDef("branding.logoGlowColor", "branding", "Logo glow color", SettingType.COLOR, "#ffffff",
+               help_text="Color of the logo glow (white by default)."),
     SettingDef("branding.faviconUrl", "branding", "Favicon", SettingType.IMAGE, "/favicon.svg"),
     SettingDef("branding.metaDescription", "branding", "Search/share description", SettingType.TEXT,
                {"en": "JDK Factory — AI-powered technology & innovation.", "ar": ""}, i18n=True,

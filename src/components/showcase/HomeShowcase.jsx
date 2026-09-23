@@ -3,12 +3,13 @@ import { useLang } from "../../context/LangContext.jsx";
 import { fetchShowcase } from "../../api/publicContent.js";
 import "./HomeShowcase.css";
 
-// A photo is held fully visible for HOLD_MS, then dissolves into the next
-// over FADE_MS. The timer runs on the whole cycle (hold + dissolve), so
-// "10 seconds" is how long a photo is actually on screen at full
-// strength — the dissolve doesn't eat into it.
+// One photo at a time, never two overlapping: a photo is held fully
+// visible for HOLD_MS, fades out over FADE_MS, the stage stays empty for
+// GAP_MS, then the next photo fades in over FADE_MS. (With transparent
+// PNGs like the cement bag, a crossfade would show both at once.)
 export const HOLD_MS = 10_000;
 export const FADE_MS = 2_000;
+export const GAP_MS = 1_000;
 
 const TITLE = { en: "Showcase", ar: "معرض الصور" };
 
@@ -23,12 +24,10 @@ const TITLE = { en: "Showcase", ar: "معرض الصور" };
  * top-down light, and (in RTL) the mirrored position — so it reads as
  * part of the page rather than a separate boxed panel.
  *
- * Crossfade technique: the incoming photo fades 0 -> 1 *on top of* the
- * outgoing one, which stays fully opaque underneath until the fade is
- * done. Fading both at once would dip through the page background at
- * the midpoint (two half-transparent layers don't add up to opaque).
+ * Transition: fade out -> GAP_MS of empty stage -> fade in. Only one
+ * photo is ever visible, so transparent images never overlap.
  *
- * Only the current, previous, and next photos are mounted, so a large
+ * Only the current, target, and following photos are mounted, so a large
  * gallery never downloads every photo at once — the "next" one is
  * mounted (hidden) a full cycle ahead so it's already loaded when its
  * turn comes.
@@ -36,8 +35,9 @@ const TITLE = { en: "Showcase", ar: "معرض الصور" };
 export default function HomeShowcase() {
   const { lang, theme } = useLang();
   const [images, setImages] = useState([]);
-  // `prev` is the photo currently dissolving out (null when idle).
-  const [pos, setPos] = useState({ current: 0, prev: null });
+  // `visible` false = current photo is fading out / the stage is in its
+  // gap; `target` is the photo that fades in next.
+  const [pos, setPos] = useState({ current: 0, visible: true, target: 0 });
   const [pageVisible, setPageVisible] = useState(
     () => typeof document === "undefined" || document.visibilityState !== "hidden"
   );
@@ -47,7 +47,7 @@ export default function HomeShowcase() {
     fetchShowcase().then((data) => {
       if (cancelled || !Array.isArray(data)) return;
       setImages(data);
-      setPos({ current: 0, prev: null });
+      setPos({ current: 0, visible: true, target: 0 });
     });
     return () => {
       cancelled = true;
@@ -65,34 +65,40 @@ export default function HomeShowcase() {
 
   const count = images.length;
   const current = count ? pos.current % count : 0;
-  const prev = pos.prev !== null && count ? pos.prev % count : null;
+  const target = count ? pos.target % count : 0;
+  const fading = !pos.visible;
 
+  // Start a transition to `next`. Ignored while one is already running.
   const goTo = useCallback((next) => {
-    setPos((p) => (p.current === next ? p : { current: next, prev: p.current }));
+    setPos((p) => (!p.visible || p.current === next ? p : { ...p, visible: false, target: next }));
   }, []);
 
-  // One timer, re-armed every time the photo changes (automatically or
-  // via a dot), so a photo always gets its full hold before the next dissolve.
+  // Photo on screen: hold it (its own fade-in + HOLD_MS), then start
+  // fading it out towards the next one.
   useEffect(() => {
-    if (count < 2 || !pageVisible) return undefined;
+    if (count < 2 || !pageVisible || !pos.visible) return undefined;
     const timer = setTimeout(() => goTo((current + 1) % count), HOLD_MS + FADE_MS);
     return () => clearTimeout(timer);
-  }, [count, current, pageVisible, goTo]);
+  }, [count, current, pos.visible, pageVisible, goTo]);
 
-  // Once the dissolve has finished the outgoing photo is fully covered,
-  // so it can be dropped to hidden.
+  // Fading out: once it's gone, wait GAP_MS of empty stage, then bring
+  // in the target photo.
   useEffect(() => {
-    if (pos.prev === null) return undefined;
-    const timer = setTimeout(() => setPos((p) => ({ ...p, prev: null })), FADE_MS + 60);
+    if (pos.visible || !pageVisible) return undefined;
+    const timer = setTimeout(
+      () => setPos((p) => ({ current: p.target, visible: true, target: p.target })),
+      FADE_MS + GAP_MS,
+    );
     return () => clearTimeout(timer);
-  }, [pos.current, pos.prev]);
+  }, [pos.visible, pos.target, pageVisible]);
 
   if (count === 0) return null;
 
   const title = TITLE[lang] ?? TITLE.en;
-  const next = count > 1 ? (current + 1) % count : null;
-  const mounted = new Set([current, prev, next].filter((i) => i !== null));
-  const fading = prev !== null;
+  const following = count > 1 ? (current + 1) % count : null;
+  // Current, the one fading in next, and the one after — mounted (hidden)
+  // ahead of time so they're already loaded when their turn comes.
+  const mounted = new Set([current, target, following].filter((i) => i !== null));
 
   return (
     <section
@@ -139,12 +145,12 @@ export default function HomeShowcase() {
       <div className="home-showcase-frame">
         {images.map((img, i) => {
           if (!mounted.has(i)) return null;
-          const state = i === current ? "is-active" : i === prev ? "is-prev" : "";
+          const state = i === current && pos.visible ? "is-active" : "";
           return (
             <figure
               key={img.id}
               className={`home-showcase-slide ${state}`.trim()}
-              aria-hidden={i !== current}
+              aria-hidden={i !== current || !pos.visible}
             >
               <img
                 className="home-showcase-img"
@@ -169,9 +175,8 @@ export default function HomeShowcase() {
                 className={`home-showcase-dot ${i === current ? "is-active" : ""}`.trim()}
                 aria-label={`${i + 1} / ${count}`}
                 aria-current={i === current ? "true" : undefined}
-                // Ignored mid-dissolve: switching again before the last
-                // fade finishes would drop the layer that's still holding
-                // the frame up, flashing the background through. Uses
+                // Ignored mid-transition (fade out / gap), so photos can't
+                // be skipped into overlapping. Uses
                 // aria-disabled rather than `disabled` so a keyboard user's
                 // focus stays on the dot they just pressed.
                 aria-disabled={fading ? "true" : undefined}

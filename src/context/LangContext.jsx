@@ -17,6 +17,8 @@ function resolveBranding(branding, lang, defaultLanguage) {
     siteName: pick(branding.siteNameByLang),
     logoUrl: branding.logoUrl,
     logoScale: branding.logoScale || 1,
+    logoGlow: branding.logoGlow || 0,
+    logoGlowColor: branding.logoGlowColor || "#ffffff",
     faviconUrl: branding.faviconUrl,
     metaDescription: pick(branding.metaDescriptionByLang),
     chatAvatarUrl: branding.chatAvatarUrl || "",

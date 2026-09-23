@@ -123,12 +123,11 @@
   isolation: isolate;
 }
 
-/* Slides stack in one spot and are shown purely by opacity/z-index:
-     (none)     hidden, waiting its turn (mounted so it's preloaded)
-     .is-prev   the photo dissolving out — kept fully opaque underneath
-     .is-active the photo dissolving in, on top
-   Only the incoming photo carries the transition; the outgoing one just
-   stays put and is hidden once it's fully covered (see HomeShowcase.jsx). */
+/* Slides stack in one spot and are shown purely by opacity. Only one is
+   ever visible (.is-active); every other slide sits at 0. The opacity
+   transition lives on the base rule, so removing .is-active fades the
+   photo OUT and adding it fades the next one IN — with the empty gap
+   between them timed in HomeShowcase.jsx (GAP_MS). */
 .home-showcase-slide {
   position: absolute;
   inset: 0;
@@ -139,13 +138,9 @@
   opacity: 0;
   z-index: 0;
   pointer-events: none;
-}
-.home-showcase-slide.is-prev { opacity: 1; z-index: 1; }
-.home-showcase-slide.is-active {
-  opacity: 1;
-  z-index: 2;
   transition: opacity var(--showcase-fade-ms, 2000ms) ease-in-out;
 }
+.home-showcase-slide.is-active { opacity: 1; z-index: 2; }
 
 .home-showcase-img {
   position: relative;
@@ -223,5 +218,5 @@
 @media (prefers-reduced-motion: reduce) {
   .home-showcase { animation: none; }
   .home-showcase-bulb-halo { animation: none; }
-  .home-showcase-slide.is-active { transition: none; }
+  .home-showcase-slide { transition: none; }
 }

@@ -287,6 +287,8 @@ export default function SettingsPage() {
                     // number input for a zoom factor isn't useful without
                     // a live preview next to it.
                     if (field.key === "branding.logoScale") return null;
+                    // Rendered inside LogoZoomControl (right after the logo upload).
+                    if (field.key === "branding.logoGlow" || field.key === "branding.logoGlowColor") return null;
                     // Superseded by the picker galleries above — bare
                     // dropdowns of opaque ids aren't useful without the
                     // mini visual previews.
@@ -324,6 +326,10 @@ export default function SettingsPage() {
                             logoUrl={values["branding.logoUrl"]}
                             scale={values["branding.logoScale"]}
                             onScaleChange={(v) => handleFieldChange("branding.logoScale", v)}
+                            glow={values["branding.logoGlow"]}
+                            onGlowChange={(v) => handleFieldChange("branding.logoGlow", v)}
+                            glowColor={values["branding.logoGlowColor"]}
+                            onGlowColorChange={(v) => handleFieldChange("branding.logoGlowColor", v)}
                           />
                         )}
                       </div>

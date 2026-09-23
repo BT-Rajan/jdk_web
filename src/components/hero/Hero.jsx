@@ -86,18 +86,23 @@ export default function Hero({ onEnter, onNavigate }) {
     <div className="hero-page">
       <TopBar onNavigate={onNavigate} />
 
-      {/* Two-column band: whichever layout template is active (its
-          headline/quick-chat/nav content, unchanged) on one side, the
-          admin's photo showcase on the other, so the two sit side by
-          side rather than stacked. HomeShowcase renders nothing until
-          there's at least one active photo, so with no photos this
-          collapses back to exactly the single-column layout it always
-          was — .hero-body-row's flex sizing does that on its own,
-          nothing here needs to special-case an empty showcase. Stacks
-          to a single column below the tablet breakpoint (see Hero.css)
-          so it never competes for room with the quick-chat composer on
-          a phone. */}
+      {/* Two-column band: the admin's photo showcase paired beside
+          whichever layout template is active (its headline/quick-chat/
+          nav content, unchanged). The showcase is the first child so it
+          takes the *start* side of the row — the left in English (LTR)
+          and, since the page flips dir="rtl" for Arabic (see
+          LangContext), the right in Arabic — with the chat/nav content
+          on the other side. HomeShowcase renders nothing until there's
+          at least one active photo, so with no photos this collapses
+          back to exactly the single-column layout it always was —
+          .hero-body-row's flex sizing does that on its own, nothing
+          here needs to special-case an empty showcase. Stacks to a
+          single column below the tablet breakpoint (see Hero.css) so it
+          never competes for room with the quick-chat composer on a
+          phone. */}
       <div className="hero-body-row">
+        <HomeShowcase />
+
         <div className="hero-body-main">
           <Layout
             copy={copy}
@@ -118,8 +123,6 @@ export default function Hero({ onEnter, onNavigate }) {
             onTopicClick={handleTopicClick}
           />
         </div>
-
-        <HomeShowcase />
       </div>
 
       <footer className="hero-footer">© {new Date().getFullYear()} {branding.siteName}</footer>

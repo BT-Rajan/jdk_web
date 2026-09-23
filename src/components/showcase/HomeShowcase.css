@@ -1,14 +1,15 @@
-/* ── Home showcase — looping photo slideshow, paired side by side with
-   the quick-chat/nav content in .hero-body-row (see Hero.jsx) above the
+/* ── Home showcase — looping photo slideshow, paired beside the
+   quick-chat/nav content in .hero-body-row (see Hero.jsx) above the
    tablet breakpoint, and stacked underneath it below that. It never
    overlaps the quick-chat box or the fixed-position chat/order
    popovers. All colors/radii come from the site's theme tokens, so it
    follows whichever theme preset is active.
 
-   The frame itself carries no background of its own — see
-   .home-showcase-frame below — so the page's own background shows
-   through around the photo instead of a boxed panel sitting on top
-   of it. */
+   No title, no border, no fill — the frame carries nothing of its own
+   (see .home-showcase-frame) and its edges fade toward transparent via
+   a mask, so the photo dissolves into the page instead of sitting in a
+   boxed panel on top of it. A soft light falls over the top of the
+   photo (.home-showcase-light) for a bit of focus/depth. */
 .home-showcase {
   flex: 1 1 420px;
   min-width: 0;
@@ -21,17 +22,6 @@
   .home-showcase { padding-top: 0; }
 }
 
-.home-showcase-title {
-  margin: 0 0 var(--space-4);
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: var(--fs-h2);
-  letter-spacing: 0.01em;
-  color: var(--gold);
-  text-align: start;
-}
-[dir="rtl"] .home-showcase-title { font-family: var(--font-ar); font-weight: 500; }
-
 .home-showcase-frame {
   position: relative;
   width: 100%;
@@ -42,13 +32,13 @@
   max-height: 72dvh;
   overflow: hidden;
   border-radius: var(--radius-lg);
-  border: 1px solid color-mix(in srgb, var(--gold) 25%, transparent);
-  /* Transparent, not a solid panel — the page's own background shows
-     through around/behind the photo, so the showcase reads as part of
-     the page rather than a boxed card floating on it. */
-  background: transparent;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
+  /* No border, no shadow, no fill of its own — nothing to read as a
+     boxed panel. The mask below fades the photo's own edges out
+     toward transparent, so it dissolves into the page instead of
+     ending in a hard rectangle. */
   isolation: isolate;
+  mask-image: radial-gradient(ellipse 88% 88% at 50% 50%, #000 60%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 88% 88% at 50% 50%, #000 60%, transparent 100%);
   /* A slow, gentle drift rather than a static box, echoing the
      headline's shimmer — reads as "alive" without competing for
      attention with the photo crossfades themselves. */
@@ -58,6 +48,26 @@
 @keyframes showcase-float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-6px); }
+}
+
+/* A soft spotlight falling from directly above, over the current
+   photo — the "focus light". Sits above the slides (z-index 4, above
+   .is-active's 2) and blends with mix-blend-mode instead of covering
+   them, so it reads as light hitting the image rather than a tinted
+   overlay sitting on top of it. */
+.home-showcase-light {
+  position: absolute;
+  inset: -10% -10% auto -10%;
+  height: 65%;
+  z-index: 4;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 70% 100% at 50% 0%,
+    color-mix(in srgb, var(--white-soft) 55%, transparent) 0%,
+    color-mix(in srgb, var(--gold) 30%, transparent) 35%,
+    transparent 75%
+  );
+  mix-blend-mode: overlay;
 }
 
 /* Slides stack in one spot and are shown purely by opacity/z-index:
@@ -79,16 +89,6 @@
   opacity: 1;
   z-index: 2;
   transition: opacity var(--showcase-fade-ms, 2000ms) ease-in-out;
-}
-
-.home-showcase-backdrop {
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-  filter: blur(28px) brightness(0.5) saturate(1.1);
-  /* Scaled past the edges so the blur's soft fringe is cropped away. */
-  transform: scale(1.2);
 }
 
 .home-showcase-img {

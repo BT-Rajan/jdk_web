@@ -509,6 +509,42 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* ── hero-body-row — pairs the active layout template's content
+   (headline/quick-chat/nav, whichever template is chosen — see
+   Hero.jsx) with the photo showcase, side by side instead of the
+   showcase sitting stacked underneath. hero-body-main just wraps
+   whatever the layout already renders, so none of the four templates'
+   own markup or CSS changes; it only ever competes for width with the
+   showcase, never with the quick-chat composer inside it. When there's
+   no showcase (no active photos — HomeShowcase renders null) this
+   flex row has a single grown child and looks exactly like the old
+   single-column page. */
+.hero-body-row {
+  width: 100%;
+  max-width: var(--content-max);
+  display: flex;
+  align-items: stretch;
+  gap: var(--section-gap);
+  padding-top: var(--section-gap);
+}
+.hero-body-main {
+  flex: 1 1 560px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+/* hero-body-main's own children (hero-center, hero-split-wrap, ...)
+   size themselves; stretch them to fill this column rather than
+   leaving them at their intrinsic centered width. */
+.hero-body-main > * { width: 100%; }
+
+/* Side-by-side only above tablet width; below it the showcase drops
+   underneath the layout content, same as it always used to sit. */
+@media (max-width: 900px) {
+  .hero-body-row { flex-direction: column; gap: var(--space-6); padding-top: 0; }
+  .hero-body-main { flex-basis: auto; }
+}
+
 @media (max-width: 480px) {
   /* Previously reset padding-top to a flat var(--space-5) (24px),
      dropping the var(--header-h) clearance the base rule above adds —

@@ -19,12 +19,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="JDK" />
-    <!-- Safari only accepts PNG for apple-touch-icon (SVG is silently
-         ignored, falling back to a screenshot) — this points at the
-         current SVG logo as a placeholder; swap in a real 180×180 PNG
-         once branding.logo_url has one, or iOS home-screen icons will
-         look wrong even though everything else here works. -->
-    <link rel="apple-touch-icon" href="/static/logo.svg" />
+    <!-- Raster fallbacks alongside the SVG favicon above (which applyTheme.js
+         can swap at runtime from branding.faviconUrl). Safari only accepts
+         PNG for apple-touch-icon, so that one points at a real 180×180 PNG. -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <title>JDK</title>
     <meta id="meta-description" name="description" content="JDK — AI-powered technology & innovation." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />

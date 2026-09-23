@@ -86,31 +86,41 @@ export default function Hero({ onEnter, onNavigate }) {
     <div className="hero-page">
       <TopBar onNavigate={onNavigate} />
 
-      <Layout
-        copy={copy}
-        home={home}
-        sections={sections}
-        nav={nav}
-        heroButtons={heroButtons}
-        lang={lang}
-        onNavigate={onNavigate}
-        quickDraft={quickDraft}
-        setQuickDraft={setQuickDraft}
-        onQuickSend={handleQuickSend}
-        onExamplePick={handleExamplePick}
-        headlineStyle={theme?.headlineStyle}
-        headlineTypingSpeedCps={theme?.headlineTypingSpeedCps}
-        branding={branding}
-        homeTopics={homeTopics}
-        onTopicClick={handleTopicClick}
-      />
+      {/* Two-column band: whichever layout template is active (its
+          headline/quick-chat/nav content, unchanged) on one side, the
+          admin's photo showcase on the other, so the two sit side by
+          side rather than stacked. HomeShowcase renders nothing until
+          there's at least one active photo, so with no photos this
+          collapses back to exactly the single-column layout it always
+          was — .hero-body-row's flex sizing does that on its own,
+          nothing here needs to special-case an empty showcase. Stacks
+          to a single column below the tablet breakpoint (see Hero.css)
+          so it never competes for room with the quick-chat composer on
+          a phone. */}
+      <div className="hero-body-row">
+        <div className="hero-body-main">
+          <Layout
+            copy={copy}
+            home={home}
+            sections={sections}
+            nav={nav}
+            heroButtons={heroButtons}
+            lang={lang}
+            onNavigate={onNavigate}
+            quickDraft={quickDraft}
+            setQuickDraft={setQuickDraft}
+            onQuickSend={handleQuickSend}
+            onExamplePick={handleExamplePick}
+            headlineStyle={theme?.headlineStyle}
+            headlineTypingSpeedCps={theme?.headlineTypingSpeedCps}
+            branding={branding}
+            homeTopics={homeTopics}
+            onTopicClick={handleTopicClick}
+          />
+        </div>
 
-      {/* Photo slideshow (admin-uploaded — Admin > Home Showcase). Sits in
-          normal flow below whichever layout is active, so it works with
-          all four templates and never touches the chat composer above
-          it or the floating chat widget. Renders nothing until there's
-          at least one active photo. */}
-      <HomeShowcase />
+        <HomeShowcase />
+      </div>
 
       <footer className="hero-footer">© {new Date().getFullYear()} {branding.siteName}</footer>
     </div>

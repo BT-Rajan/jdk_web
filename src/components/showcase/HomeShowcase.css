@@ -1,12 +1,24 @@
-/* ── Home showcase — looping photo slideshow below the hero. In normal
-   page flow (see Hero.jsx), so it never overlaps the quick-chat box or
-   the fixed-position chat/order popovers. All colors/radii come from the
-   site's theme tokens, so it follows whichever theme preset is active. */
+/* ── Home showcase — looping photo slideshow, paired side by side with
+   the quick-chat/nav content in .hero-body-row (see Hero.jsx) above the
+   tablet breakpoint, and stacked underneath it below that. It never
+   overlaps the quick-chat box or the fixed-position chat/order
+   popovers. All colors/radii come from the site's theme tokens, so it
+   follows whichever theme preset is active.
+
+   The frame itself carries no background of its own — see
+   .home-showcase-frame below — so the page's own background shows
+   through around the photo instead of a boxed panel sitting on top
+   of it. */
 .home-showcase {
-  width: 100%;
-  max-width: var(--content-max);
-  padding: var(--section-gap) 0 var(--section-padding-block);
+  flex: 1 1 420px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0 0 var(--section-padding-block);
   animation: fade-in 0.8s var(--ease);
+}
+@media (max-width: 900px) {
+  .home-showcase { padding-top: 0; }
 }
 
 .home-showcase-title {
@@ -23,16 +35,29 @@
 .home-showcase-frame {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9;
+  flex: 1;
+  aspect-ratio: 4 / 3;
   /* Very wide screens: cap the height rather than let the frame grow
      taller than the viewport. */
   max-height: 72dvh;
   overflow: hidden;
   border-radius: var(--radius-lg);
   border: 1px solid color-mix(in srgb, var(--gold) 25%, transparent);
-  background: var(--navy-2);
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+  /* Transparent, not a solid panel — the page's own background shows
+     through around/behind the photo, so the showcase reads as part of
+     the page rather than a boxed card floating on it. */
+  background: transparent;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
   isolation: isolate;
+  /* A slow, gentle drift rather than a static box, echoing the
+     headline's shimmer — reads as "alive" without competing for
+     attention with the photo crossfades themselves. */
+  animation: showcase-float 7s ease-in-out infinite;
+}
+
+@keyframes showcase-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
 }
 
 /* Slides stack in one spot and are shown purely by opacity/z-index:
@@ -126,11 +151,11 @@
 .home-showcase-dot:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; border-radius: 50%; }
 
 @media (max-width: 600px) {
-  .home-showcase-frame { aspect-ratio: 4 / 3; }
   .home-showcase-caption { padding-inline: var(--space-4); font-size: var(--fs-sm); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .home-showcase { animation: none; }
+  .home-showcase-frame { animation: none; }
   .home-showcase-slide.is-active { transition: none; }
 }

@@ -28,6 +28,24 @@ if [ ! -x "$VENV_PY" ]; then
   exit 1
 fi
 
+# Catches the #1 cause of "PM2 shows it running for a second then nothing
+# is listening, no visible error": the venv exists but is stale — e.g.
+# requirements.txt gained gunicorn after this venv was created. Without
+# this check, `python -m gunicorn` just fails at import and the process
+# exits before binding any port or printing anything under a process
+# manager's captured (non-interactive) output.
+if ! "$VENV_PY" -c "import gunicorn, uvicorn.workers" >/dev/null 2>&1; then
+  echo "ERROR: gunicorn/uvicorn not importable in $VENV_PY" >&2
+  echo "        Your venv is likely stale. Run:" >&2
+  echo "        cd backend && venv/bin/pip install -r requirements.txt" >&2
+  exit 1
+fi
+
+if [ ! -f "$ROOT_DIR/dist/index.html" ]; then
+  echo "WARNING: $ROOT_DIR/dist/index.html not found — the site/admin" >&2
+  echo "          UI will 404 until you run: npm run build" >&2
+fi
+
 cd "$BACKEND_DIR"
 
 HOST="${HOST:-127.0.0.1}"
@@ -35,6 +53,13 @@ PORT="${PORT:-7001}"
 # Gunicorn's own rule of thumb is (2 x CPU cores) + 1; 3 is a
 # reasonable default for a small VM. Override with WEB_CONCURRENCY.
 WORKERS="${WEB_CONCURRENCY:-3}"
+
+if (exec 3<>"/dev/tcp/$HOST/$PORT") 2>/dev/null; then
+  exec 3>&- 3<&-
+  echo "ERROR: something is already listening on $HOST:$PORT" >&2
+  echo "        Find it with: ss -ltnp | grep $PORT" >&2
+  exit 1
+fi
 
 echo "JDK server starting..."
 echo

@@ -6,6 +6,10 @@
 //   npm install && npm run build
 //   cd backend && python3 -m venv venv && venv/bin/pip install -r requirements.txt
 //
+// Named .cjs, not .js: package.json has "type": "module", so a plain
+// .js file here would be loaded as ESM and `module.exports` wouldn't
+// work — .cjs forces CommonJS regardless of that setting.
+//
 // Usage:
 //   pm2 start ecosystem.config.cjs
 //   pm2 save          # persist across reboots (with pm2 startup)
@@ -27,10 +31,13 @@ module.exports = {
       autorestart: true,
       watch: false,
       env: {
-        // 0.0.0.0 so the app is reachable on the server's public IP, not
-        // just localhost, when nothing else (nginx, etc.) is proxying to
-        // it — see start_server.sh's own default (127.0.0.1) for local/dev
-        // runs, which this overrides for the PM2/production entry point.
+        // 0.0.0.0, not the literal public IP: on most cloud VPS the
+        // public IP is NAT'd to the NIC rather than assigned to it, so
+        // binding to that exact address fails to bind. 0.0.0.0 listens
+        // on every interface and is reachable at the public IP as long
+        // as the firewall/security group allows the port through — see
+        // start_server.sh's own default (127.0.0.1) for local/dev runs,
+        // which this overrides for the PM2/production entry point.
         HOST: "0.0.0.0",
         PORT: "7001",
       },

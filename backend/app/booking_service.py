@@ -642,3 +642,90 @@ def expire_stale_pending_appointments(db: Session) -> list[dict]:
         appt.notes = f"{prefix}\n{appt.notes}" if appt.notes else prefix
         expired.append(_serialize(db, appt))
     return expired
+
+
+# ── Shared post-write side effects (notification/webhook/calendar sync) ──
+# A visitor can create/cancel/reschedule an appointment two ways — the
+# booking form (routers/public_booking.py) or the chat assistant's tools
+# (chat_tools.py) — and both must fire identical notifications, webhook
+# events, and calendar-sync calls so neither path feels like a second-
+# class citizen. That identical sequence used to be maintained as two
+# independent copies (chat_tools.py's own comments said "mirror
+# routers/public_booking.py exactly" at each of the three call sites) —
+# real duplication, not just similar-looking code, so it's extracted
+# here once instead of drifting between the two over time.
+#
+# Deliberately NOT reused by routers/admin_booking.py: admin's
+# accept/reject/cancel/reschedule fire different notifications entirely
+# (notify_booking_accepted/declined vs. confirmed/requested) — a
+# genuinely different sequence, not the same one duplicated, so forcing
+# it through these helpers would either change admin behavior or need a
+# branchy parameter that defeats the point of sharing.
+
+def finalize_created_appointment(db: Session, result: dict) -> dict:
+    """Call immediately after create_appointment(). Commits the new
+    appointment first (durable before any side effect can fail), then —
+    only if creation actually succeeded — sends the requested/confirmed
+    notification and webhook event, creates the Google Calendar event
+    for an immediately-confirmed booking, and commits again (calendar
+    sync may itself have touched the session, e.g. refreshing a token).
+    No-ops (just the first commit) on a failed result."""
+    from app import calendar_sync_service, notification_service, webhook_service
+
+    db.commit()
+    if not result["ok"]:
+        return result
+    appt = result["appointment"]
+    if appt["status"] == "pending":
+        notification_service.notify_booking_requested(db, appt)
+        webhook_service.dispatch_event(db, "booking.requested", appt)
+    else:
+        notification_service.notify_booking_confirmed(db, appt)
+        webhook_service.dispatch_event(db, "booking.confirmed", appt)
+        event_id = calendar_sync_service.create_event_for_appointment(db, result["id"])
+        if event_id:
+            appt["externalEventId"] = event_id
+    db.commit()
+    return result
+
+
+def finalize_cancelled_appointment(db: Session, result: dict, appt_id: str) -> dict:
+    """Call immediately after cancel_appointment(). Only fires
+    notification/webhook/calendar-cleanup on a genuine new cancellation
+    — never on already_cancelled (idempotent replay) or a failed
+    lookup, so cancelling the same appointment twice doesn't double-send
+    a cancellation email."""
+    from app import calendar_sync_service, notification_service, webhook_service
+
+    db.commit()
+    if result["ok"] and not result.get("already_cancelled"):
+        notification_service.notify_booking_cancelled(db, result["appointment"])
+        webhook_service.dispatch_event(db, "booking.cancelled", result["appointment"])
+        calendar_sync_service.delete_event_for_appointment(db, appt_id)
+        result["appointment"]["externalEventId"] = None
+        db.commit()
+    return result
+
+
+def finalize_rescheduled_appointment(db: Session, result: dict, appt_id: str) -> dict:
+    """Call immediately after reschedule_appointment(). On success,
+    PATCHes the linked Google event to the new time (or creates one if
+    there wasn't one yet) for an appointment that's confirmed after the
+    move; for one that's still pending, deletes any existing linked
+    event instead (see public_booking.py's original comment: a pending
+    appointment shouldn't hold a calendar slot until confirmed)."""
+    from app import calendar_sync_service, notification_service, webhook_service
+
+    db.commit()
+    if result["ok"]:
+        notification_service.notify_booking_rescheduled(db, result["appointment"])
+        webhook_service.dispatch_event(db, "booking.rescheduled", result["appointment"])
+        if result["appointment"]["status"] != "pending":
+            event_id = calendar_sync_service.update_event_for_appointment(db, appt_id)
+            if event_id:
+                result["appointment"]["externalEventId"] = event_id
+        else:
+            calendar_sync_service.delete_event_for_appointment(db, appt_id)
+            result["appointment"]["externalEventId"] = None
+        db.commit()
+    return result

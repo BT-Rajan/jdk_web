@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import Field
 from sqlalchemy.orm import Session
 
-from app import booking_service, calendar_sync_service, notification_service, webhook_service
+from app import booking_service
 from app.config import settings
 from app.db import get_db
 from app.rate_limit import limiter
@@ -97,19 +97,7 @@ def create_appointment(request: Request, body: CreateAppointmentRequest, db: Ses
         phone=body.phone, service=body.service, notes=body.notes, lang=body.lang,
         service_id=body.service_id, answers=[a.model_dump() for a in body.answers],
     )
-    db.commit()
-    if result["ok"]:
-        if result["appointment"]["status"] == "pending":
-            notification_service.notify_booking_requested(db, result["appointment"])
-            webhook_service.dispatch_event(db, "booking.requested", result["appointment"])
-        else:
-            notification_service.notify_booking_confirmed(db, result["appointment"])
-            webhook_service.dispatch_event(db, "booking.confirmed", result["appointment"])
-            event_id = calendar_sync_service.create_event_for_appointment(db, result["id"])
-            if event_id:
-                result["appointment"]["externalEventId"] = event_id
-        db.commit()  # notification/webhook/calendar-sync activity may have touched the session
-    return result
+    return booking_service.finalize_created_appointment(db, result)
 
 
 @router.post("/appointments/lookup")
@@ -122,42 +110,11 @@ def lookup_appointment(request: Request, body: LookupRequest, db: Session = Depe
 @limiter.limit(settings.RATE_LIMIT_APPOINTMENT)
 def cancel_appointment(request: Request, body: CancelRequest, db: Session = Depends(get_db)):
     result = booking_service.cancel_appointment(db, body.id, body.email)
-    db.commit()
-    if result["ok"] and not result.get("already_cancelled"):
-        notification_service.notify_booking_cancelled(db, result["appointment"])
-        webhook_service.dispatch_event(db, "booking.cancelled", result["appointment"])
-        calendar_sync_service.delete_event_for_appointment(db, body.id)
-        result["appointment"]["externalEventId"] = None
-        db.commit()
-    return result
+    return booking_service.finalize_cancelled_appointment(db, result, body.id)
 
 
 @router.post("/appointments/reschedule")
 @limiter.limit(settings.RATE_LIMIT_APPOINTMENT)
 def reschedule_appointment(request: Request, body: RescheduleRequest, db: Session = Depends(get_db)):
     result = booking_service.reschedule_appointment(db, body.id, body.email, body.date, body.time)
-    db.commit()
-    if result["ok"]:
-        notification_service.notify_booking_rescheduled(db, result["appointment"])
-        webhook_service.dispatch_event(db, "booking.rescheduled", result["appointment"])
-        if result["appointment"]["status"] != "pending":
-            # PATCHes the existing Google event to the new time in place
-            # (falls back to creating one if there wasn't one already) —
-            # keeps the same event id and anything attached to it on
-            # Google's side, instead of the old delete-then-recreate.
-            # None means the push failed without changing anything (see
-            # update_event_for_appointment's docstring — a non-404
-            # failure deliberately leaves the existing link alone rather
-            # than risking a duplicate) - only overwrite the response
-            # when there's an actual new value to report, so a
-            # transient failure doesn't make an appointment that's
-            # still correctly linked in the database look unlinked to
-            # the client.
-            event_id = calendar_sync_service.update_event_for_appointment(db, body.id)
-            if event_id:
-                result["appointment"]["externalEventId"] = event_id
-        else:
-            calendar_sync_service.delete_event_for_appointment(db, body.id)
-            result["appointment"]["externalEventId"] = None
-        db.commit()
-    return result
+    return booking_service.finalize_rescheduled_appointment(db, result, body.id)

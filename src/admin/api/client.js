@@ -169,7 +169,7 @@ export const adminApi = {
   addKnowledgeUrl: (url) => request("admin/api/knowledge/url", { method: "POST", body: JSON.stringify({ url }) }),
   refreshKnowledgeSource: (id) => request(`admin/api/knowledge/${id}/refresh`, { method: "POST" }),
   setKnowledgeSourceActive: (id, isActive) =>
-    request(`admin/api/knowledge/${id}`, { method: "PATCH", body: JSON.stringify({ isActive: isActive }) }),
+    request(`admin/api/knowledge/${id}`, { method: "PATCH", body: JSON.stringify({ isActive }) }),
   deleteKnowledgeSource: (id) => request(`admin/api/knowledge/${id}`, { method: "DELETE" }),
 
   // -- content: pages + FAQ (admin-editable, served publicly via /api/content) --

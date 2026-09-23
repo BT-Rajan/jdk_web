@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, status
-from pydantic import BaseModel, Field
+from pydantic import Field
 from sqlalchemy.orm import Session
 
 from app import knowledge_service
@@ -8,13 +8,14 @@ from app.deps import get_current_admin, require_csrf
 from app.models import AdminUser
 from app.rate_limit import limiter
 from app.config import settings as infra_settings
+from app.schema_base import CamelModel
 
 router = APIRouter(prefix="/admin/api/knowledge", tags=["admin-knowledge"], dependencies=[Depends(require_csrf)])
 
 MAX_UPLOAD_BYTES = 8 * 1024 * 1024  # 8 MB — matches the reference implementation's cap
 
 
-class SourceOut(BaseModel):
+class SourceOut(CamelModel):
     id: str
     kind: str
     content_type: str
@@ -33,11 +34,11 @@ class SourcePreviewOut(SourceOut):
     text: str
 
 
-class AddUrlRequest(BaseModel):
+class AddUrlRequest(CamelModel):
     url: str = Field(min_length=1, max_length=2048)
 
 
-class SetActiveRequest(BaseModel):
+class SetActiveRequest(CamelModel):
     is_active: bool
 
 

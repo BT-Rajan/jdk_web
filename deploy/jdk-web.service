@@ -1,0 +1,29 @@
+# systemd unit for the JDK backend (serves the public site, /admin,
+# and the API on one port via start_server.sh / gunicorn+uvicorn).
+#
+# Install:
+#   sudo cp deploy/jdk-web.service /etc/systemd/system/
+#   sudo nano /etc/systemd/system/jdk-web.service   # fix the paths/User below
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now jdk-web
+#
+# Logs:  journalctl -u jdk-web -f
+
+[Unit]
+Description=JDK web app (FastAPI + built frontend)
+After=network.target mysql.service
+# Remove the line above if you're using SQLite / a remote DB.
+
+[Service]
+Type=simple
+# Run as a dedicated non-root user, not root.
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/jdk_web
+ExecStart=/opt/jdk_web/start_server.sh
+Environment=WEB_CONCURRENCY=3
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

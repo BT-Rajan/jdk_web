@@ -6,7 +6,9 @@ string-interpolated SQL, so the same code runs unmodified against SQLite
 """
 from __future__ import annotations
 
+import sys
 from contextlib import contextmanager
+from pathlib import Path
 from typing import Iterator
 
 from sqlalchemy import create_engine, inspect, text
@@ -41,7 +43,32 @@ def sync_schema() -> None:
     runs automatically on every startup instead, so a model change can
     never again outrun the live schema. Never drops or alters existing
     columns, only adds ones that don't exist yet.
+
+    Runs under a cross-process file lock: under gunicorn with more than
+    one worker, every worker's own ASGI startup calls this independently,
+    and without serializing them they race on the same "does this table
+    exist yet" check-then-create, so one worker's CREATE TABLE can lose
+    to another's and crash that worker's boot (which gunicorn treats as
+    fatal, taking down the whole master). The lock makes each worker wait
+    its turn; by the time a later worker runs this, create_all's own
+    checkfirst correctly sees everything the first worker already made.
     """
+    lock_path = settings.DATA_DIR / ".schema.lock"
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    lock_file = open(lock_path, "w")
+    try:
+        if sys.platform != "win32":
+            import fcntl
+
+            fcntl.flock(lock_file, fcntl.LOCK_EX)
+        _sync_schema_locked()
+    finally:
+        if sys.platform != "win32":
+            fcntl.flock(lock_file, fcntl.LOCK_UN)
+        lock_file.close()
+
+
+def _sync_schema_locked() -> None:
     Base.metadata.create_all(bind=engine)
 
     inspector = inspect(engine)

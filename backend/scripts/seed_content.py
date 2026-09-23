@@ -10,6 +10,10 @@ something the running app depends on.
 Safe to re-run: skips any page/FAQ item/setting that already has a DB
 override, so it never clobbers an admin's edits.
 
+Requires the schema to already exist — run `alembic upgrade head`
+first. This script no longer creates tables itself.
+
+    alembic upgrade head
     python scripts/seed_content.py
 """
 from __future__ import annotations
@@ -19,7 +23,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from app.db import Base, engine, session_scope
+from app.db import session_scope
 from app.models import ContentPage, FaqItem, SiteSetting
 from app import content_service
 from app.settings_service import set_many
@@ -198,8 +202,11 @@ def _read_md(lang: str, slug: str) -> str:
 
 
 def main() -> None:
-    Base.metadata.create_all(bind=engine)
-
+    # Schema is owned by Alembic (see alembic/versions/). Run
+    # `alembic upgrade head` before this script. This used to call
+    # Base.metadata.create_all(bind=engine) here, which created tables
+    # directly and left alembic_version unset — the next `alembic
+    # upgrade head` would then fail with "table already exists".
     with session_scope() as db:
         # --- pages ---
         for order, (slug, per_lang) in enumerate(PAGE_META.items()):

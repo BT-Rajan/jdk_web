@@ -1,6 +1,6 @@
 import "./HeadingCasePicker.css";
 
-// Mirrors theme.heading_case's ENUM choices in
+// Mirrors theme.headingCase's ENUM choices in
 // backend/app/settings_registry.py and the [data-heading-case="..."]
 // rules in src/styles/themeVariants.css.
 const CASES = [
@@ -17,7 +17,7 @@ function CasePreview({ id }) {
 }
 
 /**
- * Visual picker for theme.heading_case — casing/tracking for
+ * Visual picker for theme.headingCase — casing/tracking for
  * section-card titles (e.g. the homepage nav cards) site-wide.
  */
 export default function HeadingCasePicker({ value, onChange }) {

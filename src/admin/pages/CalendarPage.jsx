@@ -178,10 +178,10 @@ export default function CalendarPage() {
                 {events?.length === 0 && <tr><td colSpan={3} className="table-empty">No events this week.</td></tr>}
                 {events?.map((ev) => (
                   <tr key={ev.id} className={editingId === ev.id ? "row-selected" : ""}>
-                    <td>{ev.all_day ? ev.start : new Date(ev.start).toLocaleString()}</td>
+                    <td>{ev.allDay ? ev.start : new Date(ev.start).toLocaleString()}</td>
                     <td>{ev.summary}</td>
                     <td className="calendar-page-row-actions">
-                      <button className="row-action" onClick={() => openEdit(ev)} disabled={ev.all_day}>Edit</button>
+                      <button className="row-action" onClick={() => openEdit(ev)} disabled={ev.allDay}>Edit</button>
                       <button className="row-action danger" onClick={() => handleDelete(ev.id)}>Delete</button>
                     </td>
                   </tr>

@@ -6,15 +6,18 @@ string-interpolated SQL, so the same code runs unmodified against SQLite
 """
 from __future__ import annotations
 
+import logging
 import sys
+import time
 from contextlib import contextmanager
-from pathlib import Path
 from typing import Iterator
 
-from sqlalchemy import create_engine, inspect, text
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from app.config import settings
+
+logger = logging.getLogger("jdk.db")
 
 _connect_args = {"check_same_thread": False} if settings.DATABASE_URL.startswith("sqlite") else {}
 
@@ -32,65 +35,38 @@ class Base(DeclarativeBase):
     pass
 
 
-def sync_schema() -> None:
-    """Idempotent, additive-only schema sync: creates any missing tables
-    (create_all) and adds any columns present on a model but missing from
-    its existing table (create_all never alters an existing table).
+def wait_for_db(retries: int = 5, base_delay: float = 1.0) -> None:
+    """Boot-time guard: proves the DB is actually reachable before the app
+    finishes starting, with a bounded retry/backoff to ride out a DB that's
+    still coming up itself (e.g. a VPS reboot racing MySQL's own startup).
 
-    Existing-install upgrades used to depend on someone remembering to run
-    a one-off migrate_*.py script after pulling model changes — miss that
-    step and every query touching the new column 500s in production. This
-    runs automatically on every startup instead, so a model change can
-    never again outrun the live schema. Never drops or alters existing
-    columns, only adds ones that don't exist yet.
-
-    Runs under a cross-process file lock: under gunicorn with more than
-    one worker, every worker's own ASGI startup calls this independently,
-    and without serializing them they race on the same "does this table
-    exist yet" check-then-create, so one worker's CREATE TABLE can lose
-    to another's and crash that worker's boot (which gunicorn treats as
-    fatal, taking down the whole master). The lock makes each worker wait
-    its turn; by the time a later worker runs this, create_all's own
-    checkfirst correctly sees everything the first worker already made.
+    Schema is no longer synced here — that's Alembic's job now, run as an
+    explicit `alembic upgrade head` deploy step (see setup.sh/deploy.sh),
+    not something the running app does to itself on every boot. This
+    function only answers "can I reach DATABASE_URL at all", and fails
+    loudly with an actionable message + clean exit instead of letting a
+    connection error surface as an unguarded traceback deep in ASGI
+    startup, which is what used to turn a DB hiccup into a silent
+    PM2 crash-respawn loop.
     """
-    lock_path = settings.DATA_DIR / ".schema.lock"
-    lock_path.parent.mkdir(parents=True, exist_ok=True)
-    lock_file = open(lock_path, "w")
-    try:
-        if sys.platform != "win32":
-            import fcntl
-
-            fcntl.flock(lock_file, fcntl.LOCK_EX)
-        _sync_schema_locked()
-    finally:
-        if sys.platform != "win32":
-            fcntl.flock(lock_file, fcntl.LOCK_UN)
-        lock_file.close()
-
-
-def _sync_schema_locked() -> None:
-    Base.metadata.create_all(bind=engine)
-
-    inspector = inspect(engine)
-    existing_tables = set(inspector.get_table_names())
-
-    with engine.begin() as conn:
-        for table in Base.metadata.sorted_tables:
-            if table.name not in existing_tables:
-                continue  # just created above, already has every column
-            existing_columns = {c["name"] for c in inspector.get_columns(table.name)}
-            for column in table.columns:
-                if column.name in existing_columns:
-                    continue
-                # Always added nullable, even if the model marks it NOT NULL:
-                # existing rows have no value to backfill, and a NOT NULL
-                # ADD COLUMN without a default fails outright on MySQL/
-                # Postgres once the table has any rows. App code already
-                # has to tolerate None on a freshly-added column anyway.
-                ddl_type = column.type.compile(dialect=engine.dialect)
-                conn.execute(text(
-                    f"ALTER TABLE {table.name} ADD COLUMN {column.name} {ddl_type}"
-                ))
+    last_exc: Exception | None = None
+    for attempt in range(1, retries + 1):
+        try:
+            with engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            return
+        except Exception as exc:  # noqa: BLE001 - deliberately broad: any connectivity failure
+            last_exc = exc
+            if attempt < retries:
+                delay = base_delay * (2 ** (attempt - 1))
+                logger.warning(
+                    "Database not reachable yet (attempt %d/%d): %s — retrying in %.1fs",
+                    attempt, retries, exc, delay,
+                )
+                time.sleep(delay)
+    print(f"FATAL: cannot reach DATABASE_URL after {retries} attempts: {last_exc}", file=sys.stderr)
+    print("        Check DATABASE_URL in .env and that the database server is running.", file=sys.stderr)
+    sys.exit(1)
 
 
 def get_db() -> Iterator[Session]:

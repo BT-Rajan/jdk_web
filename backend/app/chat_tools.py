@@ -190,10 +190,10 @@ def _tool_check_availability(db: Session, args: dict[str, Any]) -> dict[str, Any
 
 
 def _tool_book_appointment(db: Session, lang: str, args: dict[str, Any]) -> dict[str, Any]:
-    from app import booking_service, calendar_sync_service, notification_service, webhook_service
+    from app import booking_service
     from app.settings_service import get_setting
 
-    if not get_setting(db, "features.booking_enabled"):
+    if not get_setting(db, "features.bookingEnabled"):
         return {"ok": False, "error": "booking_disabled"}
 
     raw_answers = args.get("answers")
@@ -220,26 +220,10 @@ def _tool_book_appointment(db: Session, lang: str, args: dict[str, Any]) -> dict
         service_id=_str(args, "service_id") or None,
         answers=answers,
     )
-    if not result["ok"]:
-        return result
-
-    # Mirror routers/public_booking.py's create_appointment exactly: commit
-    # so the appointment is durable before firing notifications/webhooks/
-    # calendar sync, then commit again since those may have touched the
-    # session themselves (e.g. calendar_sync_service refreshing a token).
-    db.commit()
-    appt = result["appointment"]
-    if appt["status"] == "pending":
-        notification_service.notify_booking_requested(db, appt)
-        webhook_service.dispatch_event(db, "booking.requested", appt)
-    else:
-        notification_service.notify_booking_confirmed(db, appt)
-        webhook_service.dispatch_event(db, "booking.confirmed", appt)
-        event_id = calendar_sync_service.create_event_for_appointment(db, result["id"])
-        if event_id:
-            appt["external_event_id"] = event_id
-    db.commit()
-    return result
+    # Same notification/webhook/calendar-sync side effects as
+    # routers/public_booking.py's create_appointment — see
+    # booking_service.finalize_created_appointment.
+    return booking_service.finalize_created_appointment(db, result)
 
 
 def _tool_lookup_appointment(db: Session, args: dict[str, Any]) -> dict[str, Any]:
@@ -249,43 +233,27 @@ def _tool_lookup_appointment(db: Session, args: dict[str, Any]) -> dict[str, Any
 
 
 def _tool_cancel_appointment(db: Session, args: dict[str, Any]) -> dict[str, Any]:
-    from app import booking_service, calendar_sync_service, notification_service, webhook_service
+    from app import booking_service
 
     appt_id = _str(args, "id")
     result = booking_service.cancel_appointment(db, appt_id, _str(args, "email"))
-    db.commit()
-    # Mirror routers/public_booking.py's cancel_appointment exactly, so a
-    # visitor cancelling through chat gets the same notifications, webhook
-    # events, and calendar cleanup as one cancelling through the form.
-    if result["ok"] and not result.get("already_cancelled"):
-        notification_service.notify_booking_cancelled(db, result["appointment"])
-        webhook_service.dispatch_event(db, "booking.cancelled", result["appointment"])
-        calendar_sync_service.delete_event_for_appointment(db, appt_id)
-        result["appointment"]["external_event_id"] = None
-        db.commit()
-    return result
+    # Same notification/webhook/calendar-cleanup side effects as
+    # routers/public_booking.py's cancel_appointment — see
+    # booking_service.finalize_cancelled_appointment.
+    return booking_service.finalize_cancelled_appointment(db, result, appt_id)
 
 
 def _tool_reschedule_appointment(db: Session, args: dict[str, Any]) -> dict[str, Any]:
-    from app import booking_service, calendar_sync_service, notification_service, webhook_service
+    from app import booking_service
 
     appt_id = _str(args, "id")
     result = booking_service.reschedule_appointment(
         db, appt_id, _str(args, "email"), _str(args, "date"), _str(args, "slot")
     )
-    db.commit()
-    # Mirror routers/public_booking.py's reschedule_appointment exactly.
-    if result["ok"]:
-        notification_service.notify_booking_rescheduled(db, result["appointment"])
-        webhook_service.dispatch_event(db, "booking.rescheduled", result["appointment"])
-        if result["appointment"]["status"] != "pending":
-            event_id = calendar_sync_service.update_event_for_appointment(db, appt_id)
-            result["appointment"]["external_event_id"] = event_id
-        else:
-            calendar_sync_service.delete_event_for_appointment(db, appt_id)
-            result["appointment"]["external_event_id"] = None
-        db.commit()
-    return result
+    # Same notification/webhook/calendar-sync side effects as
+    # routers/public_booking.py's reschedule_appointment — see
+    # booking_service.finalize_rescheduled_appointment.
+    return booking_service.finalize_rescheduled_appointment(db, result, appt_id)
 
 
 def make_executor(db: Session, *, lang: str) -> ToolExecutor:

@@ -7,7 +7,7 @@ import "./ServicesPage.css";
 
 /**
  * Admin management for the FAQ items shown in the chat assistant's
- * "Quick Questions" screen (copy.chat.faq_title — see
+ * "Quick Questions" screen (copy.chat.faqTitle — see
  * settings_registry.py). Mirrors PagesPage.jsx's table + side-panel
  * shape: content_service.py/admin_content.py have carried full FAQ
  * CRUD (create/update/delete/reorder) since the pages feature shipped,
@@ -128,8 +128,8 @@ export default function FaqPage() {
                     {item.translations?.en?.q || <span className="table-subtext">—</span>}
                   </td>
                   <td onClick={() => { setSelectedId(item.id); setCreating(false); }}>
-                    <span className={`status-pill ${item.is_active ? "confirmed" : "cancelled"}`}>
-                      {item.is_active ? "active" : "inactive"}
+                    <span className={`status-pill ${item.isActive ? "confirmed" : "cancelled"}`}>
+                      {item.isActive ? "active" : "inactive"}
                     </span>
                   </td>
                 </tr>

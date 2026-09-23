@@ -39,7 +39,7 @@ function JsonTextArea({ value, onChange, onError, rows = 4, describedBy, control
   );
 }
 
-// Backs any `image`-typed setting (branding.logo_url, branding.favicon_url).
+// Backs any `image`-typed setting (branding.logoUrl, branding.faviconUrl).
 // An admin can either paste a URL directly or upload a file — uploading
 // posts to the existing /admin/api/uploads/image endpoint (PNG/JPEG/WEBP/
 // ICO, sniffed server-side) and drops the returned URL straight into the
@@ -275,7 +275,7 @@ export default function SettingField({ field, value, error, onChange, onError })
         {field.label}
         {isSecretText && <span className="setting-secret-badge">secret</span>}
       </label>
-      {field.help_text && <p className="setting-help">{field.help_text}</p>}
+      {field.helpText && <p className="setting-help">{field.helpText}</p>}
       {control}
       {error && <p className="setting-error" id={errorId} role="alert">{error}</p>}
     </div>

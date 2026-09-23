@@ -122,15 +122,15 @@ export default function PagesPage() {
                     <span className="mono-chip-inline">{p.slug}</span>
                   </td>
                   <td onClick={() => { setSelectedSlug(p.slug); setCreating(false); }}>
-                    {p.translations?.en?.nav_label || <span className="table-subtext">—</span>}
+                    {p.translations?.en?.navLabel || <span className="table-subtext">—</span>}
                   </td>
                   <td onClick={() => { setSelectedSlug(p.slug); setCreating(false); }}>
-                    <span className={`status-pill ${p.is_visible ? "confirmed" : "cancelled"}`}>
-                      {p.is_visible ? "visible" : "hidden"}
+                    <span className={`status-pill ${p.isVisible ? "confirmed" : "cancelled"}`}>
+                      {p.isVisible ? "visible" : "hidden"}
                     </span>
                   </td>
                   <td onClick={() => { setSelectedSlug(p.slug); setCreating(false); }}>
-                    {p.show_in_nav ? "Yes" : "No"}
+                    {p.showInNav ? "Yes" : "No"}
                   </td>
                 </tr>
               ))}

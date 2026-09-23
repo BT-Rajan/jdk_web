@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 import "./ServiceDetailPanel.css";
 
 const EMPTY_FORM = {
-  date: "", time: "", name: "", email: "", phone: "", service_id: "", service: "", notes: "", lang: "en",
+  date: "", time: "", name: "", email: "", phone: "", serviceId: "", service: "", notes: "", lang: "en",
 };
 
 export default function AppointmentCreatePanel({ onClose, onCreated }) {
@@ -17,18 +17,18 @@ export default function AppointmentCreatePanel({ onClose, onCreated }) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    adminApi.listServices().then((list) => setServices(list.filter((s) => s.is_active))).catch(() => {});
+    adminApi.listServices().then((list) => setServices(list.filter((s) => s.isActive))).catch(() => {});
   }, []);
 
   useEffect(() => {
     if (!form.date) { setSlots([]); return; }
     setSlotsLoading(true);
     adminApi
-      .getSlots(form.date, form.service_id || undefined)
+      .getSlots(form.date, form.serviceId || undefined)
       .then((res) => setSlots(res?.slots ?? res ?? []))
       .catch(() => setSlots([]))
       .finally(() => setSlotsLoading(false));
-  }, [form.date, form.service_id]);
+  }, [form.date, form.serviceId]);
 
   function set(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -56,14 +56,14 @@ export default function AppointmentCreatePanel({ onClose, onCreated }) {
       </div>
 
       <label className="service-panel-label">Service (optional)</label>
-      <select value={form.service_id} onChange={(e) => set("service_id", e.target.value)}>
+      <select value={form.serviceId} onChange={(e) => set("serviceId", e.target.value)}>
         <option value="">— No service / general enquiry —</option>
         {services.map((s) => (
-          <option key={s.id} value={s.id}>{s.name} ({s.duration_minutes} min)</option>
+          <option key={s.id} value={s.id}>{s.name} ({s.durationMinutes} min)</option>
         ))}
       </select>
 
-      {!form.service_id && (
+      {!form.serviceId && (
         <>
           <label className="service-panel-label">Description (if no service picked)</label>
           <input value={form.service} onChange={(e) => set("service", e.target.value)} placeholder="e.g. General enquiry" />

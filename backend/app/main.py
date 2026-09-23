@@ -105,10 +105,27 @@ def create_app() -> FastAPI:
         import sys
         if "pytest" in sys.modules:
             return
-        from app.db import sync_schema
-        sync_schema()
+        # 1. Prove the DB is reachable before anything else — fails loud
+        #    with an actionable message and clean exit, not an unguarded
+        #    traceback (see db.wait_for_db's docstring for why this used
+        #    to turn a DB hiccup into a silent PM2 crash-respawn loop).
+        from app.db import wait_for_db
+        wait_for_db()
+        # Schema is brought up to date by `alembic upgrade head` as an
+        # explicit deploy step (setup.sh/deploy.sh) before the process is
+        # (re)started — the app no longer migrates itself on every boot.
+        # 2. Scheduler starts last, and its own start() already degrades
+        #    to "background polling disabled" on failure rather than
+        #    raising — a broken scheduler must never take the web server
+        #    down with it, so this is additionally wrapped defensively.
         from app import scheduler
-        scheduler.start()
+        try:
+            scheduler.start()
+        except Exception:
+            import logging
+            logging.getLogger("jdk").exception(
+                "Scheduler failed to start — continuing without background jobs"
+            )
 
     @app.on_event("shutdown")
     def _stop_background_jobs() -> None:

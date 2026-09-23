@@ -3,20 +3,21 @@ from __future__ import annotations
 import datetime as dt
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import Field
 from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.deps import get_current_admin, require_csrf
 from app.models import AdminUser
+from app.schema_base import CamelModel
 
 router = APIRouter(prefix="/admin/api/availability", tags=["admin-availability"], dependencies=[Depends(require_csrf)])
 
 
 # ── Schemas ──────────────────────────────────────────────────────────
 
-class RuleOut(BaseModel):
+class RuleOut(CamelModel):
     id: str
     service_id: str | None
     kind: str
@@ -27,7 +28,7 @@ class RuleOut(BaseModel):
     is_closed: bool
 
 
-class RuleCreateIn(BaseModel):
+class RuleCreateIn(CamelModel):
     service_id: str | None = None
     kind: str
     weekday: int | None = Field(default=None, ge=0, le=6)
@@ -37,7 +38,7 @@ class RuleCreateIn(BaseModel):
     is_closed: bool = False
 
 
-class RuleUpdateIn(BaseModel):
+class RuleUpdateIn(CamelModel):
     weekday: int | None = Field(default=None, ge=0, le=6)
     date: str | None = Field(default=None, max_length=10)
     start_time: str | None = Field(default=None, max_length=5)
@@ -45,12 +46,12 @@ class RuleUpdateIn(BaseModel):
     is_closed: bool | None = None
 
 
-class EffectiveRangeOut(BaseModel):
+class EffectiveRangeOut(CamelModel):
     start: str
     end: str
 
 
-class EffectiveOut(BaseModel):
+class EffectiveOut(CamelModel):
     is_closed: bool
     source: str  # "rule" | "legacy_settings"
     ranges: list[EffectiveRangeOut]
@@ -71,7 +72,7 @@ def _error_status(message: str) -> int:
 
 @router.get("/rules", response_model=list[RuleOut])
 def list_rules(
-    service_id: str | None = None,
+    service_id: str | None = Query(default=None, alias="serviceId"),
     admin: AdminUser = Depends(get_current_admin), db: Session = Depends(get_db),
 ):
     from app import availability_service
@@ -134,7 +135,7 @@ def delete_rule(rule_id: str, admin: AdminUser = Depends(get_current_admin), db:
 
 @router.get("/effective", response_model=EffectiveOut)
 def effective(
-    date: str, service_id: str | None = None,
+    date: str, service_id: str | None = Query(default=None, alias="serviceId"),
     admin: AdminUser = Depends(get_current_admin), db: Session = Depends(get_db),
 ):
     """Debugging/preview endpoint: what hours will this service
@@ -154,7 +155,7 @@ def effective(
         # preview matches what a real booking request would see.
         from app.settings_service import get_setting
         workdays = set(get_setting(db, "booking.workdays"))
-        start_h, end_h = get_setting(db, "booking.day_start_hour"), get_setting(db, "booking.day_end_hour")
+        start_h, end_h = get_setting(db, "booking.dayStartHour"), get_setting(db, "booking.dayEndHour")
         if d.weekday() not in workdays or end_h <= start_h:
             return EffectiveOut(is_closed=True, source="legacy_settings", ranges=[])
         return EffectiveOut(

@@ -67,8 +67,8 @@ class InfraSettings(BaseSettings):
     ENCRYPTION_KEY: str = ""
 
     # --- Bootstrap admin (first run only) --------------------------------
-    # Used ONLY by scripts/init_db.py to create the first admin account if
-    # none exists yet. Ignored on every subsequent start — after that,
+    # Used ONLY by scripts/seed_admin.py to create the first admin account
+    # if none exists yet. Ignored on every subsequent start — after that,
     # admin accounts and their password hashes live in the DB and are
     # managed from the admin panel itself (see Pass 9).
     BOOTSTRAP_ADMIN_USERNAME: str = "admin"
@@ -78,6 +78,16 @@ class InfraSettings(BaseSettings):
     # Only false for local http-only dev — Secure cookies are silently
     # dropped by browsers over plain HTTP.
     COOKIE_SECURE: bool = True
+    # Required alongside COOKIE_SECURE=true in production (see _validate
+    # below) — an explicit acknowledgment that TLS actually terminates in
+    # front of this process (nginx/caddy/etc), since there's no reliable
+    # way for the app itself to prove that. Exists specifically because a
+    # plain-HTTP production deploy with COOKIE_SECURE=true previously
+    # failed *silently*: the browser just drops the Secure cookie with no
+    # visible error, so login looks like it works but every subsequent
+    # request is unauthenticated. Now that combination fails loudly at
+    # startup instead.
+    BEHIND_TLS_PROXY: bool = False
 
     RATE_LIMIT_LOGIN: str = "5/minute"
     RATE_LIMIT_APPOINTMENT: str = "6/hour"
@@ -117,6 +127,13 @@ def _validate(s: InfraSettings) -> InfraSettings:
                   "but consider Postgres/MySQL for concurrent write load.", file=sys.stderr)
         if not s.COOKIE_SECURE:
             _fail("COOKIE_SECURE must be true in production.")
+        if not s.BEHIND_TLS_PROXY:
+            _fail(
+                "COOKIE_SECURE=true requires TLS in front of this app (nginx/caddy/etc) — "
+                "set BEHIND_TLS_PROXY=true in .env once HTTPS is actually configured. "
+                "Without it, session cookies are silently dropped by browsers over plain "
+                "HTTP and login will appear to succeed but never actually authenticate."
+            )
     else:
         # Dev: auto-generate ephemeral secrets so `uvicorn app.main:app` just
         # works out of the box, but never silently do this in prod.

@@ -43,7 +43,7 @@ class LLMError(Exception):
     """Raised for any failure talking to the provider — network,
     auth, rate limit, malformed response, or a tool-use loop that
     never converges. Callers (chat_service.py) catch this uniformly
-    and fall back to chat.unavailable_message rather than ever
+    and fall back to chat.unavailableMessage rather than ever
     surfacing a raw provider error to a visitor."""
 
 

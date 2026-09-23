@@ -247,9 +247,9 @@ def send_test_event(db: Session, webhook_id: str) -> WebhookDelivery:
     fixture_appointment = {
         "id": "PRN-TESTTEST", "date": "2030-01-01", "time": "09:00", "slot": "09:00",
         "name": "Test Appointment", "email": "test@example.com", "phone": "",
-        "service": "Test Service", "service_id": None, "service_name": None,
+        "service": "Test Service", "serviceId": None, "serviceName": None,
         "notes": "This is a test delivery triggered from the admin dashboard.",
-        "status": "confirmed", "confirmed_at": None, "answers": [],
+        "status": "confirmed", "confirmedAt": None, "answers": [],
     }
     payload = {
         "event": "booking.confirmed", "appointment": fixture_appointment,

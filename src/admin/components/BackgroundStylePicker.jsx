@@ -1,6 +1,6 @@
 import "./BackgroundStylePicker.css";
 
-// Mirrors theme.background_style's ENUM choices in
+// Mirrors theme.backgroundStyle's ENUM choices in
 // backend/app/settings_registry.py and the
 // [data-background-style="..."] rules in src/styles/themeVariants.css.
 const STYLES = [
@@ -15,7 +15,7 @@ function BackgroundThumb({ id }) {
 }
 
 /**
- * Visual picker for theme.background_style — the texture behind all
+ * Visual picker for theme.backgroundStyle — the texture behind all
  * page content, site-wide.
  */
 export default function BackgroundStylePicker({ value, onChange }) {

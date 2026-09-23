@@ -28,7 +28,7 @@ export default function AppointmentsPage() {
 
   const load = useCallback(() => {
     adminApi
-      .listAppointments({ status_filter: statusFilter, date_from: dateFrom, date_to: dateTo })
+      .listAppointments({ statusFilter, dateFrom, dateTo })
       .then(setAppointments)
       .catch((e) => (e.status === 401 ? handleSessionExpired() : setError(e.message)));
   }, [statusFilter, dateFrom, dateTo, handleSessionExpired]);
@@ -155,7 +155,7 @@ export default function AppointmentsPage() {
                   </td>
                   <td>{a.date} · {a.time}</td>
                   <td>
-                    {a.service_name || a.service || "—"}
+                    {a.serviceName || a.service || "—"}
                     {a.answers?.length > 0 && <span className="table-subtext"> · {a.answers.length} answer{a.answers.length > 1 ? "s" : ""}</span>}
                   </td>
                   <td><span className={`status-pill ${a.status}`}>{a.status}</span></td>

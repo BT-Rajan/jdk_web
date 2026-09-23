@@ -11,7 +11,7 @@ export function AuthProvider({ children }) {
     adminApi
       .me()
       .then((data) => {
-        setCsrfToken(data.csrf_token);
+        setCsrfToken(data.csrfToken);
         setUser(data);
       })
       .catch(() => setUser(null))
@@ -20,7 +20,7 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (username, password) => {
     const data = await adminApi.login(username, password);
-    setCsrfToken(data.csrf_token);
+    setCsrfToken(data.csrfToken);
     setUser(data);
     return data;
   }, []);

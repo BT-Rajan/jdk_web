@@ -4,7 +4,7 @@ import "./Logo.css";
 
 /**
  * Logo image URL and wordmark text both come from live branding config
- * (branding.logo_url / branding.site_name — see useLang()), so swapping
+ * (branding.logoUrl / branding.siteName — see useLang()), so swapping
  * either from the admin panel needs no rebuild. Shows the image OR the
  * site-name wordmark — never both — falling back to the text if there's
  * no logo configured or the image fails to load.

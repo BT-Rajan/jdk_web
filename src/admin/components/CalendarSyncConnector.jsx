@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { adminApi } from "../api/client.js";
 import "./CalendarSyncConnector.css";
 
-// Google redirects back to this very Settings page (calendar_sync.
+// Google redirects back to this very Settings page (calendarSync.
 // google_redirect_uri should point here) with ?code=&state= — this
 // component picks those up on mount and completes the exchange itself,
 // rather than the browser landing on a raw JSON response. See
@@ -37,7 +37,7 @@ export default function CalendarSyncConnector() {
     adminApi
       .completeCalendarSyncCallback(code, state)
       .then((data) => {
-        setPendingCredentialId(data.credential_id);
+        setPendingCredentialId(data.credentialId);
         setPendingCalendars(data.calendars);
         if (data.calendars.length > 0) setSelectedCalendarId(data.calendars[0].id);
       })
@@ -128,19 +128,24 @@ export default function CalendarSyncConnector() {
         <div className="calendar-sync-status">
           <div className="calendar-sync-status-info">
             <span className="status-pill confirmed">Connected</span>
-            <span className="calendar-sync-detail">{status.calendar_id}</span>
+            <span className="calendar-sync-detail">{status.calendarId}</span>
           </div>
           <div className="calendar-sync-meta">
             <span>
-              Last checked: {status.last_synced_at ? new Date(status.last_synced_at).toLocaleString() : "never yet"}
+              Last checked: {status.lastSyncedAt ? new Date(status.lastSyncedAt).toLocaleString() : "never yet"}
             </span>
-            {status.flagged_count > 0 && (
+            {status.flaggedCount > 0 && (
               <span className="calendar-sync-flagged">
-                {status.flagged_count} appointment{status.flagged_count === 1 ? "" : "s"} out of sync with
+                {status.flaggedCount} appointment{status.flaggedCount === 1 ? "" : "s"} out of sync with
                 Google — see Appointments
               </span>
             )}
           </div>
+          {status.lastSyncError && (
+            <div className="calendar-sync-error">
+              Last check failed: {status.lastSyncError} — the connection may need to be reconnected.
+            </div>
+          )}
           <div className="calendar-sync-actions">
             <button type="button" className="row-action" onClick={handleSyncNow} disabled={busy}>
               {busy ? "Checking…" : "Sync now"}

@@ -6,7 +6,7 @@ Two in-process background jobs:
    deleted directly in Google) and flag any linked appointment that no
    longer matches. See calendar_sync_service.detect_drift.
 2. pending_expiry_poll — periodically auto-decline pending appointments
-   that have sat past booking.pending_expiry_hours with no admin
+   that have sat past booking.pendingExpiryHours with no admin
    action, so one doesn't hold its slot forever. See
    booking_service.expire_stale_pending_appointments.
 
@@ -22,7 +22,7 @@ import logging
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-logger = logging.getLogger("jdk.calendar_sync")
+logger = logging.getLogger("jdk.calendarSync")
 
 _scheduler: BackgroundScheduler | None = None
 _DRIFT_JOB_ID = "calendar_drift_poll"
@@ -35,7 +35,7 @@ def _run_drift_check() -> None:
     from app.settings_service import get_setting
 
     with session_scope() as db:
-        if not get_setting(db, "features.calendar_sync_enabled"):
+        if not get_setting(db, "features.calendarSyncEnabled"):
             return
         if calendar_sync_service.get_active_credential(db) is None:
             return
@@ -97,11 +97,11 @@ def start() -> None:
 
     try:
         with session_scope() as db:
-            drift_minutes = get_setting(db, "calendar_sync.drift_poll_minutes")
-            expiry_minutes = get_setting(db, "booking.pending_expiry_poll_minutes")
+            drift_minutes = get_setting(db, "calendarSync.driftPollMinutes")
+            expiry_minutes = get_setting(db, "booking.pendingExpiryPollMinutes")
     except Exception:
         # Settings table may not exist yet (fresh install before
-        # init_db.py has run) - skip scheduling rather than crash startup.
+        # `alembic upgrade head` has run) - skip scheduling rather than crash startup.
         logger.exception("Could not read scheduler intervals at startup; background polling disabled")
         return
 
@@ -112,7 +112,7 @@ def start() -> None:
 
 
 def reschedule(minutes: int) -> None:
-    """Call after an admin updates calendar_sync.drift_poll_minutes so
+    """Call after an admin updates calendarSync.driftPollMinutes so
     the running scheduler picks up the new interval immediately."""
     if _scheduler is None:
         return
@@ -122,7 +122,7 @@ def reschedule(minutes: int) -> None:
 
 
 def reschedule_pending_expiry(minutes: int) -> None:
-    """Twin of reschedule() above, for booking.pending_expiry_poll_minutes."""
+    """Twin of reschedule() above, for booking.pendingExpiryPollMinutes."""
     if _scheduler is None:
         return
     if _scheduler.get_job(_PENDING_EXPIRY_JOB_ID) is not None:

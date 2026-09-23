@@ -83,7 +83,7 @@ export const adminApi = {
   // Public slot-availability check, reused here so the admin's manual
   // "Add appointment" form can only pick a slot the grid actually allows.
   getSlots: (date, serviceId) =>
-    request(`api/booking/slots?date=${encodeURIComponent(date)}${serviceId ? `&service_id=${encodeURIComponent(serviceId)}` : ""}`),
+    request(`api/booking/slots?date=${encodeURIComponent(date)}${serviceId ? `&serviceId=${encodeURIComponent(serviceId)}` : ""}`),
   cancelAppointment: (id) => request(`admin/api/booking/appointments/${id}/cancel`, { method: "POST" }),
   acceptAppointment: (id) => request(`admin/api/booking/appointments/${id}/accept`, { method: "POST" }),
   rejectAppointment: (id, reason) =>
@@ -125,7 +125,7 @@ export const adminApi = {
     request(`admin/api/services/${serviceId}/questions/${questionId}`, { method: "DELETE" }),
   reorderServiceQuestions: (serviceId, orderedIds) =>
     request(`admin/api/services/${serviceId}/questions/reorder`, {
-      method: "POST", body: JSON.stringify({ ordered_ids: orderedIds }),
+      method: "POST", body: JSON.stringify({ orderedIds }),
     }),
 
   // -- calendar module: webhooks (Pass 11, see docs/CALENDAR_MODULE_PLAN.md) --
@@ -143,7 +143,7 @@ export const adminApi = {
     request(`admin/api/calendar-sync/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`),
   selectCalendarSyncCalendar: (credentialId, calendarId) =>
     request("admin/api/calendar-sync/select", {
-      method: "POST", body: JSON.stringify({ credential_id: credentialId, calendar_id: calendarId }),
+      method: "POST", body: JSON.stringify({ credentialId, calendarId }),
     }),
   disconnectCalendarSync: () => request("admin/api/calendar-sync/disconnect", { method: "POST" }),
   syncCalendarNow: () => request("admin/api/calendar-sync/sync-now", { method: "POST" }),
@@ -153,7 +153,7 @@ export const adminApi = {
   //    the connected account's calendar, not just this app's own
   //    appointment-linked events --
   listCalendarEvents: (dateFrom, dateTo) =>
-    request(`admin/api/calendar-events?date_from=${encodeURIComponent(dateFrom)}&date_to=${encodeURIComponent(dateTo)}`),
+    request(`admin/api/calendar-events?dateFrom=${encodeURIComponent(dateFrom)}&dateTo=${encodeURIComponent(dateTo)}`),
   createCalendarEvent: (body) => request("admin/api/calendar-events", { method: "POST", body: JSON.stringify(body) }),
   updateCalendarEvent: (id, body) => request(`admin/api/calendar-events/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
   deleteCalendarEvent: (id) => request(`admin/api/calendar-events/${id}`, { method: "DELETE" }),
@@ -169,7 +169,7 @@ export const adminApi = {
   addKnowledgeUrl: (url) => request("admin/api/knowledge/url", { method: "POST", body: JSON.stringify({ url }) }),
   refreshKnowledgeSource: (id) => request(`admin/api/knowledge/${id}/refresh`, { method: "POST" }),
   setKnowledgeSourceActive: (id, isActive) =>
-    request(`admin/api/knowledge/${id}`, { method: "PATCH", body: JSON.stringify({ is_active: isActive }) }),
+    request(`admin/api/knowledge/${id}`, { method: "PATCH", body: JSON.stringify({ isActive }) }),
   deleteKnowledgeSource: (id) => request(`admin/api/knowledge/${id}`, { method: "DELETE" }),
 
   // -- content: pages + FAQ (admin-editable, served publicly via /api/content) --
@@ -179,7 +179,7 @@ export const adminApi = {
   upsertPage: (slug, body) => request(`admin/api/content/pages/${slug}`, { method: "PUT", body: JSON.stringify(body) }),
   deletePage: (slug) => request(`admin/api/content/pages/${slug}`, { method: "DELETE" }),
   reorderPages: (orderedSlugs) =>
-    request("admin/api/content/pages/reorder", { method: "POST", body: JSON.stringify({ ordered_slugs: orderedSlugs }) }),
+    request("admin/api/content/pages/reorder", { method: "POST", body: JSON.stringify({ orderedSlugs }) }),
   listPageVersions: (slug) => request(`admin/api/content/pages/${slug}/versions`),
   rollbackPage: (slug, versionId) => request(`admin/api/content/pages/${slug}/rollback/${versionId}`, { method: "POST" }),
 
@@ -189,7 +189,7 @@ export const adminApi = {
   updateFaq: (id, body) => request(`admin/api/content/faq/${id}`, { method: "PUT", body: JSON.stringify(body) }),
   deleteFaq: (id) => request(`admin/api/content/faq/${id}`, { method: "DELETE" }),
   reorderFaq: (orderedIds) =>
-    request("admin/api/content/faq/reorder", { method: "POST", body: JSON.stringify({ ordered_ids: orderedIds }) }),
+    request("admin/api/content/faq/reorder", { method: "POST", body: JSON.stringify({ orderedIds }) }),
 };
 
 export { ApiError };

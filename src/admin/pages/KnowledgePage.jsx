@@ -74,7 +74,7 @@ export default function KnowledgePage() {
 
   async function handleToggleActive(source) {
     try {
-      await adminApi.setKnowledgeSourceActive(source.id, !source.is_active);
+      await adminApi.setKnowledgeSourceActive(source.id, !source.isActive);
       load();
     } catch (err) {
       if (err.status === 401) handleSessionExpired();
@@ -177,25 +177,25 @@ export default function KnowledgePage() {
             {sources?.map((s) => (
               <>
                 <tr key={s.id}>
-                  <td>{TYPE_ICON[s.content_type] || "❓"}</td>
+                  <td>{TYPE_ICON[s.contentType] || "❓"}</td>
                   <td>
                     <button className="kb-title-btn" onClick={() => togglePreview(s.id)} disabled={!s.ok}>
                       {s.title}
                     </button>
-                    {s.kind === "url" && <div className="table-subtext">{s.source_ref}</div>}
+                    {s.kind === "url" && <div className="table-subtext">{s.sourceRef}</div>}
                   </td>
-                  <td>{s.content_type}</td>
+                  <td>{s.contentType}</td>
                   <td>{s.chars.toLocaleString()} chars{s.truncated && " (truncated)"}</td>
                   <td>
                     {s.ok ? (
                       <span className="status-pill confirmed">ready</span>
                     ) : (
-                      <span className="status-pill cancelled" title={s.error_message}>error</span>
+                      <span className="status-pill cancelled" title={s.errorMessage}>error</span>
                     )}
                   </td>
                   <td>
                     <label className="setting-toggle">
-                      <input type="checkbox" checked={s.is_active} onChange={() => handleToggleActive(s)} />
+                      <input type="checkbox" checked={s.isActive} onChange={() => handleToggleActive(s)} />
                     </label>
                   </td>
                   <td className="kb-actions">
@@ -212,9 +212,9 @@ export default function KnowledgePage() {
                     </td>
                   </tr>
                 )}
-                {!s.ok && s.error_message && (
+                {!s.ok && s.errorMessage && (
                   <tr key={`${s.id}-error`}>
-                    <td colSpan={7} className="kb-error-row">{s.error_message}</td>
+                    <td colSpan={7} className="kb-error-row">{s.errorMessage}</td>
                   </tr>
                 )}
               </>

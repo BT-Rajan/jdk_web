@@ -19,7 +19,7 @@ def public_pages(response: Response, db: Session = Depends(get_db)):
         {
             "slug": p.slug,
             "order": p.order,
-            "show_in_nav": p.show_in_nav,
+            "showInNav": p.show_in_nav,
             "translations": p.translations,
         }
         for p in pages

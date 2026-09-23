@@ -9,9 +9,9 @@ function clamp(v) {
 }
 
 /**
- * Pairs with the branding.logo_url field: a live preview of the logo
+ * Pairs with the branding.logoUrl field: a live preview of the logo
  * against the actual header background, plus zoom in/out controls for
- * branding.logo_scale — so an admin can see and fix a logo that reads
+ * branding.logoScale — so an admin can see and fix a logo that reads
  * too small next to the header text (a lot of source logo files carry
  * built-in whitespace padding that shrinks them at 1:1) without
  * guessing at a raw number. The preview mirrors the site's own

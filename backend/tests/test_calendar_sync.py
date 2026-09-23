@@ -18,10 +18,10 @@ def _widen_booking_window():
     """This file's dates start at nth-workday 250, clear of every other
     file's window (see PASS9_NOTES.md)."""
     with session_scope() as db:
-        set_setting(db, "booking.max_days_ahead", 365, actor_id=None, actor_username="test-setup")
+        set_setting(db, "booking.maxDaysAhead", 365, actor_id=None, actor_username="test-setup")
     yield
     with session_scope() as db:
-        set_setting(db, "booking.max_days_ahead", 30, actor_id=None, actor_username="test-teardown")
+        set_setting(db, "booking.maxDaysAhead", 30, actor_id=None, actor_username="test-teardown")
 
 
 @pytest.fixture(autouse=True)
@@ -32,8 +32,8 @@ def _clear_calendar_state_after_test():
     yield
     with session_scope() as db:
         db.query(CalendarCredential).delete()
-        set_setting(db, "features.calendar_sync_enabled", False, actor_id=None, actor_username="test-teardown")
-        set_setting(db, "booking.calendar_sync_fail_open", False, actor_id=None, actor_username="test-teardown")
+        set_setting(db, "features.calendarSyncEnabled", False, actor_id=None, actor_username="test-teardown")
+        set_setting(db, "booking.calendarSyncFailOpen", False, actor_id=None, actor_username="test-teardown")
 
 
 def _nth_future_workday(n: int) -> str:
@@ -49,7 +49,7 @@ def _nth_future_workday(n: int) -> str:
 
 def _enable_sync(logged_in_client=None):
     with session_scope() as db:
-        set_setting(db, "features.calendar_sync_enabled", True, actor_id=None, actor_username="test-setup")
+        set_setting(db, "features.calendarSyncEnabled", True, actor_id=None, actor_username="test-setup")
 
 
 def _create_active_credential(calendar_id="primary@group.calendar.google.com", expires_in_future=True):
@@ -69,10 +69,10 @@ def _create_active_credential(calendar_id="primary@group.calendar.google.com", e
 
 
 def _configure_oauth_client(logged_in_client, redirect_uri="https://example.com/admin/api/calendar-sync/callback"):
-    resp = logged_in_client.put("/admin/api/settings/calendar_sync", json={
-        "calendar_sync.google_client_id": "test-client-id",
-        "calendar_sync.google_client_secret": "test-client-secret",
-        "calendar_sync.google_redirect_uri": redirect_uri,
+    resp = logged_in_client.put("/admin/api/settings/calendarSync", json={
+        "calendarSync.googleClientId": "test-client-id",
+        "calendarSync.googleClientSecret": "test-client-secret",
+        "calendarSync.googleRedirectUri": redirect_uri,
     })
     assert resp.status_code == 200, resp.text
 
@@ -121,19 +121,19 @@ def test_full_connect_flow(logged_in_client, monkeypatch):
     assert callback.status_code == 200, callback.text
     body = callback.json()
     assert body["calendars"] == [{"id": "primary", "summary": "Primary", "primary": True}]
-    credential_id = body["credential_id"]
+    credential_id = body["credentialId"]
 
     status_before = logged_in_client.get("/admin/api/calendar-sync/status").json()
     assert status_before["connected"] is False  # calendar not chosen yet
 
     select = logged_in_client.post("/admin/api/calendar-sync/select", json={
-        "credential_id": credential_id, "calendar_id": "primary",
+        "credentialId": credential_id, "calendarId": "primary",
     })
     assert select.status_code == 200
 
     status_after = logged_in_client.get("/admin/api/calendar-sync/status").json()
     assert status_after["connected"] is True
-    assert status_after["calendar_id"] == "primary"
+    assert status_after["calendarId"] == "primary"
 
 
 def test_reconnect_keeps_old_credential_active_until_new_one_is_selected(logged_in_client, monkeypatch):
@@ -163,20 +163,20 @@ def test_reconnect_keeps_old_credential_active_until_new_one_is_selected(logged_
 
     callback = logged_in_client.get(f"/admin/api/calendar-sync/callback?code=abc123&state={state}")
     assert callback.status_code == 200, callback.text
-    new_credential_id = callback.json()["credential_id"]
+    new_credential_id = callback.json()["credentialId"]
 
     # The admin hasn't picked a calendar for the new connection yet -
     # the old one must still be the one in effect.
     status_mid_flow = logged_in_client.get("/admin/api/calendar-sync/status").json()
     assert status_mid_flow["connected"] is True
-    assert status_mid_flow["calendar_id"] == "old-calendar@group.calendar.google.com"
+    assert status_mid_flow["calendarId"] == "old-calendar@group.calendar.google.com"
 
     with session_scope() as db:
         old = db.get(CalendarCredential, old_credential_id)
         assert old.is_active is True
 
     select = logged_in_client.post("/admin/api/calendar-sync/select", json={
-        "credential_id": new_credential_id, "calendar_id": "new-calendar@group.calendar.google.com",
+        "credentialId": new_credential_id, "calendarId": "new-calendar@group.calendar.google.com",
     })
     assert select.status_code == 200
 
@@ -189,7 +189,7 @@ def test_reconnect_keeps_old_credential_active_until_new_one_is_selected(logged_
 
     status_after = logged_in_client.get("/admin/api/calendar-sync/status").json()
     assert status_after["connected"] is True
-    assert status_after["calendar_id"] == "new-calendar@group.calendar.google.com"
+    assert status_after["calendarId"] == "new-calendar@group.calendar.google.com"
 
 
 def test_callback_without_refresh_token_rejected(logged_in_client, monkeypatch):
@@ -248,7 +248,7 @@ def test_busy_block_removes_overlapping_slot_leaves_adjacent(logged_in_client, c
 
 
 def test_sync_disabled_ignores_busy_times(client, monkeypatch):
-    # features.calendar_sync_enabled defaults False - no credential even
+    # features.calendarSyncEnabled defaults False - no credential even
     # configured, so get_busy_times must never be called.
     called = []
     monkeypatch.setattr("app.google_calendar_client.get_busy_times", lambda *a, **k: called.append(1) or [])
@@ -276,7 +276,7 @@ def test_fail_open_setting_ignores_api_failure(logged_in_client, client, monkeyp
     _enable_sync()
     _create_active_credential()
     with session_scope() as db:
-        set_setting(db, "booking.calendar_sync_fail_open", True, actor_id=None, actor_username="test")
+        set_setting(db, "booking.calendarSyncFailOpen", True, actor_id=None, actor_username="test")
     date = _nth_future_workday(253)
 
     def boom(*a, **k):
@@ -320,8 +320,8 @@ def test_expired_token_is_refreshed_before_freebusy_call(client, monkeypatch):
         return []
 
     with session_scope() as db:
-        set_setting(db, "calendar_sync.google_client_id", "cid", actor_id=None, actor_username="test")
-        set_setting(db, "calendar_sync.google_client_secret", "csecret", actor_id=None, actor_username="test")
+        set_setting(db, "calendarSync.googleClientId", "cid", actor_id=None, actor_username="test")
+        set_setting(db, "calendarSync.googleClientSecret", "csecret", actor_id=None, actor_username="test")
 
     monkeypatch.setattr("app.google_calendar_client.refresh_access_token", fake_refresh)
     monkeypatch.setattr("app.google_calendar_client.get_busy_times", fake_busy)
@@ -353,7 +353,7 @@ def test_event_created_on_confirmed_booking(client, monkeypatch):
     resp = client.post("/api/booking/appointments", json={"date": date, "slot": "09:00", **VALID_APPT})
     body = resp.json()
     assert body["ok"] is True
-    assert body["appointment"]["external_event_id"] == "gcal-evt-1"
+    assert body["appointment"]["externalEventId"] == "gcal-evt-1"
     assert len(created) == 1
 
 
@@ -372,14 +372,14 @@ def test_event_creation_failure_does_not_break_booking(client, monkeypatch):
     resp = client.post("/api/booking/appointments", json={"date": date, "slot": "09:00", **VALID_APPT})
     body = resp.json()
     assert body["ok"] is True
-    assert body["appointment"]["external_event_id"] is None
+    assert body["appointment"]["externalEventId"] is None
 
 
 def test_event_created_only_on_confirmation_accept_not_on_pending_request(logged_in_client, client, monkeypatch):
     _enable_sync()
     _create_active_credential()
     svc = logged_in_client.post("/admin/api/services", json={
-        "name": "Sync Confirmation Service", "duration_minutes": 30, "requires_confirmation": True,
+        "name": "Sync Confirmation Service", "durationMinutes": 30, "requiresConfirmation": True,
     }).json()
     date = _nth_future_workday(258)
 
@@ -388,9 +388,9 @@ def test_event_created_only_on_confirmation_accept_not_on_pending_request(logged
     monkeypatch.setattr("app.google_calendar_client.create_event", lambda *a, **kw: created.append(kw) or "gcal-evt-2")
 
     booked = client.post("/api/booking/appointments", json={
-        "date": date, "slot": "09:00", "service_id": svc["id"], **VALID_APPT,
+        "date": date, "slot": "09:00", "serviceId": svc["id"], **VALID_APPT,
     }).json()["appointment"]
-    assert booked["external_event_id"] is None
+    assert booked["externalEventId"] is None
     assert len(created) == 0  # pending - no event yet
 
     logged_in_client.post(f"/admin/api/booking/appointments/{booked['id']}/accept")
@@ -432,7 +432,7 @@ def test_event_updated_in_place_on_reschedule(client, monkeypatch):
     monkeypatch.setattr("app.google_calendar_client.delete_event", lambda *a, **kw: delete_calls.append(kw))
 
     created = client.post("/api/booking/appointments", json={"date": date, "slot": "09:00", **VALID_APPT}).json()
-    assert created["appointment"]["external_event_id"] == "gcal-evt-1"
+    assert created["appointment"]["externalEventId"] == "gcal-evt-1"
 
     resp = client.post("/api/booking/appointments/reschedule", json={
         "id": created["id"], "email": VALID_APPT["email"], "date": new_date, "time": "10:00",
@@ -445,7 +445,7 @@ def test_event_updated_in_place_on_reschedule(client, monkeypatch):
     assert update_calls[0]["event_id"] == "gcal-evt-1"
     assert len(create_calls) == 1  # only the original creation, never a second
     assert len(delete_calls) == 0
-    assert body["appointment"]["external_event_id"] == "gcal-evt-1"
+    assert body["appointment"]["externalEventId"] == "gcal-evt-1"
 
 
 def test_event_recreated_on_reschedule_if_update_fails(client, monkeypatch):
@@ -470,7 +470,7 @@ def test_event_recreated_on_reschedule_if_update_fails(client, monkeypatch):
     monkeypatch.setattr("app.google_calendar_client.update_event", boom_update)
 
     created = client.post("/api/booking/appointments", json={"date": date, "slot": "09:00", **VALID_APPT}).json()
-    assert created["appointment"]["external_event_id"] == "gcal-evt-1"
+    assert created["appointment"]["externalEventId"] == "gcal-evt-1"
 
     resp = client.post("/api/booking/appointments/reschedule", json={
         "id": created["id"], "email": VALID_APPT["email"], "date": new_date, "time": "10:00",
@@ -478,7 +478,7 @@ def test_event_recreated_on_reschedule_if_update_fails(client, monkeypatch):
     body = resp.json()
     assert body["ok"] is True
     assert len(create_calls) == 2  # original + the fallback recreate
-    assert body["appointment"]["external_event_id"] == "gcal-evt-2"
+    assert body["appointment"]["externalEventId"] == "gcal-evt-2"
 
 
 def test_event_not_recreated_on_reschedule_if_update_fails_for_other_reason(client, monkeypatch):
@@ -507,7 +507,7 @@ def test_event_not_recreated_on_reschedule_if_update_fails_for_other_reason(clie
     monkeypatch.setattr("app.google_calendar_client.update_event", boom_update)
 
     created = client.post("/api/booking/appointments", json={"date": date, "slot": "09:00", **VALID_APPT}).json()
-    assert created["appointment"]["external_event_id"] == "gcal-evt-1"
+    assert created["appointment"]["externalEventId"] == "gcal-evt-1"
 
     resp = client.post("/api/booking/appointments/reschedule", json={
         "id": created["id"], "email": VALID_APPT["email"], "date": new_date, "time": "10:00",
@@ -519,7 +519,7 @@ def test_event_not_recreated_on_reschedule_if_update_fails_for_other_reason(clie
     assert len(create_calls) == 1  # only the original — no duplicate
     # The stale link is left alone (not cleared, not repointed) so a
     # retry or the next drift check has something to act on.
-    assert body["appointment"]["external_event_id"] == "gcal-evt-1"
+    assert body["appointment"]["externalEventId"] == "gcal-evt-1"
 
 
 # ── Admin-side reschedule/edit ───────────────────────────────────────
@@ -591,7 +591,7 @@ def test_manual_event_crud(logged_in_client, monkeypatch):
     assert create_resp.json()["id"] == "manual-evt-1"
     assert len(created_calls) == 1
 
-    list_resp = logged_in_client.get("/admin/api/calendar-events?date_from=2026-09-01&date_to=2026-09-07")
+    list_resp = logged_in_client.get("/admin/api/calendar-events?dateFrom=2026-09-01&dateTo=2026-09-07")
     assert list_resp.status_code == 200, list_resp.text
     events = list_resp.json()
     assert len(events) == 1
@@ -641,7 +641,7 @@ def test_sync_now_flags_externally_deleted_event(logged_in_client, client, monke
     lookup = client.post("/api/booking/appointments/lookup", json={
         "id": created["id"], "email": VALID_APPT["email"],
     }).json()
-    assert lookup["appointment"]["calendar_drift"]
+    assert lookup["appointment"]["calendarDrift"]
 
 
 def test_sync_now_flags_externally_changed_time(logged_in_client, client, monkeypatch):
@@ -667,12 +667,12 @@ def test_sync_now_flags_externally_changed_time(logged_in_client, client, monkey
     # leaves its own flagged appointment in place, since the drift
     # column has no reason to be cleared by an unrelated test's
     # teardown — this test only needs to know its own flag landed.
-    assert status["flagged_count"] >= 1
+    assert status["flaggedCount"] >= 1
 
     lookup = client.post("/api/booking/appointments/lookup", json={
         "id": created["id"], "email": VALID_APPT["email"],
     }).json()
-    assert lookup["appointment"]["calendar_drift"]
+    assert lookup["appointment"]["calendarDrift"]
 
 
 def test_sync_now_not_connected(logged_in_client):
@@ -726,6 +726,6 @@ def test_drift_check_uses_appointment_own_timezone_not_live_setting(logged_in_cl
     lookup = client.post("/api/booking/appointments/lookup", json={
         "id": created["id"], "email": VALID_APPT["email"],
     }).json()
-    assert not lookup["appointment"]["calendar_drift"]
+    assert not lookup["appointment"]["calendarDrift"]
 
 

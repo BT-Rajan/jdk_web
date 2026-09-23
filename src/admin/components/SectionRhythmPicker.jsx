@@ -1,6 +1,6 @@
 import "./SectionRhythmPicker.css";
 
-// Mirrors theme.section_rhythm's ENUM choices in
+// Mirrors theme.sectionRhythm's ENUM choices in
 // backend/app/settings_registry.py and the
 // [data-section-rhythm="..."] rules in src/styles/themeVariants.css.
 const LEVELS = [
@@ -21,7 +21,7 @@ function RhythmThumb({ id }) {
 }
 
 /**
- * Visual picker for theme.section_rhythm — breathing room between
+ * Visual picker for theme.sectionRhythm — breathing room between
  * major page sections/blocks (e.g. the gap before the homepage's
  * nav-card grid), independent of theme.density above.
  */

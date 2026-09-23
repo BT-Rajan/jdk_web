@@ -21,7 +21,7 @@ class WhatsAppError(Exception):
 
 def _send_twilio(*, account_id: str, api_key: str, from_number: str, to_number: str, message: str) -> None:
     if not from_number:
-        raise WhatsAppError("Twilio requires notifications.whatsapp_from_number to be set")
+        raise WhatsAppError("Twilio requires notifications.whatsappFromNumber to be set")
     try:
         resp = httpx.post(
             TWILIO_URL_TEMPLATE.format(account_sid=account_id),

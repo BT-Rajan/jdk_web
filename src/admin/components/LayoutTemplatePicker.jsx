@@ -1,7 +1,7 @@
 import "./LayoutTemplatePicker.css";
 
 // Mirrors the LAYOUTS map in src/components/hero/Hero.jsx exactly —
-// these ids are theme.layout_template's ENUM choices in
+// these ids are theme.layoutTemplate's ENUM choices in
 // backend/app/settings_registry.py. Each thumbnail is a tiny, purely
 // decorative CSS mockup (no real content/copy) just to convey the
 // arrangement at a glance; the real preview is the live site itself.
@@ -91,7 +91,7 @@ function LayoutThumbnail({ id }) {
 }
 
 /**
- * Visual picker for theme.layout_template — same "gallery of cards,
+ * Visual picker for theme.layoutTemplate — same "gallery of cards,
  * click to select" pattern as ThemePresetPicker, but for page
  * structure instead of color/font. Deliberately narrow in scope: this
  * only ever writes the one enum field, so picking a layout can't

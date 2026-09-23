@@ -8,7 +8,7 @@ const LANGS = ["en", "ar"];
 function emptyTranslations() {
   const t = {};
   for (const lang of LANGS) {
-    t[lang] = { nav_label: "", section_title: "", section_body: "", tagline_line1: "", tagline_line2: "", tagline_sub: "", body_markdown: "" };
+    t[lang] = { navLabel: "", sectionTitle: "", sectionBody: "", taglineLine1: "", taglineLine2: "", taglineSub: "", bodyMarkdown: "" };
   }
   return t;
 }
@@ -20,8 +20,8 @@ export default function PageDetailPanel({ mode, page, onClose, onCreated, onUpda
   const [translations, setTranslations] = useState(
     mode === "edit" ? { ...emptyTranslations(), ...page.translations } : emptyTranslations()
   );
-  const [isVisible, setIsVisible] = useState(mode === "edit" ? page.is_visible : true);
-  const [showInNav, setShowInNav] = useState(mode === "edit" ? page.show_in_nav : true);
+  const [isVisible, setIsVisible] = useState(mode === "edit" ? page.isVisible : true);
+  const [showInNav, setShowInNav] = useState(mode === "edit" ? page.showInNav : true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const fileInputRef = useRef(null);
@@ -59,8 +59,8 @@ export default function PageDetailPanel({ mode, page, onClose, onCreated, onUpda
     try {
       const restored = await adminApi.rollbackPage(page.slug, versionId);
       setTranslations({ ...emptyTranslations(), ...restored.translations });
-      setIsVisible(restored.is_visible);
-      setShowInNav(restored.show_in_nav);
+      setIsVisible(restored.isVisible);
+      setShowInNav(restored.showInNav);
       onUpdated(restored);
       const fresh = await adminApi.listPageVersions(page.slug);
       setVersions(fresh);
@@ -77,7 +77,7 @@ export default function PageDetailPanel({ mode, page, onClose, onCreated, onUpda
     if (!file) return;
     try {
       const text = await file.text();
-      setField("body_markdown", text);
+      setField("bodyMarkdown", text);
     } catch {
       setError("Couldn't read that file — make sure it's a plain text/Markdown file.");
     } finally {
@@ -95,7 +95,7 @@ export default function PageDetailPanel({ mode, page, onClose, onCreated, onUpda
     try {
       const cleanSlug = slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, "-");
       const saved = await adminApi.upsertPage(cleanSlug, {
-        translations, is_visible: isVisible, show_in_nav: showInNav,
+        translations, isVisible, showInNav,
       });
       if (mode === "create") onCreated(saved);
       else {
@@ -161,30 +161,30 @@ export default function PageDetailPanel({ mode, page, onClose, onCreated, onUpda
       </div>
 
       <label className="service-panel-label">Nav menu label</label>
-      <input value={t.nav_label || ""} onChange={(e) => setField("nav_label", e.target.value)} />
+      <input value={t.navLabel || ""} onChange={(e) => setField("navLabel", e.target.value)} />
 
       <label className="service-panel-label">Home teaser title</label>
-      <input value={t.section_title || ""} onChange={(e) => setField("section_title", e.target.value)} />
+      <input value={t.sectionTitle || ""} onChange={(e) => setField("sectionTitle", e.target.value)} />
 
       <label className="service-panel-label">Home teaser text</label>
-      <textarea rows={2} value={t.section_body || ""} onChange={(e) => setField("section_body", e.target.value)} />
+      <textarea rows={2} value={t.sectionBody || ""} onChange={(e) => setField("sectionBody", e.target.value)} />
 
       <label className="service-panel-label">Page header — line 1</label>
-      <input value={t.tagline_line1 || ""} onChange={(e) => setField("tagline_line1", e.target.value)} />
+      <input value={t.taglineLine1 || ""} onChange={(e) => setField("taglineLine1", e.target.value)} />
 
       <label className="service-panel-label">Page header — line 2 (accent)</label>
-      <input value={t.tagline_line2 || ""} onChange={(e) => setField("tagline_line2", e.target.value)} />
+      <input value={t.taglineLine2 || ""} onChange={(e) => setField("taglineLine2", e.target.value)} />
 
       <label className="service-panel-label">Page header — subtitle</label>
-      <input value={t.tagline_sub || ""} onChange={(e) => setField("tagline_sub", e.target.value)} />
+      <input value={t.taglineSub || ""} onChange={(e) => setField("taglineSub", e.target.value)} />
 
       <label className="service-panel-label">
         Full page body (Markdown) — {lang.toUpperCase()}
       </label>
       <textarea
         rows={10}
-        value={t.body_markdown || ""}
-        onChange={(e) => setField("body_markdown", e.target.value)}
+        value={t.bodyMarkdown || ""}
+        onChange={(e) => setField("bodyMarkdown", e.target.value)}
         placeholder="Paste Markdown here, or upload a .md file below."
         style={{ fontFamily: "monospace", fontSize: 12.5 }}
       />
@@ -230,8 +230,8 @@ export default function PageDetailPanel({ mode, page, onClose, onCreated, onUpda
               {versions?.map((v) => (
                 <div className="question-row" key={v.id}>
                   <div className="question-row-main">
-                    {new Date(v.saved_at).toLocaleString()}
-                    {v.saved_by_username ? ` — ${v.saved_by_username}` : ""}
+                    {new Date(v.savedAt).toLocaleString()}
+                    {v.savedByUsername ? ` — ${v.savedByUsername}` : ""}
                   </div>
                   <div className="question-row-actions">
                     <button

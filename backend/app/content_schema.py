@@ -27,18 +27,18 @@ class FieldDef:
     multiline: bool = False  # hint for the (future) admin UI, markdown for body fields
 
 
-# One row per content page. `nav_label` also feeds the header nav menu
+# One row per content page. `navLabel` also feeds the header nav menu
 # and the home page's quick-link cards — unifying what used to be three
 # separate hardcoded structures (NAV, SECTIONS, PAGE_META in
 # src/data/content.js and src/data/pages.js) into one per-page record.
 PAGE_FIELDS: list[FieldDef] = [
-    FieldDef("nav_label", "Nav menu label", required=True),
-    FieldDef("section_title", "Home teaser title", required=True),
-    FieldDef("section_body", "Home teaser text", required=True, multiline=True),
-    FieldDef("tagline_line1", "Page header — line 1", required=False),
-    FieldDef("tagline_line2", "Page header — line 2 (accent)", required=False),
-    FieldDef("tagline_sub", "Page header — subtitle", required=False),
-    FieldDef("body_markdown", "Full page body (Markdown)", required=True, multiline=True),
+    FieldDef("navLabel", "Nav menu label", required=True),
+    FieldDef("sectionTitle", "Home teaser title", required=True),
+    FieldDef("sectionBody", "Home teaser text", required=True, multiline=True),
+    FieldDef("taglineLine1", "Page header — line 1", required=False),
+    FieldDef("taglineLine2", "Page header — line 2 (accent)", required=False),
+    FieldDef("taglineSub", "Page header — subtitle", required=False),
+    FieldDef("bodyMarkdown", "Full page body (Markdown)", required=True, multiline=True),
 ]
 
 FAQ_FIELDS: list[FieldDef] = [

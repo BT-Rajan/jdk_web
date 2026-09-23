@@ -12,8 +12,8 @@ simply hasn't touched Availability) keeps behaving identically.
 Pass 8 adds what a *service* contributes on top of the day's open
 hours: its own duration and buffer time. A booking's service_id is
 optional — a site that has never defined a Service occupies one
-booking.slot_minutes-sized grid slot with no buffer. When a service is
-given, slot generation still snaps to the same booking.slot_minutes
+booking.slotMinutes-sized grid slot with no buffer. When a service is
+given, slot generation still snaps to the same booking.slotMinutes
 grid (so times stay predictable and stable across services) but each
 candidate slot's *occupied span* is the service's own duration plus its
 buffers, checked for overlap against every other booking that day
@@ -25,6 +25,7 @@ from __future__ import annotations
 import datetime as dt
 import re
 import secrets
+from contextlib import contextmanager
 from zoneinfo import ZoneInfo
 
 from sqlalchemy import select, text
@@ -49,13 +50,13 @@ class InvalidServiceError(Exception):
 def _booking_config(db: Session) -> dict:
     return {
         "timezone": get_setting(db, "booking.timezone"),
-        "slot_minutes": get_setting(db, "booking.slot_minutes"),
-        "day_start_hour": get_setting(db, "booking.day_start_hour"),
-        "day_end_hour": get_setting(db, "booking.day_end_hour"),
+        "slot_minutes": get_setting(db, "booking.slotMinutes"),
+        "day_start_hour": get_setting(db, "booking.dayStartHour"),
+        "day_end_hour": get_setting(db, "booking.dayEndHour"),
         "workdays": set(get_setting(db, "booking.workdays")),
-        "max_days_ahead": get_setting(db, "booking.max_days_ahead"),
-        "min_notice_hours": get_setting(db, "booking.min_notice_hours"),
-        "pending_expiry_hours": get_setting(db, "booking.pending_expiry_hours"),
+        "max_days_ahead": get_setting(db, "booking.maxDaysAhead"),
+        "min_notice_hours": get_setting(db, "booking.minNoticeHours"),
+        "pending_expiry_hours": get_setting(db, "booking.pendingExpiryHours"),
     }
 
 
@@ -64,7 +65,7 @@ def _now(cfg: dict) -> dt.datetime:
 
 
 def _pending_cutoff(cfg: dict) -> dt.datetime | None:
-    """None means disabled (booking.pending_expiry_hours == 0) — a
+    """None means disabled (booking.pendingExpiryHours == 0) — a
     pending appointment holds its slot indefinitely, as it always did
     before this setting existed. Otherwise, the UTC instant a pending
     appointment's created_at has to be older than to stop counting as
@@ -129,7 +130,7 @@ def _day_ranges(db: Session, cfg: dict, date: dt.date, service_id: str | None) -
 
 
 def _grid_slots_for_ranges(cfg: dict, ranges: list[tuple[int, int]]) -> list[str]:
-    """Candidate start times on the booking.slot_minutes grid, across
+    """Candidate start times on the booking.slotMinutes grid, across
     every open range for the day (a split day — e.g. 09:00-12:00 and
     13:00-17:00 — just means two ranges, each gridded independently;
     duplicates across overlapping ranges are deduped defensively)."""
@@ -166,7 +167,7 @@ def _booked_intervals(db: Session, cfg: dict, date_str: str, *, exclude_id: str 
     a second visitor booking the same slot while the first request
     awaits organizer approval — is a worse failure mode for a small
     business than a slot looking briefly unavailable. But only up to
-    booking.pending_expiry_hours old (_pending_cutoff) — past that, an
+    booking.pendingExpiryHours old (_pending_cutoff) — past that, an
     admin has had a full expiry window to act and didn't, so this stops
     counting it as blocking even before the background sweep
     (expire_stale_pending_appointments) gets around to formally
@@ -190,7 +191,7 @@ def _booked_intervals(db: Session, cfg: dict, date_str: str, *, exclude_id: str 
 
 class CalendarSyncUnavailableError(Exception):
     """Raised internally when calendar sync is enabled, connected, and
-    the Google API call failed, AND booking.calendar_sync_fail_open is
+    the Google API call failed, AND booking.calendarSyncFailOpen is
     False (the default) — signals available_slots to return no slots
     for the day rather than book against unconfirmed real availability.
     Never escapes available_slots itself."""
@@ -200,10 +201,10 @@ def _google_busy_intervals(db: Session, cfg: dict, date_str: str) -> list[tuple[
     """Busy ranges from the connected Google Calendar, or [] if sync
     isn't enabled/connected. Raises CalendarSyncUnavailableError if
     sync is enabled+connected but the Google API call failed and
-    booking.calendar_sync_fail_open is False — the caller propagates
+    booking.calendarSyncFailOpen is False — the caller propagates
     that straight into "no slots today," the documented safety-over-
     convenience default (see PASS12_NOTES.md)."""
-    if not get_setting(db, "features.calendar_sync_enabled"):
+    if not get_setting(db, "features.calendarSyncEnabled"):
         return []
     from app import calendar_sync_service
     credential = calendar_sync_service.get_active_credential(db)
@@ -212,7 +213,7 @@ def _google_busy_intervals(db: Session, cfg: dict, date_str: str) -> list[tuple[
     try:
         return calendar_sync_service.busy_minutes_for_date(db, credential, date_str, timezone=cfg["timezone"])
     except Exception:
-        if get_setting(db, "booking.calendar_sync_fail_open"):
+        if get_setting(db, "booking.calendarSyncFailOpen"):
             return []  # ignore the external calendar for this request, admin opted into this
         raise CalendarSyncUnavailableError(date_str)
 
@@ -280,7 +281,9 @@ def _acquire_booking_lock(db: Session) -> None:
     first thing the caller does with `db` — before any other read or
     write in that request — and the caller's transaction must not
     commit until after its own insert/update, since committing is what
-    releases the lock.
+    releases the lock. Prefer calling this via the booking_lock(db)
+    context manager below rather than directly — its docstring explains
+    why.
 
     Implemented as a real write (UPDATE, not SELECT ... FOR UPDATE)
     against a single sentinel row (BookingLock id=1), because SQLite —
@@ -294,9 +297,10 @@ def _acquire_booking_lock(db: Session) -> None:
 
     The sentinel row is seeded lazily (first call in the process's
     lifetime, memoized in _lock_seeded so later calls skip straight to
-    the UPDATE) rather than only in app.db.sync_schema, since a test DB
-    built directly with Base.metadata.create_all never runs sync_schema
-    at all. That seeding deliberately happens on connections of its own,
+    the UPDATE) rather than as part of schema setup, since a test DB
+    built directly with Base.metadata.create_all (or a fresh install
+    before `alembic upgrade head` has ever run) has the table but no
+    row in it yet. That seeding deliberately happens on connections of its own,
     fully opened and closed *before* `db` is touched at all — not just
     committed independently. On SQLite, even a read against `db` starts
     an implicit transaction that's held open (and holds a file-level
@@ -323,6 +327,21 @@ def _acquire_booking_lock(db: Session) -> None:
     db.execute(text("UPDATE booking_lock SET touched_at = :now WHERE id = 1"), {"now": now})
 
 
+@contextmanager
+def booking_lock(db: Session):
+    """Wraps _acquire_booking_lock (see its docstring for the full
+    correctness reasoning) as a context manager, so each of the 3 call
+    sites below reads as `with booking_lock(db): <all the availability-
+    check-then-write work>` — one visually-scoped block — instead of a
+    bare function call at the top of a function body that a later edit
+    could accidentally end up above. Doesn't (can't) stop a caller from
+    touching `db` before entering the `with`, but makes doing so a
+    visible break in the block's shape rather than an easy-to-miss
+    reordering of two independent-looking statements."""
+    _acquire_booking_lock(db)
+    yield
+
+
 def _generate_code(db: Session) -> str:
     for _ in range(10):
         code = "PRN-" + "".join(secrets.choice(_CODE_ALPHABET) for _ in range(8))
@@ -344,59 +363,59 @@ def create_appointment(
     # _acquire_booking_lock's docstring. Held until the router's
     # subsequent db.commit() persists (or a raised exception rolls
     # back) the appointment this call is about to create.
-    _acquire_booking_lock(db)
-    try:
-        slots = available_slots(db, date_str, service_id=service_id)
-    except ValueError:
-        return {"ok": False, "error": "invalid_date"}
-    except InvalidServiceError:
-        return {"ok": False, "error": "invalid_service"}
+    with booking_lock(db):
+        try:
+            slots = available_slots(db, date_str, service_id=service_id)
+        except ValueError:
+            return {"ok": False, "error": "invalid_date"}
+        except InvalidServiceError:
+            return {"ok": False, "error": "invalid_service"}
 
-    if time_str not in slots:
-        return {"ok": False, "error": "slot_unavailable"}
+        if time_str not in slots:
+            return {"ok": False, "error": "slot_unavailable"}
 
-    svc = db.get(Service, service_id) if service_id else None
-    answer_map: dict[str, str] = {}
-    if svc is not None:
-        answer_map = {a.get("question_id"): (a.get("answer") or "").strip() for a in (answers or [])}
-        known_ids = {q.id for q in svc.questions}
-        if set(answer_map) - known_ids:
-            return {"ok": False, "error": "invalid_question"}
-        if any(q.required and not answer_map.get(q.id) for q in svc.questions):
-            return {"ok": False, "error": "missing_required_answer"}
+        svc = db.get(Service, service_id) if service_id else None
+        answer_map: dict[str, str] = {}
+        if svc is not None:
+            answer_map = {a.get("question_id"): (a.get("answer") or "").strip() for a in (answers or [])}
+            known_ids = {q.id for q in svc.questions}
+            if set(answer_map) - known_ids:
+                return {"ok": False, "error": "invalid_question"}
+            if any(q.required and not answer_map.get(q.id) for q in svc.questions):
+                return {"ok": False, "error": "missing_required_answer"}
 
-    appt = Appointment(
-        id=_generate_code(db), date=date_str, time=time_str, lang=lang or "en",
-        # Snapshotted at booking time (see Appointment.timezone's
-        # docstring) - a separate read of booking.timezone from the one
-        # inside available_slots() above, but get_setting is
-        # process-cached (settings_service.py), so this costs nothing
-        # extra in practice.
-        timezone=_booking_config(db)["timezone"],
-        name=name.strip(), email=email.strip(), phone=phone.strip(),
-        service=service.strip(), service_id=service_id, notes=notes.strip(),
-        status="pending" if (svc is not None and svc.requires_confirmation) else "confirmed",
-    )
-    db.add(appt)
-    db.flush()
+        appt = Appointment(
+            id=_generate_code(db), date=date_str, time=time_str, lang=lang or "en",
+            # Snapshotted at booking time (see Appointment.timezone's
+            # docstring) - a separate read of booking.timezone from the one
+            # inside available_slots() above, but get_setting is
+            # process-cached (settings_service.py), so this costs nothing
+            # extra in practice.
+            timezone=_booking_config(db)["timezone"],
+            name=name.strip(), email=email.strip(), phone=phone.strip(),
+            service=service.strip(), service_id=service_id, notes=notes.strip(),
+            status="pending" if (svc is not None and svc.requires_confirmation) else "confirmed",
+        )
+        db.add(appt)
+        db.flush()
 
-    if svc is not None:
-        for q in svc.questions:
-            ans = answer_map.get(q.id, "")
-            if ans:
-                db.add(AppointmentQuestionAnswer(
-                    appointment_id=appt.id, question_id=q.id, question_label=q.label, answer=ans
-                ))
+        if svc is not None:
+            for q in svc.questions:
+                ans = answer_map.get(q.id, "")
+                if ans:
+                    db.add(AppointmentQuestionAnswer(
+                        appointment_id=appt.id, question_id=q.id, question_label=q.label, answer=ans
+                    ))
 
-    # A booking is a strong, unambiguous signal — always worth a lead
-    # record, whether or not this person ever chatted first.
-    from app import leads_service
-    booked_what = svc.name if svc is not None else (appt.service or "general enquiry")
-    leads_service.capture_lead(
-        db, email=appt.email, source="booking", name=appt.name, phone=appt.phone,
-        transcript_entry={"from": "system", "text": f"Booked {appt.date} {appt.time} ({booked_what})"},
-    )
-    return {"ok": True, "id": appt.id, "pending": appt.status == "pending", "appointment": _serialize(db, appt)}
+        # A booking is a strong, unambiguous signal — always worth a lead
+        # record, whether or not this person ever chatted first.
+        from app import leads_service
+        booked_what = svc.name if svc is not None else (appt.service or "general enquiry")
+        leads_service.capture_lead(
+            db, email=appt.email, source="booking", name=appt.name, phone=appt.phone,
+            transcript_entry={"from": "system", "text": f"Booked {appt.date} {appt.time} ({booked_what})"},
+        )
+        return {"ok": True, "id": appt.id, "pending": appt.status == "pending", "appointment": _serialize(db, appt)}
 
 
 def _find_by_id_and_email(db: Session, appt_id: str, email: str) -> Appointment | None:
@@ -450,36 +469,36 @@ def reschedule_appointment(db: Session, appt_id: str, email: str, new_date_str: 
     # prevent another request's create/reschedule from slipping in
     # between this function's read of available_slots() and its own
     # write further down.
-    _acquire_booking_lock(db)
-    appt = _find_by_id_and_email(db, appt_id, email)
-    if appt is None:
-        return {"ok": False, "error": "not_found"}
-    if appt.status == "cancelled":
-        return {"ok": False, "error": "already_cancelled"}
-    if not _has_enough_notice(db, appt):
-        return {"ok": False, "error": "notice_window_passed"}
+    with booking_lock(db):
+        appt = _find_by_id_and_email(db, appt_id, email)
+        if appt is None:
+            return {"ok": False, "error": "not_found"}
+        if appt.status == "cancelled":
+            return {"ok": False, "error": "already_cancelled"}
+        if not _has_enough_notice(db, appt):
+            return {"ok": False, "error": "notice_window_passed"}
 
-    try:
-        # Reschedule keeps whatever service the booking was originally
-        # made under (it isn't something the visitor picks again here)
-        # — if that service was deactivated since, this fails cleanly
-        # rather than silently re-slotting the appointment as generic.
-        slots = available_slots(db, new_date_str, service_id=appt.service_id, exclude_id=appt.id)
-    except ValueError:
-        return {"ok": False, "error": "invalid_date"}
-    except InvalidServiceError:
-        return {"ok": False, "error": "invalid_service"}
-    if new_time_str not in slots:
-        return {"ok": False, "error": "slot_unavailable"}
+        try:
+            # Reschedule keeps whatever service the booking was originally
+            # made under (it isn't something the visitor picks again here)
+            # — if that service was deactivated since, this fails cleanly
+            # rather than silently re-slotting the appointment as generic.
+            slots = available_slots(db, new_date_str, service_id=appt.service_id, exclude_id=appt.id)
+        except ValueError:
+            return {"ok": False, "error": "invalid_date"}
+        except InvalidServiceError:
+            return {"ok": False, "error": "invalid_service"}
+        if new_time_str not in slots:
+            return {"ok": False, "error": "slot_unavailable"}
 
-    appt.date = new_date_str
-    appt.time = new_time_str
-    # Re-snapshot: the new date/time was just chosen from slots computed
-    # under the *current* live booking.timezone (available_slots above),
-    # so that's what this appointment's stored timezone should become
-    # too — see Appointment.timezone's docstring.
-    appt.timezone = _booking_config(db)["timezone"]
-    return {"ok": True, "appointment": _serialize(db, appt)}
+        appt.date = new_date_str
+        appt.time = new_time_str
+        # Re-snapshot: the new date/time was just chosen from slots computed
+        # under the *current* live booking.timezone (available_slots above),
+        # so that's what this appointment's stored timezone should become
+        # too — see Appointment.timezone's docstring.
+        appt.timezone = _booking_config(db)["timezone"]
+        return {"ok": True, "appointment": _serialize(db, appt)}
 
 
 def admin_reschedule_appointment(db: Session, appt_id: str, new_date_str: str, new_time_str: str) -> dict:
@@ -490,25 +509,25 @@ def admin_reschedule_appointment(db: Session, appt_id: str, new_date_str: str, n
     so it can't create a double-booking."""
     # See _acquire_booking_lock's docstring — same reasoning as
     # reschedule_appointment above.
-    _acquire_booking_lock(db)
-    appt = db.get(Appointment, appt_id)
-    if appt is None:
-        return {"ok": False, "error": "not_found"}
-    if appt.status == "cancelled":
-        return {"ok": False, "error": "already_cancelled"}
-    try:
-        slots = available_slots(db, new_date_str, service_id=appt.service_id, exclude_id=appt.id)
-    except ValueError:
-        return {"ok": False, "error": "invalid_date"}
-    except InvalidServiceError:
-        return {"ok": False, "error": "invalid_service"}
-    if new_time_str not in slots:
-        return {"ok": False, "error": "slot_unavailable"}
+    with booking_lock(db):
+        appt = db.get(Appointment, appt_id)
+        if appt is None:
+            return {"ok": False, "error": "not_found"}
+        if appt.status == "cancelled":
+            return {"ok": False, "error": "already_cancelled"}
+        try:
+            slots = available_slots(db, new_date_str, service_id=appt.service_id, exclude_id=appt.id)
+        except ValueError:
+            return {"ok": False, "error": "invalid_date"}
+        except InvalidServiceError:
+            return {"ok": False, "error": "invalid_service"}
+        if new_time_str not in slots:
+            return {"ok": False, "error": "slot_unavailable"}
 
-    appt.date = new_date_str
-    appt.time = new_time_str
-    appt.timezone = _booking_config(db)["timezone"]  # re-snapshot — same reasoning as reschedule_appointment above
-    return {"ok": True, "appointment": _serialize(db, appt)}
+        appt.date = new_date_str
+        appt.time = new_time_str
+        appt.timezone = _booking_config(db)["timezone"]  # re-snapshot — same reasoning as reschedule_appointment above
+        return {"ok": True, "appointment": _serialize(db, appt)}
 
 
 def _serialize(db: Session, appt: Appointment) -> dict:
@@ -517,7 +536,7 @@ def _serialize(db: Session, appt: Appointment) -> dict:
         svc = db.get(Service, appt.service_id)
         service_name = svc.name if svc is not None else None
     answers = [
-        {"question_id": a.question_id, "label": a.question_label, "answer": a.answer}
+        {"questionId": a.question_id, "label": a.question_label, "answer": a.answer}
         for a in db.scalars(
             select(AppointmentQuestionAnswer).where(AppointmentQuestionAnswer.appointment_id == appt.id)
         )
@@ -526,11 +545,11 @@ def _serialize(db: Session, appt: Appointment) -> dict:
         "id": appt.id, "date": appt.date, "time": appt.time, "slot": appt.time,
         "timezone": appt.timezone,  # the IANA zone date/time above should be read in — see Appointment.timezone
         "name": appt.name, "email": appt.email, "phone": appt.phone,
-        "service": appt.service, "service_id": appt.service_id, "service_name": service_name,
+        "service": appt.service, "serviceId": appt.service_id, "serviceName": service_name,
         "notes": appt.notes, "status": appt.status,
-        "confirmed_at": appt.confirmed_at.isoformat() if appt.confirmed_at else None,
-        "external_event_id": appt.external_event_id,
-        "calendar_drift": appt.calendar_drift,
+        "confirmedAt": appt.confirmed_at.isoformat() if appt.confirmed_at else None,
+        "externalEventId": appt.external_event_id,
+        "calendarDrift": appt.calendar_drift,
         "answers": answers,
     }
 
@@ -594,7 +613,7 @@ def admin_reject_appointment(db: Session, appt_id: str, *, reason: str = "") -> 
 
 def expire_stale_pending_appointments(db: Session) -> list[dict]:
     """Transitions every pending appointment older than
-    booking.pending_expiry_hours to cancelled — an admin-side twin of
+    booking.pendingExpiryHours to cancelled — an admin-side twin of
     admin_reject_appointment, just triggered by age instead of an
     admin click. _booked_intervals already stops treating an
     appointment this stale as blocking a slot; this is what makes the
@@ -602,13 +621,13 @@ def expire_stale_pending_appointments(db: Session) -> list[dict]:
     forever showing "pending" while quietly no longer holding anything.
 
     Called from app/scheduler.py on a timer
-    (booking.pending_expiry_poll_minutes), not from any HTTP route —
+    (booking.pendingExpiryPollMinutes), not from any HTTP route —
     there's no request to hang side effects (notification, webhook,
     calendar cleanup) off, so this only does the state transition and
     returns the newly-expired appointments (serialized) for the caller
     to run those side effects against, the same division of
     responsibility the routers already use for a normal cancel. A
-    no-op, returning [], when booking.pending_expiry_hours is 0."""
+    no-op, returning [], when booking.pendingExpiryHours is 0."""
     cfg = _booking_config(db)
     cutoff = _pending_cutoff(cfg)
     if cutoff is None:
@@ -623,3 +642,90 @@ def expire_stale_pending_appointments(db: Session) -> list[dict]:
         appt.notes = f"{prefix}\n{appt.notes}" if appt.notes else prefix
         expired.append(_serialize(db, appt))
     return expired
+
+
+# ── Shared post-write side effects (notification/webhook/calendar sync) ──
+# A visitor can create/cancel/reschedule an appointment two ways — the
+# booking form (routers/public_booking.py) or the chat assistant's tools
+# (chat_tools.py) — and both must fire identical notifications, webhook
+# events, and calendar-sync calls so neither path feels like a second-
+# class citizen. That identical sequence used to be maintained as two
+# independent copies (chat_tools.py's own comments said "mirror
+# routers/public_booking.py exactly" at each of the three call sites) —
+# real duplication, not just similar-looking code, so it's extracted
+# here once instead of drifting between the two over time.
+#
+# Deliberately NOT reused by routers/admin_booking.py: admin's
+# accept/reject/cancel/reschedule fire different notifications entirely
+# (notify_booking_accepted/declined vs. confirmed/requested) — a
+# genuinely different sequence, not the same one duplicated, so forcing
+# it through these helpers would either change admin behavior or need a
+# branchy parameter that defeats the point of sharing.
+
+def finalize_created_appointment(db: Session, result: dict) -> dict:
+    """Call immediately after create_appointment(). Commits the new
+    appointment first (durable before any side effect can fail), then —
+    only if creation actually succeeded — sends the requested/confirmed
+    notification and webhook event, creates the Google Calendar event
+    for an immediately-confirmed booking, and commits again (calendar
+    sync may itself have touched the session, e.g. refreshing a token).
+    No-ops (just the first commit) on a failed result."""
+    from app import calendar_sync_service, notification_service, webhook_service
+
+    db.commit()
+    if not result["ok"]:
+        return result
+    appt = result["appointment"]
+    if appt["status"] == "pending":
+        notification_service.notify_booking_requested(db, appt)
+        webhook_service.dispatch_event(db, "booking.requested", appt)
+    else:
+        notification_service.notify_booking_confirmed(db, appt)
+        webhook_service.dispatch_event(db, "booking.confirmed", appt)
+        event_id = calendar_sync_service.create_event_for_appointment(db, result["id"])
+        if event_id:
+            appt["externalEventId"] = event_id
+    db.commit()
+    return result
+
+
+def finalize_cancelled_appointment(db: Session, result: dict, appt_id: str) -> dict:
+    """Call immediately after cancel_appointment(). Only fires
+    notification/webhook/calendar-cleanup on a genuine new cancellation
+    — never on already_cancelled (idempotent replay) or a failed
+    lookup, so cancelling the same appointment twice doesn't double-send
+    a cancellation email."""
+    from app import calendar_sync_service, notification_service, webhook_service
+
+    db.commit()
+    if result["ok"] and not result.get("already_cancelled"):
+        notification_service.notify_booking_cancelled(db, result["appointment"])
+        webhook_service.dispatch_event(db, "booking.cancelled", result["appointment"])
+        calendar_sync_service.delete_event_for_appointment(db, appt_id)
+        result["appointment"]["externalEventId"] = None
+        db.commit()
+    return result
+
+
+def finalize_rescheduled_appointment(db: Session, result: dict, appt_id: str) -> dict:
+    """Call immediately after reschedule_appointment(). On success,
+    PATCHes the linked Google event to the new time (or creates one if
+    there wasn't one yet) for an appointment that's confirmed after the
+    move; for one that's still pending, deletes any existing linked
+    event instead (see public_booking.py's original comment: a pending
+    appointment shouldn't hold a calendar slot until confirmed)."""
+    from app import calendar_sync_service, notification_service, webhook_service
+
+    db.commit()
+    if result["ok"]:
+        notification_service.notify_booking_rescheduled(db, result["appointment"])
+        webhook_service.dispatch_event(db, "booking.rescheduled", result["appointment"])
+        if result["appointment"]["status"] != "pending":
+            event_id = calendar_sync_service.update_event_for_appointment(db, appt_id)
+            if event_id:
+                result["appointment"]["externalEventId"] = event_id
+        else:
+            calendar_sync_service.delete_event_for_appointment(db, appt_id)
+            result["appointment"]["externalEventId"] = None
+        db.commit()
+    return result

@@ -66,7 +66,7 @@ export const api = {
   },
 
   async getSlots(date, serviceId) {
-    const qs = serviceId ? `booking/slots?date=${date}&service_id=${serviceId}` : `booking/slots?date=${date}`;
+    const qs = serviceId ? `booking/slots?date=${date}&serviceId=${serviceId}` : `booking/slots?date=${date}`;
     const data = await tryFetch(qs);
     if (data) return data.slots;
     return mockSlotsFor(date);

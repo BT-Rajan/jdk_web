@@ -1,7 +1,7 @@
 import datetime as dt
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
-from pydantic import BaseModel, Field
+from pydantic import Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -10,6 +10,7 @@ from app.db import get_db
 from app.deps import get_current_admin, get_current_session
 from app.models import AdminSession, AdminUser, AuditLog
 from app.rate_limit import limiter
+from app.schema_base import CamelModel
 from app.security import (
     SESSION_COOKIE_NAME,
     sign_session_id,
@@ -19,12 +20,12 @@ from app.security import (
 router = APIRouter(prefix="/admin/api/auth", tags=["admin-auth"])
 
 
-class LoginRequest(BaseModel):
+class LoginRequest(CamelModel):
     username: str = Field(min_length=1, max_length=64)
     password: str = Field(min_length=1, max_length=256)
 
 
-class LoginResponse(BaseModel):
+class LoginResponse(CamelModel):
     username: str
     role: str
     csrf_token: str

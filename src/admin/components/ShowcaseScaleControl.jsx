@@ -27,7 +27,7 @@ export default function ShowcaseScaleControl({ scale, onScaleChange }) {
       .listShowcase()
       .then((list) => {
         if (cancelled || !Array.isArray(list)) return;
-        const first = list.find((i) => i.is_active !== false) || list[0];
+        const first = list.find((i) => i.isActive) || list[0];
         if (first?.url) setPhotoUrl(first.url);
       })
       .catch(() => {});

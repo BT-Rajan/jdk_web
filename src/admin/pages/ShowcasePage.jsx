@@ -24,6 +24,9 @@ export default function ShowcasePage() {
   const [uploadErrors, setUploadErrors] = useState([]);
   const [dragging, setDragging] = useState(false);
   const [reordering, setReordering] = useState(false);
+  // Thumbnail quick-delete: which photo is asking "sure?", and which is mid-request.
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
   const handleApiError = useCallback(
     (e) => (e.status === 401 ? handleSessionExpired() : setError(e.message)),
@@ -96,6 +99,21 @@ export default function ShowcasePage() {
   function handleDeleted(id) {
     setImages((prev) => prev.filter((i) => i.id !== id));
     navigate("/admin/showcase");
+  }
+
+  async function handleQuickDelete(id) {
+    setDeletingId(id);
+    setError("");
+    try {
+      await adminApi.deleteShowcase(id);
+      setImages((prev) => prev.filter((i) => i.id !== id));
+      if (selectedId === id) navigate("/admin/showcase");
+    } catch (e) {
+      handleApiError(e);
+    } finally {
+      setDeletingId(null);
+      setConfirmDeleteId(null);
+    }
   }
 
   const selectedIndex = images?.findIndex((i) => i.id === selectedId) ?? -1;
@@ -172,23 +190,60 @@ export default function ShowcasePage() {
           {images?.length > 0 && (
             <div className="showcase-grid">
               {images.map((img, i) => (
-                <button
-                  key={img.id}
-                  type="button"
-                  className={[
-                    "showcase-thumb",
-                    selectedId === img.id ? "is-selected" : "",
-                    img.isActive ? "" : "is-inactive",
-                  ].join(" ").trim()}
-                  aria-pressed={selectedId === img.id}
-                  aria-label={`Photo ${i + 1}${img.caption ? `: ${img.caption}` : ""}${img.isActive ? "" : " (hidden)"}`}
-                  onClick={() => navigate(`/admin/showcase/${img.id}`)}
-                >
-                  <img src={img.url} alt="" loading="lazy" draggable="false" />
-                  <span className="showcase-thumb-order">{i + 1}</span>
-                  {!img.isActive && <span className="showcase-thumb-flag">Hidden</span>}
-                  {img.caption && <span className="showcase-thumb-caption">{img.caption}</span>}
-                </button>
+                <div key={img.id} className="showcase-thumb-cell">
+                  <button
+                    type="button"
+                    className={[
+                      "showcase-thumb",
+                      selectedId === img.id ? "is-selected" : "",
+                      img.isActive ? "" : "is-inactive",
+                    ].join(" ").trim()}
+                    aria-pressed={selectedId === img.id}
+                    aria-label={`Photo ${i + 1}${img.caption ? `: ${img.caption}` : ""}${img.isActive ? "" : " (hidden)"}`}
+                    onClick={() => navigate(`/admin/showcase/${img.id}`)}
+                  >
+                    <img src={img.url} alt="" loading="lazy" draggable="false" />
+                    <span className="showcase-thumb-order">{i + 1}</span>
+                    {!img.isActive && <span className="showcase-thumb-flag">Hidden</span>}
+                    {img.caption && <span className="showcase-thumb-caption">{img.caption}</span>}
+                  </button>
+
+                  {/* Sibling of the thumb button, not a child — a button
+                      inside a button is invalid HTML and clicks misfire. */}
+                  {confirmDeleteId === img.id ? (
+                    <div className="showcase-thumb-confirm" role="alertdialog" aria-label="Confirm delete">
+                      <span>Delete this photo?</span>
+                      <div className="showcase-thumb-confirm-actions">
+                        <button
+                          type="button"
+                          className="showcase-thumb-yes"
+                          disabled={deletingId === img.id}
+                          onClick={() => handleQuickDelete(img.id)}
+                        >
+                          {deletingId === img.id ? "Deleting…" : "Yes, delete"}
+                        </button>
+                        <button
+                          type="button"
+                          className="showcase-thumb-no"
+                          disabled={deletingId === img.id}
+                          onClick={() => setConfirmDeleteId(null)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      className="showcase-thumb-delete"
+                      aria-label={`Delete photo ${i + 1}`}
+                      title="Delete photo"
+                      onClick={() => setConfirmDeleteId(img.id)}
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
               ))}
             </div>
           )}

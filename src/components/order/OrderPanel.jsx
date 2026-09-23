@@ -9,6 +9,7 @@ const TEXT = {
   en: {
     title: "Request an Order",
     subtitle: "Pick your products, tell us when you need them, and we'll follow up with a firm quote.",
+    sectionContact: "Your Details", sectionProducts: "Your Order", sectionDelivery: "Delivery",
     name: "Name", email: "Email", phone: "Phone (optional)",
     products: "Products", qty: "Qty", noProducts: "No products are available to order right now.",
     requiredDate: "Required by", notes: "Notes (optional)",
@@ -17,10 +18,12 @@ const TEXT = {
     errItems: "Please select at least one product.", errDate: "Please pick a required date.",
     successTitle: "Request received!", successBody: "Thanks — we'll be in touch shortly with a firm quote.",
     close: "Close", newOrder: "Start a new order",
+    itemsOne: "1 item selected", itemsMany: (n) => `${n} items selected`,
   },
   ar: {
     title: "طلب شراء",
     subtitle: "اختر المنتجات، وأخبرنا متى تحتاجها، وسنتابع معك بعرض سعر نهائي.",
+    sectionContact: "بياناتك", sectionProducts: "طلبك", sectionDelivery: "التسليم",
     name: "الاسم", email: "البريد الإلكتروني", phone: "الهاتف (اختياري)",
     products: "المنتجات", qty: "الكمية", noProducts: "لا توجد منتجات متاحة للطلب حالياً.",
     requiredDate: "التاريخ المطلوب", notes: "ملاحظات (اختياري)",
@@ -29,6 +32,7 @@ const TEXT = {
     errItems: "يرجى اختيار منتج واحد على الأقل.", errDate: "يرجى اختيار التاريخ المطلوب.",
     successTitle: "تم استلام طلبك!", successBody: "شكراً لك — سنتواصل معك قريباً بعرض سعر نهائي.",
     close: "إغلاق", newOrder: "طلب جديد",
+    itemsOne: "تم اختيار عنصر واحد", itemsMany: (n) => `تم اختيار ${n} عناصر`,
   },
 };
 
@@ -76,9 +80,12 @@ export default function OrderPanel({ open, onClose }) {
     [lineItems]
   );
 
-  function setQty(productId, value) {
-    const n = Math.max(0, Math.min(1000, Math.floor(Number(value) || 0)));
-    setQuantities((q) => ({ ...q, [productId]: n }));
+  function stepQty(productId, delta) {
+    setQuantities((q) => {
+      const current = Number(q[productId]) || 0;
+      const next = Math.max(0, Math.min(1000, current + delta));
+      return { ...q, [productId]: next };
+    });
   }
 
   function resetForCreate() {
@@ -122,7 +129,16 @@ export default function OrderPanel({ open, onClose }) {
       <div className="order-panel-header">
         <div>
           <p className="order-panel-title">{t.title}</p>
-          {!result && <p className="order-panel-subtitle">{t.subtitle}</p>}
+          {!result && (
+            lineItems.length > 0 ? (
+              <p className="order-panel-cart-badge">
+                {lineItems.length === 1 ? t.itemsOne : t.itemsMany(lineItems.length)}
+                {" · "}{estimatedTotal.toFixed(2)}
+              </p>
+            ) : (
+              <p className="order-panel-subtitle">{t.subtitle}</p>
+            )
+          )}
         </div>
         <button className="order-panel-close" onClick={onClose} aria-label={t.close}>✕</button>
       </div>
@@ -139,49 +155,74 @@ export default function OrderPanel({ open, onClose }) {
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
-            <label className="order-panel-label">{t.name}</label>
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} />
+            <div className="order-panel-section">
+              <p className="order-panel-section-title">{t.sectionContact}</p>
+              <label className="order-panel-label">{t.name}</label>
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)} maxLength={120} />
 
-            <label className="order-panel-label">{t.email}</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={254} />
+              <label className="order-panel-label">{t.email}</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={254} />
 
-            <label className="order-panel-label">{t.phone}</label>
-            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={40} />
+              <label className="order-panel-label">{t.phone}</label>
+              <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={40} />
+            </div>
 
-            <label className="order-panel-label">{t.products}</label>
-            {products.length === 0 ? (
-              <p className="order-panel-empty">{t.noProducts}</p>
-            ) : (
-              <div className="order-panel-products">
-                {products.map((p) => (
-                  <div key={p.id} className="order-panel-product-row">
-                    <div className="order-panel-product-info">
-                      <span className="order-panel-product-name">{p.name}</span>
-                      {p.description && <span className="order-panel-product-desc">{p.description}</span>}
-                      <span className="order-panel-product-price">{p.price.toFixed(2)} / {p.unit}</span>
-                    </div>
-                    <label className="order-panel-qty">
-                      <span>{t.qty}</span>
-                      <input
-                        type="number" min="0" max="1000"
-                        value={quantities[p.id] || ""}
-                        onChange={(e) => setQty(p.id, e.target.value)}
-                        placeholder="0"
-                      />
-                    </label>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className="order-panel-section">
+              <p className="order-panel-section-title">{t.sectionProducts}</p>
+              {products.length === 0 ? (
+                <p className="order-panel-empty">{t.noProducts}</p>
+              ) : (
+                <div className="order-panel-products">
+                  {products.map((p) => {
+                    const qty = Number(quantities[p.id]) || 0;
+                    return (
+                      <div
+                        key={p.id}
+                        className={`order-panel-product-row${qty > 0 ? " selected" : ""}`}
+                      >
+                        <div className="order-panel-product-info">
+                          <span className="order-panel-product-name">{p.name}</span>
+                          {p.description && <span className="order-panel-product-desc">{p.description}</span>}
+                          <span className="order-panel-product-price">{p.price.toFixed(2)} / {p.unit}</span>
+                        </div>
+                        <div className="order-panel-stepper">
+                          <button
+                            type="button"
+                            className="order-panel-stepper-btn"
+                            onClick={() => stepQty(p.id, -1)}
+                            disabled={qty === 0}
+                            aria-label={`-1 ${p.name}`}
+                          >
+                            −
+                          </button>
+                          <span className="order-panel-stepper-value">{qty}</span>
+                          <button
+                            type="button"
+                            className="order-panel-stepper-btn"
+                            onClick={() => stepQty(p.id, 1)}
+                            aria-label={`+1 ${p.name}`}
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
-            <label className="order-panel-label">{t.requiredDate}</label>
-            <input
-              type="date" min={todayIso} value={requiredDate}
-              onChange={(e) => setRequiredDate(e.target.value)}
-            />
+            <div className="order-panel-section">
+              <p className="order-panel-section-title">{t.sectionDelivery}</p>
+              <label className="order-panel-label">{t.requiredDate}</label>
+              <input
+                type="date" min={todayIso} value={requiredDate}
+                onChange={(e) => setRequiredDate(e.target.value)}
+              />
 
-            <label className="order-panel-label">{t.notes}</label>
-            <textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={1000} />
+              <label className="order-panel-label">{t.notes}</label>
+              <textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={1000} />
+            </div>
 
             {error && <p className="order-panel-error">{error}</p>}
 

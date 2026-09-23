@@ -53,6 +53,14 @@
   line-height: 1.4;
 }
 
+.order-panel-cart-badge {
+  margin-top: 2px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--gold);
+  line-height: 1.4;
+}
+
 .order-panel-close {
   background: none;
   border: none;
@@ -77,7 +85,26 @@
 .order-panel-body form {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0;
+}
+
+.order-panel-section {
+  padding-bottom: var(--space-4);
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--glass-border);
+}
+.order-panel-section:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+.order-panel-section-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.78rem;
+  color: var(--text);
+  margin-bottom: var(--space-2);
 }
 
 .order-panel-label {
@@ -130,6 +157,12 @@
   border: 1px solid var(--glass-border);
   border-radius: 2px;
   padding: 8px 10px;
+  transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+
+.order-panel-product-row.selected {
+  border-color: var(--gold-border, var(--gold));
+  background: color-mix(in srgb, var(--gold) 8%, transparent);
 }
 
 .order-panel-product-info {
@@ -157,21 +190,35 @@
   color: var(--gold);
 }
 
-.order-panel-qty {
+.order-panel-stepper {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 2px;
-  font-size: 0.6rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--muted);
+  gap: 6px;
   flex-shrink: 0;
 }
 
-.order-panel-qty input {
-  width: 56px !important;
+.order-panel-stepper-btn {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--glass-border);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--brand-bg) 90%, white 2%);
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.order-panel-stepper-btn:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
+.order-panel-stepper-btn:disabled { opacity: 0.35; }
+
+.order-panel-stepper-value {
+  min-width: 20px;
   text-align: center;
+  font-size: 0.82rem;
+  font-weight: 600;
 }
 
 .order-panel-error {

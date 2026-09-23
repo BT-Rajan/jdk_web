@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { to: "/admin", label: "Overview", end: true },
   { to: "/admin/leads", label: "Leads" },
   { to: "/admin/products", label: "Products" },
+  { to: "/admin/showcase", label: "Home Showcase" },
   { to: "/admin/knowledge", label: "Knowledge Base" },
   { to: "/admin/settings", label: "Settings" },
 ];

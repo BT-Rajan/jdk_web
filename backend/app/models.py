@@ -266,3 +266,28 @@ class Product(Base):
     updated_by: Mapped[str | None] = mapped_column(String(32), ForeignKey("admin_user.id"), nullable=True)
 
     __table_args__ = (Index("ix_product_active_position", "is_active", "position"),)
+
+
+class ShowcaseImage(Base):
+    """One photo in the public home page's showcase slideshow, uploaded
+    from the admin panel. `filename` is the server-generated name of the
+    file under settings.UPLOADS_DIR (never a client-supplied name) — the
+    public URL is derived from it (/uploads/<filename>) rather than
+    stored, so there's no way for a row to point anywhere but our own
+    uploads directory. `position` is the slideshow order; inactive rows
+    stay in the admin list (and on disk) but are hidden from the public
+    endpoint, so a photo can be pulled from the homepage without losing
+    it."""
+
+    __tablename__ = "showcase_image"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_uuid)
+    filename: Mapped[str] = mapped_column(String(64), nullable=False)
+    caption: Mapped[str] = mapped_column(String(200), default="", nullable=False)
+    position: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    updated_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
+    updated_by: Mapped[str | None] = mapped_column(String(32), ForeignKey("admin_user.id"), nullable=True)
+
+    __table_args__ = (Index("ix_showcase_image_active_position", "is_active", "position"),)

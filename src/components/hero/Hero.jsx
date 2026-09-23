@@ -6,6 +6,7 @@ import ClassicLayout from "./layouts/ClassicLayout.jsx";
 import SplitLayout from "./layouts/SplitLayout.jsx";
 import CenteredCardLayout from "./layouts/CenteredCardLayout.jsx";
 import EditorialLayout from "./layouts/EditorialLayout.jsx";
+import HomeShowcase from "../showcase/HomeShowcase.jsx";
 import "./Hero.css";
 
 // Keyed by theme.layoutTemplate (see backend/app/settings_registry.py).
@@ -103,6 +104,13 @@ export default function Hero({ onEnter, onNavigate }) {
         homeTopics={homeTopics}
         onTopicClick={handleTopicClick}
       />
+
+      {/* Photo slideshow (admin-uploaded — Admin > Home Showcase). Sits in
+          normal flow below whichever layout is active, so it works with
+          all four templates and never touches the chat composer above
+          it or the floating chat widget. Renders nothing until there's
+          at least one active photo. */}
+      <HomeShowcase />
 
       <footer className="hero-footer">© {new Date().getFullYear()} {branding.siteName}</footer>
     </div>

@@ -101,6 +101,10 @@ class InfraSettings(BaseSettings):
     # nothing secret is ever allowed to live under this directory.
     UPLOADS_DIR: Path = BASE_DIR / "data" / "uploads"
     MAX_UPLOAD_IMAGE_BYTES: int = 4 * 1024 * 1024  # 4 MB
+    # Home-page showcase photos (see routers/admin_showcase.py) are usually
+    # straight off a phone or camera, so they get a higher per-image cap
+    # than the brand assets above (logo/favicon).
+    MAX_SHOWCASE_IMAGE_BYTES: int = 10 * 1024 * 1024  # 10 MB
 
     @property
     def allowed_origins_list(self) -> list[str]:

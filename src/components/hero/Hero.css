@@ -527,13 +527,16 @@
    middle. Being a logical (inline-start) margin, this pushes the image
    further left in English and — since the page flips dir="rtl" for
    Arabic — further right in Arabic, automatically, with no separate
-   rule needed per language. */
+   rule needed per language. The row's own gap is kept near zero (the
+   outdent above is what makes room on the *outer* side) so the
+   showcase and the chat content sit close together on their shared
+   inner edge instead of leaving a visible band between them. */
 .hero-body-row {
   width: 100%;
   max-width: var(--content-max);
   display: flex;
   align-items: stretch;
-  gap: clamp(var(--section-gap), 6vw, 96px);
+  gap: clamp(0px, 0.6vw, 8px);
   padding-top: var(--section-gap);
   position: relative;
 }

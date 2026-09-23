@@ -1,5 +1,10 @@
 # systemd unit for the JDK backend (serves the public site, /admin,
-# and the API on one port via start_server.sh / gunicorn+uvicorn).
+# and the API on one port via start_server.sh -> a single uvicorn
+# process, no gunicorn/worker pool).
+#
+# This is an ALTERNATIVE to running it under PM2 (see
+# ecosystem.config.js) — pick one process manager, never both at once,
+# or they'll fight over the port and over restarting the process.
 #
 # Install:
 #   sudo cp deploy/jdk-web.service /etc/systemd/system/
@@ -21,7 +26,6 @@ User=www-data
 Group=www-data
 WorkingDirectory=/opt/jdk_web
 ExecStart=/opt/jdk_web/start_server.sh
-Environment=WEB_CONCURRENCY=3
 Restart=on-failure
 RestartSec=5
 # Without this, systemd treats ANY signal-terminated exit — including a

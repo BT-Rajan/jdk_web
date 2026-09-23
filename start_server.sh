@@ -6,14 +6,14 @@
 #  ecosystem.config.cjs) so PM2 does the restart/monitoring, not
 #  a second process manager on top of it.
 #
-#  First-time setup (no installer — do this once, by hand):
-#    npm install && npm run build
-#    cd backend && python3 -m venv venv && venv/bin/pip install -r requirements.txt
-#    cp backend/.env.example backend/.env   # then edit DATABASE_URL, ALLOWED_ORIGINS
-#    cd backend && venv/bin/python scripts/gen_secrets.py --write-env .env
-#    cd backend && venv/bin/python scripts/init_db.py
+#  This script assumes everything is already installed/configured — it
+#  does NOT set up the venv, .env, secrets, or run migrations. For that
+#  (first-time install, or pulling new code), use:
 #
-#  Run directly:
+#    ./setup.sh       # first-time, or after pulling code with new deps/migrations
+#    ./deploy.sh       # setup.sh + restart PM2 + health check, in one step
+#
+#  Run directly (rare — normally PM2 execs this):
 #    ./start_server.sh
 #
 #  Run under PM2 (recommended for production):

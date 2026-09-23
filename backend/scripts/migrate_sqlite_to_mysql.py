@@ -3,20 +3,21 @@
 One-time data migration: copies every row from an existing SQLite
 database into the MySQL database configured by DATABASE_URL (.env).
 
-Schema creation is not a separate step — SQLAlchemy's
-Base.metadata.create_all() already builds an identical schema on any
-dialect (see app/db.py's dialect-agnostic design note), so this script
-creates the tables on the MySQL side itself before copying rows.
+Schema creation is NOT this script's job — run `alembic upgrade head`
+against the MySQL target first (same as any other deploy; see
+setup.sh/deploy.sh). This only copies rows, and refuses to run (in
+non-dry-run mode) if the target schema isn't there yet.
 
 Usage:
     # DATABASE_URL in .env must already point at the target mysql+pymysql:// URL
+    alembic upgrade head
     python scripts/migrate_sqlite_to_mysql.py --sqlite-path ./data/jdk.db
 
     # Preview row counts without writing anything:
     python scripts/migrate_sqlite_to_mysql.py --sqlite-path ./data/jdk.db --dry-run
 
-    # If the target tables already have rows (e.g. you ran init_db.py's
-    # bootstrap-admin step against MySQL first), wipe them before copying:
+    # If the target tables already have rows (e.g. you ran seed_admin.py
+    # against MySQL first), wipe them before copying:
     python scripts/migrate_sqlite_to_mysql.py --sqlite-path ./data/jdk.db --truncate
 
 Safe to re-run in --dry-run mode any number of times. Without
@@ -40,6 +41,11 @@ from app.models import (  # noqa: F401 — import registers every table on Base.
     ContentPageVersion, FaqItem, Appointment, AppointmentQuestionAnswer, Service,
     ServiceCustomQuestion, AvailabilityRule, Webhook, WebhookDelivery,
     CalendarCredential, Lead, KnowledgeSource,
+)
+
+_MISSING_SCHEMA_HELP = (
+    "FATAL: target MySQL database has no tables yet.\n"
+    "Run `alembic upgrade head` against it first, then re-run this script."
 )
 
 
@@ -69,18 +75,21 @@ def main() -> None:
     print(f"Source: sqlite:///{sqlite_path}")
     print(f"Target: {settings.DATABASE_URL}")
 
-    if not args.dry_run:
-        Base.metadata.create_all(bind=target_engine)
-        print("Target schema created/verified.\n")
+    target_tables = set(inspect(target_engine).get_table_names())
+    if not args.dry_run and not target_tables:
+        print(_MISSING_SCHEMA_HELP, file=sys.stderr)
+        sys.exit(1)
 
     tables = Base.metadata.sorted_tables  # parent tables before children (FK order)
     total_copied = 0
 
     with source_engine.connect() as src, target_engine.connect() as tgt:
-        # Dry-run never creates the target schema, so a table may not
-        # exist yet on a brand-new target — that's fine, it just means
-        # "0 rows there" rather than a query error.
-        target_has_table = set(inspect(target_engine).get_table_names()) if args.dry_run else None
+        # In dry-run mode the target schema may not exist yet (e.g.
+        # previewing before ever running `alembic upgrade head` against
+        # it) — that's fine, it just means "0 rows there" rather than a
+        # query error. Outside dry-run, target_tables is already
+        # confirmed non-empty above.
+        target_has_table = target_tables
 
         # FK order is respected by sorted_tables already; disabling checks
         # too is just cheap insurance against ordering surprises.

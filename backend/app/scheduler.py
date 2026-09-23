@@ -101,7 +101,7 @@ def start() -> None:
             expiry_minutes = get_setting(db, "booking.pending_expiry_poll_minutes")
     except Exception:
         # Settings table may not exist yet (fresh install before
-        # init_db.py has run) - skip scheduling rather than crash startup.
+        # `alembic upgrade head` has run) - skip scheduling rather than crash startup.
         logger.exception("Could not read scheduler intervals at startup; background polling disabled")
         return
 

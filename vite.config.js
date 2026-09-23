@@ -24,7 +24,7 @@ export default defineConfig({
       // the same relative-path fetch("api/...") calls work both in dev
       // and in the built app.
       "/api": {
-        target: "http://localhost:8001",
+        target: "http://localhost:7001",
         changeOrigin: true,
         // Don't hard-fail dev server startup if the backend isn't running;
         // the client already falls back to bundled content on error.
@@ -36,7 +36,7 @@ export default defineConfig({
       // separate prefix from "/api" above since the admin's session
       // cookie/CSRF flow is scoped under /admin/api on the backend.
       "/admin/api": {
-        target: "http://localhost:8001",
+        target: "http://localhost:7001",
         changeOrigin: true,
         configure: (proxy) => {
           proxy.on("error", () => {});
@@ -46,7 +46,7 @@ export default defineConfig({
       // from backend/data/uploads/, referenced by branding.logo_url /
       // branding.favicon_url as root-relative paths.
       "/uploads": {
-        target: "http://localhost:8001",
+        target: "http://localhost:7001",
         changeOrigin: true,
         configure: (proxy) => {
           proxy.on("error", () => {});

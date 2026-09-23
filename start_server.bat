@@ -26,14 +26,14 @@ if not exist "%VENV_PY%" (
 cd /d "%BACKEND_DIR%"
 echo JDK server starting...
 echo.
-echo   Public site        http://localhost:8001/
-echo   Admin dashboard    http://localhost:8001/admin
+echo   Public site        http://localhost:7001/
+echo   Admin dashboard    http://localhost:7001/admin
 echo.
 echo Leave this window open while you use the site.
 echo Press Ctrl+C to stop the server.
 echo.
 
-"%VENV_PY%" -m uvicorn app.main:app --host 127.0.0.1 --port 8001
+"%VENV_PY%" -m uvicorn app.main:app --host 127.0.0.1 --port 7001
 
 echo.
 echo Server stopped.

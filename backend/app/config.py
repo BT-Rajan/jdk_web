@@ -54,7 +54,7 @@ class InfraSettings(BaseSettings):
 
     # --- Network ---------------------------------------------------------
     HOST: str = "127.0.0.1"
-    PORT: int = 8001
+    PORT: int = 7001
     # Comma-separated list of origins allowed to call the API. Same-origin
     # requests don't need this; keep it explicit rather than "*".
     ALLOWED_ORIGINS: str = ""

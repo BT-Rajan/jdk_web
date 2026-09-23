@@ -31,7 +31,7 @@ fi
 cd "$BACKEND_DIR"
 
 HOST="${HOST:-127.0.0.1}"
-PORT="${PORT:-8001}"
+PORT="${PORT:-7001}"
 # Gunicorn's own rule of thumb is (2 x CPU cores) + 1; 3 is a
 # reasonable default for a small VM. Override with WEB_CONCURRENCY.
 WORKERS="${WEB_CONCURRENCY:-3}"

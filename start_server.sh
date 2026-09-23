@@ -3,7 +3,7 @@
 #  Starts the already-installed JDK backend (which also serves
 #  the built public site and admin dashboard) as a single
 #  uvicorn process — meant to be run under PM2 (see
-#  ecosystem.config.js) so PM2 does the restart/monitoring, not
+#  ecosystem.config.cjs) so PM2 does the restart/monitoring, not
 #  a second process manager on top of it.
 #
 #  First-time setup (no installer — do this once, by hand):
@@ -17,7 +17,7 @@
 #    ./start_server.sh
 #
 #  Run under PM2 (recommended for production):
-#    pm2 start ecosystem.config.js
+#    pm2 start ecosystem.config.cjs
 #    pm2 save
 #
 #  Env overrides: HOST, PORT.

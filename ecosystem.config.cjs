@@ -7,7 +7,7 @@
 //   cd backend && python3 -m venv venv && venv/bin/pip install -r requirements.txt
 //
 // Usage:
-//   pm2 start ecosystem.config.js
+//   pm2 start ecosystem.config.cjs
 //   pm2 save          # persist across reboots (with pm2 startup)
 //   pm2 logs jdk-web
 //   pm2 restart jdk-web

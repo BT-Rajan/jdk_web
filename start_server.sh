@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # ============================================================
 #  Starts the already-installed JDK backend (which also serves
-#  the built public site and admin dashboard) under gunicorn +
-#  uvicorn workers — the standard Linux production combo, and
-#  what systemd should point at (see deploy/jdk-web.service).
+#  the built public site and admin dashboard) as a single
+#  uvicorn process — meant to be run under PM2 (see
+#  ecosystem.config.js) so PM2 does the restart/monitoring, not
+#  a second process manager on top of it.
 #
 #  First-time setup (no installer — do this once, by hand):
 #    npm install && npm run build
@@ -12,9 +13,14 @@
 #    cd backend && venv/bin/python scripts/gen_secrets.py --write-env .env
 #    cd backend && venv/bin/python scripts/init_db.py
 #
-#      ./start_server.sh
+#  Run directly:
+#    ./start_server.sh
 #
-#  Env overrides: HOST, PORT, WEB_CONCURRENCY (worker count).
+#  Run under PM2 (recommended for production):
+#    pm2 start ecosystem.config.js
+#    pm2 save
+#
+#  Env overrides: HOST, PORT.
 # ============================================================
 set -euo pipefail
 
@@ -30,12 +36,12 @@ fi
 
 # Catches the #1 cause of "PM2 shows it running for a second then nothing
 # is listening, no visible error": the venv exists but is stale — e.g.
-# requirements.txt gained gunicorn after this venv was created. Without
-# this check, `python -m gunicorn` just fails at import and the process
-# exits before binding any port or printing anything under a process
-# manager's captured (non-interactive) output.
-if ! "$VENV_PY" -c "import gunicorn, uvicorn.workers" >/dev/null 2>&1; then
-  echo "ERROR: gunicorn/uvicorn not importable in $VENV_PY" >&2
+# requirements.txt gained a dependency after this venv was created.
+# Without this check, `python -m uvicorn` just fails at import and the
+# process exits before binding any port or printing anything under a
+# process manager's captured (non-interactive) output.
+if ! "$VENV_PY" -c "import uvicorn" >/dev/null 2>&1; then
+  echo "ERROR: uvicorn not importable in $VENV_PY" >&2
   echo "        Your venv is likely stale. Run:" >&2
   echo "        cd backend && venv/bin/pip install -r requirements.txt" >&2
   exit 1
@@ -50,9 +56,6 @@ cd "$BACKEND_DIR"
 
 HOST="${HOST:-127.0.0.1}"
 PORT="${PORT:-7001}"
-# Gunicorn's own rule of thumb is (2 x CPU cores) + 1; 3 is a
-# reasonable default for a small VM. Override with WEB_CONCURRENCY.
-WORKERS="${WEB_CONCURRENCY:-3}"
 
 if (exec 3<>"/dev/tcp/$HOST/$PORT") 2>/dev/null; then
   exec 3>&- 3<&-
@@ -65,14 +68,11 @@ echo "JDK server starting..."
 echo
 echo "  Public site        http://$HOST:$PORT/"
 echo "  Admin dashboard    http://$HOST:$PORT/admin"
-echo "  Workers            $WORKERS"
 echo
 
-# exec (not a subshell) so systemd/PM2/whatever manages this process
-# can signal it directly for graceful shutdown/restart.
-exec "$VENV_PY" -m gunicorn app.main:app \
-  --worker-class uvicorn.workers.UvicornWorker \
-  --workers "$WORKERS" \
-  --bind "$HOST:$PORT" \
-  --access-logfile - \
-  --error-logfile -
+# exec (not a subshell) so PM2/systemd/whatever manages this process can
+# signal it directly for shutdown/restart, and so it's the only OS
+# process serving this app — no gunicorn master + worker pool underneath.
+exec "$VENV_PY" -m uvicorn app.main:app \
+  --host "$HOST" \
+  --port "$PORT"

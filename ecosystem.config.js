@@ -27,7 +27,11 @@ module.exports = {
       autorestart: true,
       watch: false,
       env: {
-        HOST: "127.0.0.1",
+        // 0.0.0.0 so the app is reachable on the server's public IP, not
+        // just localhost, when nothing else (nginx, etc.) is proxying to
+        // it — see start_server.sh's own default (127.0.0.1) for local/dev
+        // runs, which this overrides for the PM2/production entry point.
+        HOST: "0.0.0.0",
         PORT: "7001",
       },
     },

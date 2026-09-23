@@ -19,3 +19,10 @@ export async function fetchContentPages() {
 export async function fetchFaqItems() {
   return await tryFetch("content/faq");
 }
+
+// Active home-page showcase photos, in slideshow order:
+// [{ id, url, caption }]. Resolves to null if the backend is
+// unreachable — the showcase section then simply doesn't render.
+export async function fetchShowcase() {
+  return await tryFetch("showcase");
+}

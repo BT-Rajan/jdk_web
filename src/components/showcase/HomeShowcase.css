@@ -1,0 +1,136 @@
+/* ── Home showcase — looping photo slideshow below the hero. In normal
+   page flow (see Hero.jsx), so it never overlaps the quick-chat box or
+   the fixed-position chat/order popovers. All colors/radii come from the
+   site's theme tokens, so it follows whichever theme preset is active. */
+.home-showcase {
+  width: 100%;
+  max-width: var(--content-max);
+  padding: var(--section-gap) 0 var(--section-padding-block);
+  animation: fade-in 0.8s var(--ease);
+}
+
+.home-showcase-title {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-h2);
+  letter-spacing: 0.01em;
+  color: var(--gold);
+  text-align: start;
+}
+[dir="rtl"] .home-showcase-title { font-family: var(--font-ar); font-weight: 500; }
+
+.home-showcase-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  /* Very wide screens: cap the height rather than let the frame grow
+     taller than the viewport. */
+  max-height: 72dvh;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--gold) 25%, transparent);
+  background: var(--navy-2);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+  isolation: isolate;
+}
+
+/* Slides stack in one spot and are shown purely by opacity/z-index:
+     (none)     hidden, waiting its turn (mounted so it's preloaded)
+     .is-prev   the photo dissolving out — kept fully opaque underneath
+     .is-active the photo dissolving in, on top
+   Only the incoming photo carries the transition; the outgoing one just
+   stays put and is hidden once it's fully covered (see HomeShowcase.jsx). */
+.home-showcase-slide {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.home-showcase-slide.is-prev { opacity: 1; z-index: 1; }
+.home-showcase-slide.is-active {
+  opacity: 1;
+  z-index: 2;
+  transition: opacity var(--showcase-fade-ms, 2000ms) ease-in-out;
+}
+
+.home-showcase-backdrop {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: blur(28px) brightness(0.5) saturate(1.1);
+  /* Scaled past the edges so the blur's soft fringe is cropped away. */
+  transform: scale(1.2);
+}
+
+.home-showcase-img {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.home-showcase-caption {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  padding: var(--space-6) var(--space-5) var(--space-4);
+  /* Extra bottom room when dots are shown beneath it. */
+  padding-bottom: calc(var(--space-4) + 22px);
+  color: var(--white-soft);
+  font-size: var(--fs-body);
+  line-height: 1.4;
+  text-align: start;
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.7) 100%);
+}
+
+.home-showcase-dots {
+  position: absolute;
+  inset-inline: 0;
+  bottom: var(--space-2);
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px;
+  padding-inline: var(--space-3);
+}
+/* 20px hit area around an 8px dot — a bare 8px target is too small to
+   tap reliably on a phone. */
+.home-showcase-dot {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+.home-showcase-dot::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--white-soft) 45%, transparent);
+  transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.home-showcase-dot:hover:not([aria-disabled="true"])::before { background: var(--white-soft); }
+.home-showcase-dot.is-active::before { background: var(--gold); transform: scale(1.25); }
+.home-showcase-dot[aria-disabled="true"] { cursor: default; }
+.home-showcase-dot:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; border-radius: 50%; }
+
+@media (max-width: 600px) {
+  .home-showcase-frame { aspect-ratio: 4 / 3; }
+  .home-showcase-caption { padding-inline: var(--space-4); font-size: var(--fs-sm); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-showcase { animation: none; }
+  .home-showcase-slide.is-active { transition: none; }
+}

@@ -3,7 +3,7 @@
 # process, no gunicorn/worker pool).
 #
 # This is an ALTERNATIVE to running it under PM2 (see
-# ecosystem.config.js) — pick one process manager, never both at once,
+# ecosystem.config.cjs) — pick one process manager, never both at once,
 # or they'll fight over the port and over restarting the process.
 #
 # Install:

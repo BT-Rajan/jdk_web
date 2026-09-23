@@ -1,3 +1,9 @@
+/* ──────────────────────────────────────────────────────────
+   Shared side detail-panel primitives, used by the admin's
+   create/edit panels (Leads, FAQ, Pages, ...): the sticky panel
+   shell, header, form fields, and save/delete buttons.
+   ────────────────────────────────────────────────────────── */
+
 .service-panel {
   padding: var(--space-4);
   display: flex;
@@ -103,48 +109,4 @@
 .service-panel-delete:hover {
   border-color: var(--danger);
   background: var(--danger-bg);
-}
-
-.question-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  margin-bottom: var(--space-2);
-}
-
-.question-row {
-  background: var(--bg);
-  border-radius: var(--radius-sm);
-  padding: 8px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.question-row-main {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: 13px;
-}
-
-.question-row-actions {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.question-add-form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  background: var(--bg);
-  border-radius: var(--radius-sm);
-  padding: var(--space-3);
-  margin-bottom: var(--space-2);
-}
-
-.question-add-actions {
-  display: flex;
-  gap: var(--space-2);
 }

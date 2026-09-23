@@ -16,7 +16,6 @@ import BackgroundIntensityPicker from "../components/BackgroundIntensityPicker.j
 import DensityPicker from "../components/DensityPicker.jsx";
 import SectionRhythmPicker from "../components/SectionRhythmPicker.jsx";
 import LogoZoomControl from "../components/LogoZoomControl.jsx";
-import CalendarSyncConnector from "../components/CalendarSyncConnector.jsx";
 import WebhooksPage from "./WebhooksPage.jsx";
 import PagesPage from "./PagesPage.jsx";
 import FaqPage from "./FaqPage.jsx";
@@ -31,12 +30,10 @@ const CATEGORY_LABELS = {
   locale: "Language",
   contact: "Contact",
   features: "Features",
-  booking: "Booking",
   chat: "Chat / AI assistant",
   notifications: "Notifications",
   templates: "Message templates",
   copy: "On-screen text",
-  calendarSync: "Calendar Sync",
   webhooks: "Webhooks",
   pages: "Pages",
   faq: "FAQ",
@@ -328,8 +325,6 @@ export default function SettingsPage() {
                     </button>
                     {savedAt && <span className="settings-saved-msg">Saved.</span>}
                   </div>
-
-                  {categoryParam === "calendarSync" && <CalendarSyncConnector />}
                 </form>
               )}
             </div>

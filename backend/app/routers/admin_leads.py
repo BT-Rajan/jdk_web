@@ -1,16 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app import leads_service
 from app.db import get_db
 from app.deps import get_current_admin, require_csrf
 from app.models import AdminUser
+from app.schema_base import CamelModel
 
 router = APIRouter(prefix="/admin/api/leads", tags=["admin-leads"], dependencies=[Depends(require_csrf)])
 
 
-class LeadOut(BaseModel):
+class LeadOut(CamelModel):
     id: str
     name: str
     email: str
@@ -23,12 +23,12 @@ class LeadOut(BaseModel):
     updated_at: str
 
 
-class LeadUpdateIn(BaseModel):
+class LeadUpdateIn(CamelModel):
     status: str | None = None
     notes: str | None = None
 
 
-class LeadCreateIn(BaseModel):
+class LeadCreateIn(CamelModel):
     name: str = ""
     email: str
     phone: str = ""
@@ -46,7 +46,7 @@ def _serialize(lead) -> LeadOut:
 
 @router.get("", response_model=list[LeadOut])
 def list_leads(
-    status_filter: str | None = None, source: str | None = None,
+    status_filter: str | None = Query(default=None, alias="statusFilter"), source: str | None = None,
     admin: AdminUser = Depends(get_current_admin), db: Session = Depends(get_db),
 ):
     return [_serialize(l) for l in leads_service.list_leads(db, status=status_filter, source=source)]

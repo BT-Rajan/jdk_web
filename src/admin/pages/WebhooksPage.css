@@ -1,4 +1,4 @@
-@import "./ServicesPage.css";
+@import "../styles/adminListPage.css";
 
 .webhooks-layout {
   display: grid;

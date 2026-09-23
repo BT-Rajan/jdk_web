@@ -3,7 +3,7 @@ import { adminApi } from "../api/client.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import PageHeader from "../components/PageHeader.jsx";
 import PageDetailPanel from "../components/PageDetailPanel.jsx";
-import "./ServicesPage.css";
+import "../styles/adminListPage.css";
 
 export default function PagesPage() {
   const { handleSessionExpired } = useAuth();

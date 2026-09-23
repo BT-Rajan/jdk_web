@@ -84,7 +84,7 @@ export default function WebhooksPage() {
                       {w.events.map((e) => <span key={e} className="mono-chip">{e}</span>)}
                     </div>
                   </td>
-                  <td><span className={`status-pill ${w.is_active ? "confirmed" : "cancelled"}`}>{w.is_active ? "active" : "inactive"}</span></td>
+                  <td><span className={`status-pill ${w.isActive ? "confirmed" : "cancelled"}`}>{w.isActive ? "active" : "inactive"}</span></td>
                 </tr>
               ))}
             </tbody>

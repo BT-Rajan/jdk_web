@@ -6,7 +6,7 @@ Deliberately few tables in Pass 1. The big one conceptually is
 how the reference app's sprawl happened — a new column and a new admin
 API endpoint for every setting), every configurable value is a row here,
 keyed by a dotted key that's validated against `settings_registry.py`.
-Later passes (booking, leads, chat, notifications) add their own
+Later passes (leads, chat, notifications, products) add their own
 domain tables, but *configuration* always flows through this one table.
 """
 from __future__ import annotations
@@ -14,7 +14,7 @@ from __future__ import annotations
 import datetime as dt
 import uuid
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, JSON, String, Text
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Index, Integer, JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -149,248 +149,10 @@ class FaqItem(Base):
     updated_by: Mapped[str | None] = mapped_column(String(32), ForeignKey("admin_user.id"), nullable=True)
 
 
-class Appointment(Base):
-    """One row per booking. `date`/`time` are kept as separate strings
-    (ISO date, 'HH:MM') rather than a single datetime because every
-    piece of booking logic — slot generation, availability, the
-    workdays/hours settings — is inherently day-and-slot shaped, not a
-    continuous timestamp; storing it that way avoids timezone-conversion
-    bugs creeping into what's fundamentally a "which slot" question.
-    The confirmation code (id) is the primary key and is what a visitor
-    quotes back to look up, cancel, or reschedule — always paired with
-    the email on file, checked in booking_service.py."""
-
-    __tablename__ = "appointment"
-
-    id: Mapped[str] = mapped_column(String(16), primary_key=True)
-    date: Mapped[str] = mapped_column(String(10), nullable=False, index=True)  # YYYY-MM-DD
-    time: Mapped[str] = mapped_column(String(5), nullable=False)  # HH:MM, 24h
-    # The IANA timezone booking.timezone held *at the moment this
-    # appointment was booked* (or last rescheduled) — snapshotted here
-    # rather than re-read live from settings by everything that later
-    # needs to turn date/time back into an actual instant (notice-window
-    # checks, the Google Calendar event, drift detection). Without this,
-    # an admin changing booking.timezone after appointments exist
-    # silently reinterprets every existing appointment's stored
-    # date/time under the new zone. Nullable for rows created before
-    # this column existed; every read falls back to the live
-    # booking.timezone setting when null (see booking_service.py /
-    # calendar_sync_service.py), which is exactly today's behavior for
-    # that legacy data — this can only protect appointments booked from
-    # here on, not retroactively recover a timezone nothing recorded.
-    timezone: Mapped[str | None] = mapped_column(String(64), nullable=True)
-    lang: Mapped[str] = mapped_column(String(8), default="en", nullable=False)  # for notification template language
-    name: Mapped[str] = mapped_column(String(120), nullable=False)
-    email: Mapped[str] = mapped_column(String(254), nullable=False, index=True)
-    phone: Mapped[str] = mapped_column(String(40), default="", nullable=False)
-    # Free-text description, kept for appointments made before a Service
-    # catalog existed (and as a fallback if someone books without
-    # picking one). Not shown on the booking form once service_id is set.
-    service: Mapped[str] = mapped_column(String(200), default="", nullable=False)
-    # Nullable on purpose: a booking made against the catalog (Pass 8)
-    # points here; nothing enforces every booking having one, since a
-    # site can run booking without ever defining a Service, exactly as
-    # it did before this pass. When null, slot duration/buffers fall
-    # back to the global booking.slotMinutes setting — see
-    # booking_service.py.
-    service_id: Mapped[str | None] = mapped_column(String(32), ForeignKey("service.id"), nullable=True)
-    notes: Mapped[str] = mapped_column(String(1000), default="", nullable=False)
-    # confirmed | pending | cancelled. Pass 10 (docs/CALENDAR_MODULE_PLAN.md):
-    # a Service with requires_confirmation=True produces a "pending"
-    # booking instead of an immediately "confirmed" one — see
-    # booking_service.py::create_appointment. A pending appointment
-    # holds its slot exactly like a confirmed one (booking_service.py
-    # ::_booked_intervals), a deliberate product decision documented in
-    # PASS10_NOTES.md: double-booking while awaiting approval is a
-    # worse failure mode than a slot briefly looking unavailable.
-    status: Mapped[str] = mapped_column(String(16), default="confirmed", nullable=False)
-    # Set only when a pending appointment is admin-accepted; stays null
-    # for anything that was auto-confirmed, so "was this ever pending"
-    # is reconstructable from the data without a separate history table.
-    confirmed_at: Mapped[dt.datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    # Pass 12: set when this appointment's confirmation created a
-    # matching event on the connected Google Calendar, so a later
-    # cancel/reschedule knows which external event to delete/update
-    # instead of leaving a stale entry on the business's real calendar.
-    # Null for every appointment made before sync existed, and for any
-    # made while sync was off or event-creation itself failed
-    # (best-effort — see calendar_sync_service.py).
-    external_event_id: Mapped[str | None] = mapped_column(String(512), nullable=True)
-    # Set by calendar_sync_service.detect_drift when the linked Google
-    # Calendar event no longer matches this row (edited or deleted
-    # directly on Google's side rather than through this app) — a short
-    # human-readable description of the mismatch, or null when nothing's
-    # flagged. Cleared automatically once the mismatch resolves (another
-    # sync sees them match again) or an admin acts on it (reschedule/
-    # edit-in-place pushes our side back to Google).
-    calendar_drift: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
-    updated_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
-
-    __table_args__ = (Index("ix_appointment_date_status", "date", "status"),)
-
-
-class BookingLock(Base):
-    """A single sentinel row (id=1, always present) used purely as a
-    serialization point for booking_service._acquire_booking_lock.
-
-    Why this exists: create_appointment/reschedule_appointment read
-    available_slots() and then insert/move an appointment as two
-    separate steps. Without something forcing concurrent requests to
-    run that check-then-write one at a time, two visitors requesting
-    the same slot in the same instant can both pass the availability
-    check before either has committed, and both get booked into it.
-    _acquire_booking_lock closes that gap by taking a real write-lock
-    on this row (via UPDATE) before the check runs, and holding it
-    until the caller's transaction commits or rolls back — so the next
-    request's check can't start until the previous request's write has
-    actually landed. See booking_service.py for the acquire/seed logic."""
-
-    __tablename__ = "booking_lock"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    touched_at: Mapped[str | None] = mapped_column(String(32), nullable=True)
-
-
-class AppointmentQuestionAnswer(Base):
-    """One row per answer to a Service's custom intake question,
-    captured at booking time. `question_label` is a denormalized copy
-    of the question's label as it read when this appointment was
-    booked — if an admin later edits or deletes the question, this
-    historical answer still reads sensibly instead of showing a blank
-    or a dangling id. `question_id` is kept (nullable, SET NULL on
-    delete) purely so a future UI *can* still link back to the live
-    question when it still exists; nothing depends on it being set."""
-
-    __tablename__ = "appointment_question_answer"
-
-    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_uuid)
-    appointment_id: Mapped[str] = mapped_column(
-        String(16), ForeignKey("appointment.id", ondelete="CASCADE"), nullable=False, index=True
-    )
-    question_id: Mapped[str | None] = mapped_column(
-        String(32), ForeignKey("service_custom_question.id", ondelete="SET NULL"), nullable=True
-    )
-    question_label: Mapped[str] = mapped_column(String(200), nullable=False)
-    answer: Mapped[str] = mapped_column(String(2000), default="", nullable=False)
-
-
-class Service(Base):
-    """One row per bookable service — the calendar module's equivalent
-    of Cal.com's per-user "event type," scoped to this single business
-    instead of to an account. This is Pass 0 of the plan in
-    docs/CALENDAR_MODULE_PLAN.md: the admin-managed catalog of services
-    exists as its own resource, but the public booking flow
-    (app/booking_service.py, app/models.py::Appointment) is not yet
-    wired to it — that migration is the next slice of Pass 8. Until
-    then `booking.slotMinutes` in the settings registry remains the
-    live scheduling value; it becomes only a default once Appointment
-    gains a service_id.
-
-    `translations` follows the same {lang_code: {field_key: str}}
-    pattern as ContentPage, for a public-facing name/description once
-    the public booking page is updated to show these."""
-
-    __tablename__ = "service"
-
-    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_uuid)
-    name: Mapped[str] = mapped_column(String(120), nullable=False)
-    slug: Mapped[str] = mapped_column(String(64), unique=True, index=True, nullable=False)
-    duration_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
-    buffer_before_minutes: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    buffer_after_minutes: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    requires_confirmation: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    payment_required: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    # in_person | phone | link_provided — no embedded video-conferencing
-    # integration; see docs/CALENDAR_MODULE_PLAN.md §2.5 for why that
-    # was deliberately dropped from this plan.
-    location_type: Mapped[str] = mapped_column(String(20), default="in_person", nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    position: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    translations: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)
-    created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
-    updated_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
-    updated_by: Mapped[str | None] = mapped_column(String(32), ForeignKey("admin_user.id"), nullable=True)
-
-    questions: Mapped[list["ServiceCustomQuestion"]] = relationship(
-        back_populates="service", cascade="all, delete-orphan", order_by="ServiceCustomQuestion.position"
-    )
-
-    __table_args__ = (Index("ix_service_active_position", "is_active", "position"),)
-
-
-class ServiceCustomQuestion(Base):
-    """A per-service intake question for the public booking form
-    (rendered once the public flow adopts Service in a later pass).
-    Its own table rather than a JSON column on Service, since questions
-    are added/removed/reordered independently of the service they
-    belong to, and each answer will need a stable id to reference back
-    to (AppointmentQuestionAnswer, added alongside the public wiring)."""
-
-    __tablename__ = "service_custom_question"
-
-    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_uuid)
-    service_id: Mapped[str] = mapped_column(
-        String(32), ForeignKey("service.id", ondelete="CASCADE"), nullable=False, index=True
-    )
-    kind: Mapped[str] = mapped_column(String(16), nullable=False)  # text | textarea | number | bool | phone
-    label: Mapped[str] = mapped_column(String(200), nullable=False)
-    required: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    position: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-
-    service: Mapped["Service"] = relationship(back_populates="questions")
-
-
-class AvailabilityRule(Base):
-    """Pass 9 (docs/CALENDAR_MODULE_PLAN.md): admin-editable business
-    hours, replacing the four global booking.workdays/day_start_hour/
-    day_end_hour settings with real rows an admin can add, edit, and
-    delete. A rule is either `weekly` (recurring, tied to a weekday) or
-    `date_override` (a specific date — a holiday closure, or a one-off
-    change in hours). `service_id` null means "business-wide default";
-    a non-null value overrides that default for just one service.
-
-    Precedence, most to least specific, is resolved in
-    availability_service.effective_ranges: service+date override >
-    business-wide date override > service weekly > business-wide
-    weekly. If literally no AvailabilityRule exists anywhere yet (a
-    fresh install, or one that hasn't been migrated onto this model),
-    booking_service.py falls back to the legacy booking.workdays/
-    day_start_hour/day_end_hour settings entirely, so nothing breaks
-    for an install that predates this pass."""
-
-    __tablename__ = "availability_rule"
-
-    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_uuid)
-    service_id: Mapped[str | None] = mapped_column(
-        String(32), ForeignKey("service.id", ondelete="CASCADE"), nullable=True, index=True
-    )
-    kind: Mapped[str] = mapped_column(String(16), nullable=False)  # weekly | date_override
-    weekday: Mapped[int | None] = mapped_column(Integer, nullable=True)  # 0=Monday .. 6=Sunday
-    date: Mapped[str | None] = mapped_column(String(10), nullable=True, index=True)  # YYYY-MM-DD
-    start_time: Mapped[str | None] = mapped_column(String(5), nullable=True)  # HH:MM
-    end_time: Mapped[str | None] = mapped_column(String(5), nullable=True)  # HH:MM
-    # A date_override row can mark a date fully closed (holiday). A
-    # weekly row could too, defensively, though the normal way to
-    # represent "closed on Sundays" is simply not having a weekly rule
-    # for Sunday at all.
-    is_closed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
-    updated_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
-
-    __table_args__ = (
-        Index("ix_availability_rule_service_weekday", "service_id", "weekday"),
-        Index("ix_availability_rule_service_date", "service_id", "date"),
-    )
-
-
 class Webhook(Base):
-    """Pass 11 (docs/CALENDAR_MODULE_PLAN.md): lets the business wire
-    external systems into calendar events without polling. `events` is
-    a JSON list of event-name strings validated against the fixed
-    allow-list in webhook_service.py — the same six strings
-    notification_service.py's six notify_booking_* functions already
-    correspond to one-for-one.
+    """Lets the business wire external systems into store events
+    without polling. `events` is a JSON list of event-name strings
+    validated against the fixed allow-list in webhook_service.py.
 
     `secret` is Fernet-encrypted at rest, identical treatment to
     `SiteSetting.is_secret` rows (see app/security.py) — generated once
@@ -427,48 +189,6 @@ class WebhookDelivery(Base):
     attempted_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, index=True)
 
 
-class CalendarCredential(Base):
-    """Pass 12 (docs/CALENDAR_MODULE_PLAN.md): one connected external
-    calendar account for the whole business — deliberately not a
-    per-admin-user thing, since there's one calendar to sync, not one
-    per admin login. `provider` is a plain string rather than a
-    hardcoded enum so a second provider (Office 365, CalDAV — neither
-    built yet, see docs/CALENDAR_MODULE_PLAN.md §2.4 Pass 12) wouldn't
-    need a schema migration, just a new value.
-
-    `access_token`/`refresh_token` get the exact same at-rest treatment
-    as `Webhook.secret` and `SiteSetting.is_secret` rows — Fernet-
-    encrypted via app/security.py, no new crypto path. `calendar_id` is
-    nullable: a row can exist mid-connect (tokens stored, calendar not
-    yet chosen) before `POST /admin/api/calendar-sync/select` sets it
-    and flips `is_active`."""
-
-    __tablename__ = "calendar_credential"
-
-    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_uuid)
-    provider: Mapped[str] = mapped_column(String(32), default="google", nullable=False)
-    access_token: Mapped[str] = mapped_column(Text, nullable=False)  # Fernet-encrypted
-    refresh_token: Mapped[str] = mapped_column(Text, nullable=False)  # Fernet-encrypted
-    token_expires_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    calendar_id: Mapped[str | None] = mapped_column(String(512), nullable=True)
-    connected_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
-    # Google's incremental-sync cursor (Events.list `nextSyncToken`) —
-    # null until the first successful detect_drift run, at which point
-    # every later run asks Google for "only what changed since this"
-    # instead of re-listing the whole calendar. A 410 response means
-    # Google considers it stale; calendar_sync_service clears it back to
-    # null and falls back to a fresh time-bounded listing.
-    sync_token: Mapped[str | None] = mapped_column(Text, nullable=True)
-    last_synced_at: Mapped[dt.datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    # Set whenever detect_drift's try/except catches a failure (token
-    # refresh, API error, decrypt failure, ...), cleared on the next
-    # success — surfaced in the admin Calendar Sync UI so a broken
-    # connection (expired/revoked token, etc) is visible there instead
-    # of only in server logs, which nobody but a developer ever reads.
-    last_sync_error: Mapped[str | None] = mapped_column(Text, nullable=True)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-
-
 class Lead(Base):
     """A contact worth following up with — captured automatically
     whenever a booking is made (source='booking') or an email address
@@ -484,7 +204,7 @@ class Lead(Base):
     name: Mapped[str] = mapped_column(String(120), default="", nullable=False)
     email: Mapped[str] = mapped_column(String(254), nullable=False, index=True)
     phone: Mapped[str] = mapped_column(String(40), default="", nullable=False)
-    source: Mapped[str] = mapped_column(String(20), nullable=False)  # chat | booking
+    source: Mapped[str] = mapped_column(String(20), nullable=False)  # chat | cart | manual
     status: Mapped[str] = mapped_column(String(20), default="new", nullable=False)
     # new | contacted | qualified | converted | lost
     notes: Mapped[str] = mapped_column(Text, default="", nullable=False)  # admin's own notes
@@ -522,3 +242,27 @@ class KnowledgeSource(Base):
     created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, index=True)
     updated_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
     updated_by: Mapped[str | None] = mapped_column(String(32), ForeignKey("admin_user.id"), nullable=True)
+
+
+class Product(Base):
+    """One row per catalog item the public order form can show. Price
+    is a per-unit estimate the admin sets — the order form multiplies
+    it by quantity, both client-side (live preview) and again server-
+    side at submission (public_orders.py never trusts a client-
+    computed total)."""
+
+    __tablename__ = "product"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_uuid)
+    name: Mapped[str] = mapped_column(String(120), nullable=False)
+    slug: Mapped[str] = mapped_column(String(64), unique=True, index=True, nullable=False)
+    description: Mapped[str] = mapped_column(String(500), default="", nullable=False)
+    price: Mapped[float] = mapped_column(Float, nullable=False)
+    unit: Mapped[str] = mapped_column(String(32), default="unit", nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    position: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    updated_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
+    updated_by: Mapped[str | None] = mapped_column(String(32), ForeignKey("admin_user.id"), nullable=True)
+
+    __table_args__ = (Index("ix_product_active_position", "is_active", "position"),)

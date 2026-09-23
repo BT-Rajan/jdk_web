@@ -1,33 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useLang } from "../../context/LangContext.jsx";
 import TopBar from "../layout/TopBar.jsx";
 import GlassPanel from "../ui/GlassPanel.jsx";
-import Button from "../ui/Button.jsx";
 import Markdown from "../ui/Markdown.jsx";
-import BookingPanel from "../booking/BookingPanel.jsx";
 import "./ContentPage.css";
 import "./ContactPage.css";
 
 /**
- * The Contact Us page: the same shell as ContentPage, plus a "Talk to
- * Us" call-to-action that opens the existing booking flow in place —
- * no separate route needed for scheduling a call.
+ * The Contact Us page: the same shell as ContentPage, plus the site's
+ * contact details.
  */
 export default function ContactPage({ onBack, onNavigate }) {
-  const { copy, pages, branding, features, contact } = useLang();
+  const { pages, branding, contact } = useLang();
   const meta = pages.contact;
-
-  const [bookingOpen, setBookingOpen] = useState(false);
-  const [confirmation, setConfirmation] = useState(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-
-  function handleBookingResult(text) {
-    setBookingOpen(false);
-    setConfirmation(text);
-  }
 
   if (!meta) return null;
 
@@ -64,22 +53,6 @@ export default function ContactPage({ onBack, onNavigate }) {
               )}
               {contact.address && <li>{contact.address}</li>}
             </ul>
-          )}
-
-          {confirmation && <p className="contact-confirmation">{confirmation}</p>}
-
-          {features.bookingEnabled && (
-            <>
-              <div className="contact-cta-row">
-                <Button variant="primary" onClick={() => setBookingOpen(true)}>
-                  {copy.chat.bookBtn}
-                </Button>
-              </div>
-
-              {bookingOpen && (
-                <BookingPanel onClose={() => setBookingOpen(false)} onResult={handleBookingResult} />
-              )}
-            </>
           )}
         </GlassPanel>
       </main>

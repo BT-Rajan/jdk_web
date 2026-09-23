@@ -3,7 +3,7 @@ import { adminApi } from "../api/client.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import PageHeader from "../components/PageHeader.jsx";
 import FaqDetailPanel from "../components/FaqDetailPanel.jsx";
-import "./ServicesPage.css";
+import "../styles/adminListPage.css";
 
 /**
  * Admin management for the FAQ items shown in the chat assistant's

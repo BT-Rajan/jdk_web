@@ -58,7 +58,7 @@ export default function LeadDetailPanel({ lead, onClose, onUpdated, onDeleted })
 
       {lead.phone && <div className="lead-panel-row"><span>Phone</span>{lead.phone}</div>}
       <div className="lead-panel-row"><span>Source</span>{lead.source}</div>
-      <div className="lead-panel-row"><span>Captured</span>{new Date(lead.created_at).toLocaleString()}</div>
+      <div className="lead-panel-row"><span>Captured</span>{new Date(lead.createdAt).toLocaleString()}</div>
 
       <label className="lead-panel-label">Status</label>
       <select value={lead.status} onChange={(e) => handleStatusChange(e.target.value)}>

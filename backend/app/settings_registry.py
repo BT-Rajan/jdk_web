@@ -119,14 +119,6 @@ def _float_range(lo: float, hi: float):
     return _check
 
 
-def _valid_timezone(v: str) -> None:
-    from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
-    try:
-        ZoneInfo(v)
-    except ZoneInfoNotFoundError:
-        raise ValueError(f"{v!r} is not a valid IANA timezone (e.g. 'Asia/Kuwait', 'America/New_York')")
-
-
 def _hero_buttons(v: list) -> None:
     if not isinstance(v, list):
         raise ValueError("expected a list of {label, url} objects")
@@ -143,13 +135,6 @@ def _hero_buttons(v: list) -> None:
             raise ValueError(f"button {i}: url is required")
         if not (url.startswith("http://") or url.startswith("https://") or url.startswith("/")):
             raise ValueError(f"button {i}: url must be absolute http(s) or a root-relative path")
-
-
-def _valid_workdays(v: list) -> None:
-    if not all(isinstance(d, int) and 0 <= d <= 6 for d in v):
-        raise ValueError("each workday must be an integer 0 (Monday) through 6 (Sunday)")
-    if len(v) != len(set(v)):
-        raise ValueError("workdays must not contain duplicates")
 
 
 # ── Registry ──────────────────────────────────────────────────────────
@@ -275,7 +260,7 @@ _DEFS: list[SettingDef] = [
     # unset or unrecognized value, so no existing deployment regresses.
     SettingDef("theme.surfaceStyle", "theme", "Card & panel surface", SettingType.ENUM, "glass",
                choices=("glass", "solid", "outline", "elevated"),
-               help_text="Fill treatment for cards and panels site-wide: the chat widget, booking panel, "
+               help_text="Fill treatment for cards and panels site-wide: the chat widget "
                           "and homepage nav/content cards. 'glass' is today's blurred, translucent look."),
     SettingDef("theme.buttonStyle", "theme", "Buttons & pills", SettingType.ENUM, "default",
                choices=("default", "solid", "outline", "ghost", "gradient"),
@@ -324,64 +309,8 @@ _DEFS: list[SettingDef] = [
     # features (toggles for capabilities landing in later passes,
     # declared now so the admin can already see what's coming and
     # nothing needs a hardcoded `if` for "is this feature on") --------
-    SettingDef("features.bookingEnabled", "features", "Enable appointment booking", SettingType.BOOL, True),
     SettingDef("features.chatEnabled", "features", "Enable AI chat widget", SettingType.BOOL, True),
     SettingDef("features.whatsappWidgetEnabled", "features", "Enable WhatsApp widget", SettingType.BOOL, False),
-    SettingDef("features.calendarSyncEnabled", "features", "Enable Google Calendar sync", SettingType.BOOL, False,
-               help_text="Pass 12: once connected (see Calendar Sync), busy time on the linked Google "
-                         "Calendar blocks booking slots. Off by default even after connecting — a "
-                         "deliberate two-step opt-in."),
-
-    # booking — business rules for the appointment scheduler. Slot
-    # generation, availability, and notice-window enforcement all read
-    # these at request time (app/booking_service.py) rather than having
-    # any of it hardcoded, so an admin can retune the whole booking
-    # flow (different hours, days, timezone, lead time) without a
-    # deploy. day_start_hour/day_end_hour aren't cross-validated against
-    # each other here (registry validation is per-key); if end <= start,
-    # booking_service treats that day as having zero slots rather than
-    # erroring, so a temporarily-inconsistent pair never 500s a request.
-    SettingDef("booking.timezone", "booking", "Timezone", SettingType.STRING, "Asia/Kuwait",
-               help_text="IANA timezone name — determines what 'today' and business hours mean.",
-               validator=_valid_timezone),
-    SettingDef("booking.slotMinutes", "booking", "Slot length (minutes)", SettingType.INT, 30,
-               validator=_int_range(5, 240)),
-    SettingDef("booking.dayStartHour", "booking", "Day starts at (hour, 24h)", SettingType.INT, 9,
-               validator=_int_range(0, 23)),
-    SettingDef("booking.dayEndHour", "booking", "Day ends at (hour, 24h)", SettingType.INT, 17,
-               validator=_int_range(0, 23)),
-    SettingDef("booking.workdays", "booking", "Working days", SettingType.LIST, [0, 1, 2, 3, 4],
-               help_text="0=Monday .. 6=Sunday.", validator=_valid_workdays),
-    SettingDef("booking.maxDaysAhead", "booking", "Max days ahead bookable", SettingType.INT, 30,
-               validator=_int_range(1, 365)),
-    SettingDef("booking.minNoticeHours", "booking", "Minimum notice (hours)", SettingType.INT, 6,
-               help_text="Required lead time to book, cancel, or reschedule.", validator=_int_range(0, 168)),
-    # A pending appointment holds its slot exactly like a confirmed one
-    # (booking_service.py::_booked_intervals) - deliberately, per
-    # PASS10_NOTES.md - but that was previously unbounded: an admin who
-    # never accepts/declines a request leaves it blocking that slot
-    # forever. These two settings bound that: past
-    # pending_expiry_hours old, a pending appointment stops counting as
-    # blocking (checked live in _booked_intervals) and is auto-declined
-    # by a background sweep (booking_service.expire_stale_pending_appointments,
-    # run every pending_expiry_poll_minutes by app/scheduler.py) so it
-    # doesn't just quietly stop blocking while still sitting there
-    # showing "pending" forever.
-    SettingDef("booking.pendingExpiryHours", "booking", "Auto-decline pending requests after (hours)",
-               SettingType.INT, 48, validator=_int_range(0, 720),
-               help_text="A pending appointment awaiting approval stops holding its slot, and is "
-                         "auto-declined, after this many hours with no admin action. 0 disables this — "
-                         "a pending appointment then holds its slot indefinitely, as it always did before "
-                         "this setting existed."),
-    SettingDef("booking.pendingExpiryPollMinutes", "booking", "Check for expired pending requests every (minutes)",
-               SettingType.INT, 30, validator=_int_range(5, 1440),
-               help_text="How often the background sweep runs. Irrelevant if pending_expiry_hours is 0."),
-    SettingDef("booking.calendarSyncFailOpen", "booking", "If Google Calendar is unreachable, show slots anyway",
-               SettingType.BOOL, False,
-               help_text="Pass 12: when the connected Google Calendar can't be reached (timeout, revoked "
-                         "access, quota), the safe default is to show NO slots rather than risk double-"
-                         "booking against busy time we can't currently see. Turn this on only if you'd "
-                         "rather keep taking bookings — ignoring the external calendar — when it's down."),
 
     # chat — LLM-powered assistant configuration. The API key is the
     # only secret setting in the app so far (Fernet-encrypted at rest
@@ -410,16 +339,14 @@ _DEFS: list[SettingDef] = [
     SettingDef("chat.systemPrompt", "chat", "System prompt", SettingType.TEXT, {
         "en": "You are Perennia's AI assistant. Be warm, concise, and professional. Early in the "
               "conversation, ask the visitor's name so you can personalize the chat and so the team can "
-              "follow up. Help visitors understand Perennia's AI products and services, and encourage "
-              "booking a call via \"Talk to Us\" when they show real interest.",
+              "follow up. Help visitors understand Perennia's AI products and services.",
         "ar": "أنت المساعد الذكي لشركة بيرينيا. كن ودودًا ومختصرًا ومحترفًا. في وقت مبكر من المحادثة، اسأل "
               "الزائر عن اسمه حتى تتمكن من تخصيص المحادثة ومتابعة الطلب. ساعد الزوار على فهم منتجات وخدمات "
-              "بيرينيا، وشجعهم على حجز مكالمة عبر \"تحدث إلينا\" عند إبداء اهتمام حقيقي.",
+              "بيرينيا.",
     }, i18n=True),
     SettingDef("chat.unavailableMessage", "chat", "Fallback message (LLM unavailable)", SettingType.TEXT, {
-        "en": "Thanks for sharing that! Someone from our team will follow up shortly. "
-              "Would you like to book a time to talk?",
-        "ar": "شكرًا لك! سيقوم أحد أعضاء فريقنا بمتابعة رسالتك قريبًا. هل ترغب في حجز موعد؟",
+        "en": "Thanks for sharing that! Someone from our team will follow up shortly.",
+        "ar": "شكرًا لك! سيقوم أحد أعضاء فريقنا بمتابعة رسالتك قريبًا.",
     }, i18n=True, help_text="Shown when no LLM provider is configured, or if a request to it fails."),
     SettingDef("chat.maxTurns", "chat", "Max exchanges per session", SettingType.INT, 15,
                help_text="Once a visitor's user-turn count in one session passes this, the turn-limit "
@@ -427,43 +354,18 @@ _DEFS: list[SettingDef] = [
                validator=_int_range(3, 100)),
     SettingDef("chat.turnLimitMessage", "chat", "Turn-limit message", SettingType.TEXT, {
         "en": "You've reached the message limit for this session. We'd love to keep the conversation "
-              "going directly — please book a quick call with our team.",
+              "going directly — please reach out to our team.",
         "ar": "لقد وصلت إلى الحد الأقصى لعدد الرسائل في هذه الجلسة. يسعدنا مواصلة الحديث مباشرة — "
-              "احجز موعداً سريعاً مع فريقنا.",
+              "تواصل مع فريقنا.",
     }, i18n=True, help_text="Shown once a visitor exceeds the max exchanges above, in place of a real reply."),
 
-    # calendarSync — Pass 12 (docs/CALENDAR_MODULE_PLAN.md): Google
-    # OAuth app credentials for the Calendar Sync connect flow. These
-    # identify *this deployment* to Google (same client id/secret for
-    # every admin who ever connects, since there's one business
-    # per install) — separate from the per-connection tokens stored in
-    # CalendarCredential (app/models.py), which identify *which Google
-    # account* got connected and are Fernet-encrypted the same way
-    # google_client_secret is.
-    SettingDef("calendarSync.googleClientId", "calendarSync", "Google OAuth client ID", SettingType.STRING, "",
-               help_text="From Google Cloud Console — an OAuth 2.0 Client ID for a 'Web application'."),
-    SettingDef("calendarSync.googleClientSecret", "calendarSync", "Google OAuth client secret",
-               SettingType.STRING, "", secret=True),
-    SettingDef("calendarSync.googleRedirectUri", "calendarSync", "OAuth redirect URI", SettingType.URL, "",
-               help_text="Must exactly match an 'Authorized redirect URI' configured on the Google OAuth "
-                         "client. Point this at the admin Settings page itself — "
-                         "https://yourdomain.com/admin/settings/calendarSync — the page picks up "
-                         "Google's ?code=&state= and completes the connection without a full page reload.",
-               validator=_url_or_empty),
-    SettingDef("calendarSync.driftPollMinutes", "calendarSync", "Auto-check for external changes every (minutes)",
-               SettingType.INT, 15, validator=_int_range(0, 1440),
-               help_text="How often to check the connected Google Calendar for events that were edited or "
-                         "deleted directly in Google (not through this app) and flag the mismatched "
-                         "appointment for review. 0 disables the automatic check — use 'Sync now' in the "
-                         "Calendar settings instead."),
-
-    # notifications — outbound email/WhatsApp for booking confirmations
-    # and internal staff alerts. Every send is best-effort: a
-    # notification failure (bad SMTP creds, provider down) never fails
-    # the booking/chat request that triggered it — see
-    # notification_service.py. Both channels default fully OFF so an
-    # admin opts in deliberately rather than the app silently trying
-    # (and failing) to send mail with no configuration.
+    # notifications — outbound email/WhatsApp for internal staff alerts.
+    # Every send is best-effort: a notification failure (bad SMTP
+    # creds, provider down) never fails the chat request that
+    # triggered it — see notification_service.py. Both channels
+    # default fully OFF so an admin opts in deliberately rather than
+    # the app silently trying (and failing) to send mail with no
+    # configuration.
     SettingDef("notifications.emailEnabled", "notifications", "Enable email notifications", SettingType.BOOL, False),
     SettingDef("notifications.smtpHost", "notifications", "SMTP host", SettingType.STRING, ""),
     SettingDef("notifications.smtpPort", "notifications", "SMTP port", SettingType.INT, 587,
@@ -475,13 +377,7 @@ _DEFS: list[SettingDef] = [
     SettingDef("notifications.fromName", "notifications", "From name", SettingType.STRING, "",
                help_text="Falls back to the site name if left blank."),
     SettingDef("notifications.adminAlertEmail", "notifications", "Internal alert email", SettingType.EMAIL, "",
-               help_text="Where new-booking and new-lead alerts are sent. Leave blank to disable."),
-    SettingDef("notifications.adminAlertWhatsappNumber", "notifications", "Internal alert WhatsApp number",
-               SettingType.STRING, "",
-               help_text="Pass 13: where the 'a booking needs your confirmation' alert is sent by "
-                         "WhatsApp (in addition to, or instead of, the email above — whichever of "
-                         "the two is configured is used). Requires WhatsApp notifications enabled "
-                         "below. Leave blank to skip WhatsApp for this alert."),
+               help_text="Where new-lead alerts are sent. Leave blank to disable."),
     SettingDef("notifications.whatsappEnabled", "notifications", "Enable WhatsApp notifications", SettingType.BOOL, False),
     SettingDef("notifications.whatsappProvider", "notifications", "WhatsApp provider", SettingType.ENUM, "none",
                choices=("none", "twilio", "meta_cloud")),
@@ -495,102 +391,15 @@ _DEFS: list[SettingDef] = [
     # templates — editable, bilingual notification content. Every
     # send in notification_service.py renders one of these rather than
     # having any wording hardcoded in Python, so the exact phrasing of
-    # a confirmation email or WhatsApp message is an admin edit like
-    # everything else. {name}/{date}/{time}/{id}/{service} placeholders
-    # are filled in at send time — see notification_service.render().
-    SettingDef("templates.bookingConfirmedEmail", "templates", "Booking confirmed — email", SettingType.JSON, {
-        "en": {"subject": "Your appointment is confirmed — {id}",
-               "body": "Hi {name},\n\nYour appointment is confirmed for {date} at {time}.\n"
-                       "Confirmation code: {id}\n\nWe look forward to speaking with you."},
-        "ar": {"subject": "تم تأكيد موعدك — {id}",
-               "body": "مرحباً {name}،\n\nتم تأكيد موعدك في {date} الساعة {time}.\nرمز التأكيد: {id}\n\nنتطلع للحديث معك."},
-    }, i18n=True),
-    SettingDef("templates.bookingCancelledEmail", "templates", "Booking cancelled — email", SettingType.JSON, {
-        "en": {"subject": "Your appointment has been cancelled — {id}",
-               "body": "Hi {name},\n\nYour appointment on {date} at {time} (code {id}) has been cancelled.\n"
-                       "Feel free to book a new time whenever suits you."},
-        "ar": {"subject": "تم إلغاء موعدك — {id}",
-               "body": "مرحباً {name}،\n\nتم إلغاء موعدك في {date} الساعة {time} (الرمز {id}).\n"
-                       "يمكنك حجز موعد جديد في أي وقت يناسبك."},
-    }, i18n=True),
-    SettingDef("templates.bookingRescheduledEmail", "templates", "Booking rescheduled — email", SettingType.JSON, {
-        "en": {"subject": "Your appointment was rescheduled — {id}",
-               "body": "Hi {name},\n\nYour appointment (code {id}) is now confirmed for {date} at {time}."},
-        "ar": {"subject": "تم تغيير موعد الحجز — {id}",
-               "body": "مرحباً {name}،\n\nموعدك (الرمز {id}) أصبح الآن في {date} الساعة {time}."},
-    }, i18n=True),
-    SettingDef("templates.bookingConfirmedWhatsapp", "templates", "Booking confirmed — WhatsApp", SettingType.TEXT, {
-        "en": "Hi {name}! Your appointment is confirmed for {date} at {time}. Code: {id}",
-        "ar": "مرحباً {name}! تم تأكيد موعدك في {date} الساعة {time}. الرمز: {id}",
-    }, i18n=True),
-    SettingDef("templates.bookingCancelledWhatsapp", "templates", "Booking cancelled — WhatsApp", SettingType.TEXT, {
-        "en": "Hi {name}, your appointment on {date} at {time} (code {id}) has been cancelled.",
-        "ar": "مرحباً {name}، تم إلغاء موعدك في {date} الساعة {time} (الرمز {id}).",
-    }, i18n=True),
-    SettingDef("templates.bookingRescheduledWhatsapp", "templates", "Booking rescheduled — WhatsApp", SettingType.TEXT, {
-        "en": "Hi {name}, your appointment (code {id}) is now confirmed for {date} at {time}.",
-        "ar": "مرحباً {name}، موعدك (الرمز {id}) أصبح الآن في {date} الساعة {time}.",
-    }, i18n=True),
-    SettingDef("templates.newBookingAdminAlert", "templates", "New booking — internal alert", SettingType.JSON, {
-        "en": {"subject": "New booking: {name} — {date} {time}",
-               "body": "{name} ({email}) booked {date} at {time}.\nService: {service}\nCode: {id}"},
-    }, help_text="Internal alert, English only by default — this is for staff, not visitors."),
+    # an alert is an admin edit like everything else. {email}/{message}
+    # placeholders are filled in at send time — see notification_service.render().
     SettingDef("templates.newLeadAdminAlert", "templates", "New lead — internal alert", SettingType.JSON, {
         "en": {"subject": "New lead from chat: {email}",
                "body": "A new lead came in via chat.\nEmail: {email}\nMessage: {message}"},
     }, help_text="Internal alert, English only by default — this is for staff, not visitors."),
 
-    # Pass 10 (docs/CALENDAR_MODULE_PLAN.md): confirmation workflow for
-    # services with requires_confirmation=True. A new booking against
-    # one of those lands as "pending" — the organizer gets an internal
-    # alert (booking_requested_admin_alert, staff-facing like
-    # new_booking_admin_alert) instead of the attendee getting an
-    # immediate confirmation; the attendee only hears back once an
-    # admin accepts or declines the request.
-    SettingDef("templates.bookingRequestedAdminAlert", "templates", "Booking requested — internal alert",
-               SettingType.JSON, {
-        "en": {"subject": "Booking request: {name} — {date} {time}",
-               "body": "{name} ({email}) requested {date} at {time}.\nService: {service}\nCode: {id}\n\n"
-                       "This service requires confirmation — accept or decline it from the admin dashboard."},
-    }, help_text="Internal alert, English only by default — this is for staff, not visitors."),
-    SettingDef("templates.bookingRequestedAdminWhatsapp", "templates", "Booking requested — internal WhatsApp",
-               SettingType.TEXT, "New booking request from {name} for {date} at {time} ({service}, code {id}) "
-                                  "needs your confirmation — check the admin dashboard.",
-               help_text="Pass 13: sent to notifications.adminAlertWhatsappNumber when set, alongside "
-                         "(or instead of) the email alert above."),
-    SettingDef("templates.bookingAcceptedEmail", "templates", "Booking request accepted — email", SettingType.JSON, {
-        "en": {"subject": "Your appointment is confirmed — {id}",
-               "body": "Hi {name},\n\nGood news — your request for {date} at {time} has been accepted "
-                       "and is now confirmed.\nConfirmation code: {id}\n\nWe look forward to speaking with you."},
-        "ar": {"subject": "تم تأكيد موعدك — {id}",
-               "body": "مرحباً {name}،\n\nخبر سار — تم قبول طلبك في {date} الساعة {time} وأصبح مؤكداً الآن.\n"
-                       "رمز التأكيد: {id}\n\nنتطلع للحديث معك."},
-    }, i18n=True),
-    SettingDef("templates.bookingDeclinedEmail", "templates", "Booking request declined — email", SettingType.JSON, {
-        "en": {"subject": "About your appointment request — {id}",
-               "body": "Hi {name},\n\nWe're sorry, but we're unable to confirm your request for {date} "
-                       "at {time}.{reason}\n\nPlease feel free to reach out or book another time.\n\nCode: {id}"},
-        "ar": {"subject": "بخصوص طلب موعدك — {id}",
-               "body": "مرحباً {name}،\n\nنأسف، لا يمكننا تأكيد طلبك في {date} الساعة {time}.{reason}\n\n"
-                       "لا تتردد في التواصل معنا أو حجز موعد آخر.\n\nالرمز: {id}"},
-    }, i18n=True, help_text="{reason} is filled with the admin's decline note when one is given, "
-                              "or left blank otherwise — leave it in the template even if you rarely use it."),
-    SettingDef("templates.bookingAcceptedWhatsapp", "templates", "Booking request accepted — WhatsApp",
-               SettingType.TEXT, {
-        "en": "Hi {name}! Your request for {date} at {time} has been accepted and is now confirmed. Code: {id}",
-        "ar": "مرحباً {name}! تم قبول طلبك في {date} الساعة {time} وأصبح مؤكداً. الرمز: {id}",
-    }, i18n=True),
-    SettingDef("templates.bookingDeclinedWhatsapp", "templates", "Booking request declined — WhatsApp",
-               SettingType.TEXT, {
-        "en": "Hi {name}, we're unable to confirm your request for {date} at {time}.{reason} "
-              "Feel free to reach out or book another time.",
-        "ar": "مرحباً {name}، لا يمكننا تأكيد طلبك في {date} الساعة {time}.{reason} "
-              "لا تتردد في التواصل معنا أو حجز موعد آخر.",
-    }, i18n=True, help_text="{reason} is filled with the admin's decline note when one is given, "
-                              "or left blank otherwise."),
-
     # copy — free-form UI microcopy blobs, grouped by the screen that
-    # uses them (home / chat / booking). Kept as JSON blobs rather than
+    # uses them (home / chat). Kept as JSON blobs rather than
     # exploded into one registry entry per string: these ~10-15 strings
     # per screen are always edited together, so one admin form per
     # screen (Pass 8) makes more sense than fifteen tiny form fields.
@@ -628,11 +437,7 @@ _DEFS: list[SettingDef] = [
                           "theme.headlineDissolveMs above) — include a literal newline in the string to "
                           "have it type across two lines instead of one."),
     SettingDef("copy.chat", "copy", "Chat screen text", SettingType.JSON, {"en": {}, "ar": {}}, i18n=True,
-               help_text="taglineLine1, taglineLine2, sub, header, bookBtn, faqTitle, inputPlaceholder, welcomeMsg, langSwitch"),
-    SettingDef("copy.booking", "copy", "Booking flow text", SettingType.JSON, {"en": {}, "ar": {}}, i18n=True,
-               help_text="Field labels and status messages for the booking panel, including validation and "
-                          "error messages so a visitor never sees a raw error code. Status messages support "
-                          "{id}/{date}/{time} placeholders."),
+               help_text="taglineLine1, taglineLine2, sub, header, faqTitle, inputPlaceholder, welcomeMsg, langSwitch"),
     SettingDef("copy.common", "copy", "Shared accessibility labels", SettingType.JSON, {
         "en": {"close": "Close", "back": "Back", "send": "Send", "quickMenu": "Quick menu",
                "primaryNav": "Primary", "goHome": "Go to home", "assistantTyping": "Assistant is typing"},

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { adminApi } from "../api/client.js";
 import { useAuth } from "../context/AuthContext.jsx";
-import "./ServiceDetailPanel.css";
+import "../styles/detailPanel.css";
 
 const LANGS = ["en", "ar"];
 

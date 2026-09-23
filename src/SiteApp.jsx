@@ -1,22 +1,18 @@
 import { useState } from "react";
-import { LangProvider, useLang } from "./context/LangContext.jsx";
+import { LangProvider } from "./context/LangContext.jsx";
 import Hero from "./components/hero/Hero.jsx";
 import ChatWidget from "./components/chat/ChatWidget.jsx";
+import OrderPanel from "./components/order/OrderPanel.jsx";
 import ContentPage from "./components/pages/ContentPage.jsx";
 import ContactPage from "./components/pages/ContactPage.jsx";
 import StickyChat from "./components/StickyChat.jsx";
-import BookingPanel from "./components/booking/BookingPanel.jsx";
-import Toast from "./components/ui/Toast.jsx";
 
 // Pages with dedicated components — every other page id routes through
 // the generic, Markdown-driven ContentPage, so an admin can add a new
 // page (any slug) with zero code changes on this end.
 const SPECIAL_PAGE_IDS = new Set(["home", "contact"]);
 
-// Needs useLang() (for features.bookingEnabled), which only works
-// inside LangProvider — see the default export below.
 function AppShell() {
-  const { features } = useLang();
   const [page, setPage] = useState("home"); // "home" | "contact" | any configured page slug
   // Chat floats as a popover (see ChatWidget) instead of a routed
   // page, mirroring k-g-i.com's "Talk to Sulaiman" widget — it stays
@@ -25,41 +21,48 @@ function AppShell() {
   // same widget (voice + text, see ChatWidget) — the one chat surface
   // on the whole site.
   const [chatOpen, setChatOpen] = useState(false);
+  // The Order popover (see OrderPanel) — the cart-icon equivalent of
+  // chatOpen. Mutually exclusive with chat: both popovers dock in the
+  // same bottom-right spot, so opening one closes the other rather
+  // than letting them stack.
+  const [orderOpen, setOrderOpen] = useState(false);
   // Message typed into the hero's quick-start chat box, carried across
   // into ChatWidget so hitting Enter there feels like continuing the
   // same conversation rather than starting over.
   const [pendingMessage, setPendingMessage] = useState("");
-  // The Appointments sticky button opens booking from any page, not
-  // just from inside a chat conversation — this is that panel's state.
-  const [bookingOpen, setBookingOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
 
-  const handleStickyChat = () => setChatOpen((o) => !o);
+  const handleStickyChat = () => {
+    setOrderOpen(false);
+    setChatOpen((o) => !o);
+  };
+
+  const handleStickyOrder = () => {
+    setChatOpen(false);
+    setOrderOpen((o) => !o);
+  };
 
   const handleHeroEnter = (initialMessage) => {
     if (initialMessage) setPendingMessage(initialMessage);
+    setOrderOpen(false);
     setChatOpen(true);
   };
 
-  function handleBookingResult(text) {
-    setBookingOpen(false);
-    setToastMessage(text);
-  }
+  const anyPopoverOpen = chatOpen || orderOpen;
 
   return (
     <div className="site-shell">
       {/* Desktop has no in-flow "page vs widget" scroll separation like
-          mobile does, so the fixed-position ChatWidget popover (bottom-
-          right, up to 380x600) can sit directly over the home page's
-          own centered hero content at ordinary laptop widths — two
-          chat inputs, and often headline text, visibly overlapping.
-          Dimming + disabling the page behind it while open (rather
-          than only suppressing StickyChat, which is mobile-home-
-          specific — see below) removes the collision on any page, any
-          width, without having to chase every viewport where the
-          fixed popover's box happens to land on top of in-flow
-          content. */}
-      <div className={`app-page-content ${chatOpen ? "app-page-content-dimmed" : ""}`.trim()}>
+          mobile does, so the fixed-position ChatWidget/OrderPanel
+          popover (bottom-right, up to ~400x640) can sit directly over
+          the home page's own centered hero content at ordinary laptop
+          widths — two chat inputs, and often headline text, visibly
+          overlapping. Dimming + disabling the page behind it while
+          open (rather than only suppressing StickyChat, which is
+          mobile-home-specific — see below) removes the collision on
+          any page, any width, without having to chase every viewport
+          where the fixed popover's box happens to land on top of
+          in-flow content. */}
+      <div className={`app-page-content ${anyPopoverOpen ? "app-page-content-dimmed" : ""}`.trim()}>
         {page === "home" && <Hero onEnter={handleHeroEnter} onNavigate={setPage} />}
         {page === "contact" && <ContactPage onBack={() => setPage("home")} onNavigate={setPage} />}
         {!SPECIAL_PAGE_IDS.has(page) && (
@@ -72,13 +75,12 @@ function AppShell() {
           specifically (isHome), since Hero already renders its own
           in-flow quick-chat box there — on a small screen the two sat
           close enough to collide. Desktop keeps both; every other page
-          keeps the sticky button as-is (it's the only chat entry point
-          there). */}
+          keeps the sticky buttons as-is. */}
       <StickyChat
         onChatClick={handleStickyChat}
-        onBookingClick={() => setBookingOpen(true)}
-        showBooking={features.bookingEnabled}
         chatOpen={chatOpen}
+        onOrderClick={handleStickyOrder}
+        orderOpen={orderOpen}
         isHome={page === "home"}
       />
 
@@ -87,14 +89,9 @@ function AppShell() {
         onClose={() => setChatOpen(false)}
         initialMessage={pendingMessage}
         onConsumeInitialMessage={() => setPendingMessage("")}
-        onBookingClick={() => setBookingOpen(true)}
       />
 
-      {bookingOpen && features.bookingEnabled && (
-        <BookingPanel onClose={() => setBookingOpen(false)} onResult={handleBookingResult} />
-      )}
-
-      {toastMessage && <Toast message={toastMessage} onDismiss={() => setToastMessage("")} />}
+      <OrderPanel open={orderOpen} onClose={() => setOrderOpen(false)} />
     </div>
   );
 }

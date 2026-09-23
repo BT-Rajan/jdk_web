@@ -75,22 +75,6 @@ export const adminApi = {
 
   statsOverview: () => request("admin/api/stats/overview"),
 
-  listAppointments: (params = {}) => {
-    const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v));
-    return request(`admin/api/booking/appointments?${qs}`);
-  },
-  createAppointment: (body) => request("admin/api/booking/appointments", { method: "POST", body: JSON.stringify(body) }),
-  // Public slot-availability check, reused here so the admin's manual
-  // "Add appointment" form can only pick a slot the grid actually allows.
-  getSlots: (date, serviceId) =>
-    request(`api/booking/slots?date=${encodeURIComponent(date)}${serviceId ? `&serviceId=${encodeURIComponent(serviceId)}` : ""}`),
-  cancelAppointment: (id) => request(`admin/api/booking/appointments/${id}/cancel`, { method: "POST" }),
-  acceptAppointment: (id) => request(`admin/api/booking/appointments/${id}/accept`, { method: "POST" }),
-  rejectAppointment: (id, reason) =>
-    request(`admin/api/booking/appointments/${id}/reject`, { method: "POST", body: JSON.stringify({ reason: reason || "" }) }),
-  rescheduleAppointment: (id, date, time) =>
-    request(`admin/api/booking/appointments/${id}/reschedule`, { method: "POST", body: JSON.stringify({ date, time }) }),
-
   listLeads: (params = {}) => {
     const qs = new URLSearchParams(Object.entries(params).filter(([, v]) => v));
     return request(`admin/api/leads?${qs}`);
@@ -99,6 +83,13 @@ export const adminApi = {
   getLead: (id) => request(`admin/api/leads/${id}`),
   updateLead: (id, body) => request(`admin/api/leads/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
   deleteLead: (id) => request(`admin/api/leads/${id}`, { method: "DELETE" }),
+
+  // -- product catalog (public order form picks from these) --
+  listProducts: () => request("admin/api/products"),
+  getProduct: (id) => request(`admin/api/products/${id}`),
+  createProduct: (body) => request("admin/api/products", { method: "POST", body: JSON.stringify(body) }),
+  updateProduct: (id, body) => request(`admin/api/products/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
+  deleteProduct: (id) => request(`admin/api/products/${id}`, { method: "DELETE" }),
 
   listSettingCategories: () => request("admin/api/settings/categories"),
   getSettingCategory: (category) => request(`admin/api/settings/${category}`),
@@ -110,25 +101,7 @@ export const adminApi = {
     return request("admin/api/uploads/image", { method: "POST", body: formData });
   },
 
-  // -- calendar module: services (Pass 0 — admin-only catalog, see
-  //    docs/CALENDAR_MODULE_PLAN.md) --
-  listServices: () => request("admin/api/services"),
-  getService: (id) => request(`admin/api/services/${id}`),
-  createService: (body) => request("admin/api/services", { method: "POST", body: JSON.stringify(body) }),
-  updateService: (id, body) => request(`admin/api/services/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
-  deleteService: (id) => request(`admin/api/services/${id}`, { method: "DELETE" }),
-  addServiceQuestion: (serviceId, body) =>
-    request(`admin/api/services/${serviceId}/questions`, { method: "POST", body: JSON.stringify(body) }),
-  updateServiceQuestion: (serviceId, questionId, body) =>
-    request(`admin/api/services/${serviceId}/questions/${questionId}`, { method: "PATCH", body: JSON.stringify(body) }),
-  deleteServiceQuestion: (serviceId, questionId) =>
-    request(`admin/api/services/${serviceId}/questions/${questionId}`, { method: "DELETE" }),
-  reorderServiceQuestions: (serviceId, orderedIds) =>
-    request(`admin/api/services/${serviceId}/questions/reorder`, {
-      method: "POST", body: JSON.stringify({ orderedIds }),
-    }),
-
-  // -- calendar module: webhooks (Pass 11, see docs/CALENDAR_MODULE_PLAN.md) --
+  // -- webhooks --
   listWebhooks: () => request("admin/api/webhooks"),
   createWebhook: (body) => request("admin/api/webhooks", { method: "POST", body: JSON.stringify(body) }),
   updateWebhook: (id, body) => request(`admin/api/webhooks/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
@@ -136,27 +109,6 @@ export const adminApi = {
   regenerateWebhookSecret: (id) => request(`admin/api/webhooks/${id}/regenerate-secret`, { method: "POST" }),
   listWebhookDeliveries: (id) => request(`admin/api/webhooks/${id}/deliveries`),
   testWebhook: (id) => request(`admin/api/webhooks/${id}/test`, { method: "POST" }),
-
-  // -- calendar module: calendar sync (Pass 12, see docs/CALENDAR_MODULE_PLAN.md) --
-  getCalendarSyncStatus: () => request("admin/api/calendar-sync/status"),
-  completeCalendarSyncCallback: (code, state) =>
-    request(`admin/api/calendar-sync/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`),
-  selectCalendarSyncCalendar: (credentialId, calendarId) =>
-    request("admin/api/calendar-sync/select", {
-      method: "POST", body: JSON.stringify({ credentialId, calendarId }),
-    }),
-  disconnectCalendarSync: () => request("admin/api/calendar-sync/disconnect", { method: "POST" }),
-  syncCalendarNow: () => request("admin/api/calendar-sync/sync-now", { method: "POST" }),
-
-  // -- calendar module: direct/manual event management, independent of
-  //    the booking flow — "full calendar controls" for whatever's on
-  //    the connected account's calendar, not just this app's own
-  //    appointment-linked events --
-  listCalendarEvents: (dateFrom, dateTo) =>
-    request(`admin/api/calendar-events?dateFrom=${encodeURIComponent(dateFrom)}&dateTo=${encodeURIComponent(dateTo)}`),
-  createCalendarEvent: (body) => request("admin/api/calendar-events", { method: "POST", body: JSON.stringify(body) }),
-  updateCalendarEvent: (id, body) => request(`admin/api/calendar-events/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
-  deleteCalendarEvent: (id) => request(`admin/api/calendar-events/${id}`, { method: "DELETE" }),
 
   // -- knowledge base (chat grounding: uploaded documents + web pages) --
   listKnowledge: () => request("admin/api/knowledge"),

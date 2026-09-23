@@ -541,10 +541,18 @@
   position: relative;
 }
 .hero-body-main {
-  flex: 1 1 560px;
+  flex: 1 1 100%;
   min-width: 0;
   display: flex;
   flex-direction: column;
+  /* Centred on the page (the showcase is pinned to the start edge
+     behind this column, not beside it), so the headline and chat box
+     sit in the middle and may overlap the showcase image. */
+  align-items: center;
+  /* Empty parts of this full-width column must not swallow clicks
+     meant for the showcase dots underneath; the real controls opt back
+     in below. */
+  pointer-events: none;
   /* Sits visually in front of, and slightly above, the showcase —
      it's the content the visitor acts on, so it should read as the
      top layer of the two rather than two panels pinned at the same
@@ -558,12 +566,15 @@
    size themselves; stretch them to fill this column rather than
    leaving them at their intrinsic centered width. */
 .hero-body-main > * { width: 100%; }
+.hero-body-main :is(a, button, input, textarea, select, label, .hero-quick-chat, .hero-section, .hero-card) {
+  pointer-events: auto;
+}
 
 /* Side-by-side only above tablet width; below it the showcase drops
    underneath the layout content, same as it always used to sit. */
 @media (max-width: 900px) {
   .hero-body-row { flex-direction: column; gap: var(--space-6); padding-top: 0; }
-  .hero-body-main { flex-basis: auto; transform: none; z-index: auto; }
+  .hero-body-main { flex-basis: auto; transform: none; z-index: auto; pointer-events: auto; }
 }
 
 @media (max-width: 480px) {

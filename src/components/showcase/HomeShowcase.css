@@ -1,91 +1,111 @@
-/* ── Home showcase — looping photo slideshow, paired beside the
-   quick-chat/nav content in .hero-body-row (see Hero.jsx) above the
-   tablet breakpoint, and stacked underneath it below that. It never
-   overlaps the quick-chat box or the fixed-position chat/order
-   popovers. All colors/radii come from the site's theme tokens, so it
-   follows whichever theme preset is active.
+/* ── Home showcase — looping photo slideshow pinned to the *start*
+   edge of the hero (left in English, right in Arabic), behind the
+   chat/headline column, which is centred on the page and may overlap
+   it (see .hero-body-row / .hero-body-main in Hero.css).
 
-   No title, no border, no fill — the frame's background stays fully
-   transparent (see .home-showcase-frame) and its edges fade toward
-   transparent via a mask, so the photo dissolves into the page instead
-   of sitting in a boxed panel on top of it. A soft light falls over
-   the top of the photo (.home-showcase-light), and the frame carries a
-   very mild drop-shadow so the lit photo reads as gently lifted off
-   the page rather than flat against it. */
+   No background of any kind: no fill, no border, no mask, no panel.
+   Only the photo itself, a physical light bulb hanging above it, and
+   the soft cone of light that bulb throws down over the photo. All
+   colors come from the site's theme tokens.
+
+   Photo size is the admin's Settings > Theme > Showcase image size
+   slider (--showcase-scale, 1 = fills the frame). */
 .home-showcase {
-  flex: 1 1 420px;
-  min-width: 0;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  /* Pulled out to the page's own edge rather than the 1180px content
+     column: 0 when the viewport is narrower than the column, otherwise
+     back out by the side gutter. Logical, so Arabic mirrors it. */
+  inset-inline-start: min(0px, calc((var(--content-max) - 100vw) / 2 + var(--space-4)));
+  width: clamp(220px, 22vw, 380px);
   display: flex;
   flex-direction: column;
-  padding: 0 0 var(--section-padding-block);
-  animation: fade-in 0.8s var(--ease);
-  /* Sits behind hero-body-main (see Hero.css) and outdented toward the
-     row's own start edge — logical margin, so it's further left in
-     English and further right in Arabic automatically — to keep the
-     two from crowding the middle of the row. */
-  position: relative;
+  align-items: center;
   z-index: 1;
-  margin-inline-start: clamp(-56px, -3vw, -16px);
+  pointer-events: none;
+  animation: fade-in 0.8s var(--ease);
 }
+.home-showcase > * { pointer-events: none; }
+.home-showcase .home-showcase-dot { pointer-events: auto; }
+
 @media (max-width: 900px) {
-  .home-showcase { padding-top: 0; margin-inline-start: 0; }
+  .home-showcase {
+    position: relative;
+    inset-inline-start: auto;
+    top: auto;
+    bottom: auto;
+    width: min(100%, 320px);
+    margin-inline: auto;
+    padding-bottom: var(--space-4);
+  }
+}
+
+/* ── The bulb: cord from the top of the hero, glass bulb at the end,
+   and a soft warm halo around it. */
+.home-showcase-bulb {
+  position: relative;
+  flex: none;
+  z-index: 5;
+  height: 105px;
+  display: flex;
+  justify-content: center;
+}
+.home-showcase-bulb svg { display: block; position: relative; z-index: 1; overflow: visible; }
+.home-showcase-bulb-glass { filter: drop-shadow(0 0 10px rgba(255, 214, 120, 0.9)); }
+.home-showcase-bulb-halo {
+  position: absolute;
+  left: 50%;
+  bottom: -10px;
+  width: 170px;
+  height: 170px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, #fff2c2 55%, transparent) 0%,
+    color-mix(in srgb, var(--gold) 22%, transparent) 40%,
+    transparent 70%
+  );
+  animation: showcase-bulb-glow 4.5s ease-in-out infinite;
+}
+@keyframes showcase-bulb-glow {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
+}
+
+/* The cone of light from the bulb, widening as it falls over the
+   photo. Plain alpha (no blend mode — the frame has no backdrop to
+   blend with) and blurred so it has no hard edges. */
+.home-showcase-light {
+  position: absolute;
+  z-index: 4;
+  top: 95px;
+  left: 50%;
+  width: 150%;
+  height: min(78%, 620px);
+  transform: translateX(-50%);
+  pointer-events: none;
+  clip-path: polygon(44% 0, 56% 0, 100% 100%, 0 100%);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, #fff2c2 34%, transparent) 0%,
+    color-mix(in srgb, var(--gold) 14%, transparent) 55%,
+    transparent 100%
+  );
+  filter: blur(14px);
 }
 
 .home-showcase-frame {
   position: relative;
   width: 100%;
-  flex: 1;
-  aspect-ratio: 4 / 3;
-  /* Very wide screens: cap the height rather than let the frame grow
-     taller than the viewport. */
+  flex: 1 1 auto;
+  min-height: 0;
+  /* Very wide/tall screens: cap the height rather than grow taller than the viewport. */
   max-height: 72dvh;
-  overflow: hidden;
-  border-radius: var(--radius-lg);
-  /* No border, no fill of its own — nothing to read as a boxed panel;
-     the page's own (transparent) background shows straight through.
-     The mask fades the photo's own edges out toward transparent, so
-     it dissolves into the page instead of ending in a hard rectangle,
-     and the drop-shadow below follows that same faded silhouette
-     rather than a hard rectangle of its own. */
   background: transparent;
   isolation: isolate;
-  mask-image: radial-gradient(ellipse 88% 88% at 50% 50%, #000 60%, transparent 100%);
-  -webkit-mask-image: radial-gradient(ellipse 88% 88% at 50% 50%, #000 60%, transparent 100%);
-  /* Very mild — just enough to read as the picture sitting slightly
-     lifted under the light falling on it, not a boxed drop-shadow. */
-  filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.14));
-  /* A slow, gentle drift rather than a static box, echoing the
-     headline's shimmer — reads as "alive" without competing for
-     attention with the photo crossfades themselves. */
-  animation: showcase-float 7s ease-in-out infinite;
-}
-
-@keyframes showcase-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
-
-/* A soft light wash falling from directly above, over the current
-   photo — the "focus light". Deliberately plain alpha (no blend mode):
-   mix-blend-mode composites against the *backdrop*, and this frame's
-   backdrop is transparent (no fill of its own — see above), which
-   blend functions like overlay/soft-light treat as black, painting a
-   dark patch instead of light. Plain, low-opacity white/gold over the
-   photo reads as a gentle glow with no such risk, and stays equally
-   subtle over the fully transparent letterbox margins (object-fit:
-   contain) where the photo itself doesn't reach. */
-.home-showcase-light {
-  position: absolute;
-  inset: -8% -12% auto -12%;
-  height: 55%;
-  z-index: 4;
-  pointer-events: none;
-  background: radial-gradient(
-    ellipse 60% 100% at 50% 0%,
-    color-mix(in srgb, var(--white-soft) 38%, transparent) 0%,
-    color-mix(in srgb, var(--gold) 20%, transparent) 45%,
-    transparent 85%
-  );
 }
 
 /* Slides stack in one spot and are shown purely by opacity/z-index:
@@ -98,6 +118,9 @@
   position: absolute;
   inset: 0;
   margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   opacity: 0;
   z-index: 0;
   pointer-events: none;
@@ -112,9 +135,14 @@
 .home-showcase-img {
   position: relative;
   display: block;
-  width: 100%;
-  height: 100%;
+  /* Admin size slider: the image box is the frame × --showcase-scale,
+     centred, so lowering it zooms the bag out around its own middle
+     (and keeps it under the bulb). */
+  width: calc(100% * var(--showcase-scale, 1));
+  height: calc(100% * var(--showcase-scale, 1));
   object-fit: contain;
+  /* Follows the bag's own outline — not a panel. */
+  filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.35));
   user-select: none;
   -webkit-user-drag: none;
 }
@@ -130,7 +158,8 @@
   font-size: var(--fs-body);
   line-height: 1.4;
   text-align: start;
-  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.7) 100%);
+  /* No panel behind the text — a shadow keeps it legible. */
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
 }
 
 .home-showcase-dots {
@@ -168,12 +197,16 @@
 .home-showcase-dot[aria-disabled="true"] { cursor: default; }
 .home-showcase-dot:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; border-radius: 50%; }
 
+@media (max-width: 900px) {
+  .home-showcase-frame { aspect-ratio: 3 / 4; max-height: 60dvh; flex: none; }
+}
+
 @media (max-width: 600px) {
   .home-showcase-caption { padding-inline: var(--space-4); font-size: var(--fs-sm); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .home-showcase { animation: none; }
-  .home-showcase-frame { animation: none; }
+  .home-showcase-bulb-halo { animation: none; }
   .home-showcase-slide.is-active { transition: none; }
 }

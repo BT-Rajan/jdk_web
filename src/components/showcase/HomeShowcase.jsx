@@ -34,7 +34,7 @@ const TITLE = { en: "Showcase", ar: "معرض الصور" };
  * turn comes.
  */
 export default function HomeShowcase() {
-  const { lang } = useLang();
+  const { lang, theme } = useLang();
   const [images, setImages] = useState([]);
   // `prev` is the photo currently dissolving out (null when idle).
   const [pos, setPos] = useState({ current: 0, prev: null });
@@ -98,13 +98,45 @@ export default function HomeShowcase() {
     <section
       className="home-showcase"
       aria-label={title}
-      style={{ "--showcase-fade-ms": `${FADE_MS}ms` }}
+      style={{
+        "--showcase-fade-ms": `${FADE_MS}ms`,
+        // Admin slider (Settings > Theme > Showcase image size).
+        "--showcase-scale": theme?.showcaseScale ?? 1,
+      }}
     >
+      {/* A physical bulb hanging on a cord above the photo, with the
+          cone of light it throws down over it. Both purely decorative
+          (aria-hidden). */}
+      <div className="home-showcase-bulb" aria-hidden="true">
+        <svg viewBox="0 0 64 120" width="56" height="105" focusable="false">
+          <defs>
+            <radialGradient id="hs-bulb-glass" cx="50%" cy="55%" r="55%">
+              <stop offset="0%" stopColor="#fffdf0" />
+              <stop offset="55%" stopColor="#ffe9a8" />
+              <stop offset="100%" stopColor="#f2c14e" />
+            </radialGradient>
+            <linearGradient id="hs-bulb-cap" x1="0" x2="1">
+              <stop offset="0%" stopColor="#5b5b5b" />
+              <stop offset="50%" stopColor="#b9b9b9" />
+              <stop offset="100%" stopColor="#4a4a4a" />
+            </linearGradient>
+          </defs>
+          <line x1="32" y1="0" x2="32" y2="50" stroke="#2b2b2b" strokeWidth="2" />
+          <rect x="24" y="48" width="16" height="20" rx="3" fill="url(#hs-bulb-cap)" />
+          <line x1="24" y1="55" x2="40" y2="55" stroke="#2a2a2a" strokeWidth="1.2" />
+          <line x1="24" y1="61" x2="40" y2="61" stroke="#2a2a2a" strokeWidth="1.2" />
+          <path
+            d="M32 116c-12 0-22-9-22-21 0-8 4-13 9-18 3-3 4-6 4-9h18c0 3 1 6 4 9 5 5 9 10 9 18 0 12-10 21-22 21z"
+            fill="url(#hs-bulb-glass)"
+            className="home-showcase-bulb-glass"
+          />
+          <path d="M26 96c2-8 4-8 6-14 2 6 4 6 6 14" fill="none" stroke="#c98a1a" strokeWidth="1.4" strokeLinecap="round" />
+        </svg>
+        <span className="home-showcase-bulb-halo" />
+      </div>
+      <div className="home-showcase-light" />
+
       <div className="home-showcase-frame">
-        {/* Soft light falling from above, over whichever photo is on
-            top — purely decorative (aria-hidden), so it never blocks
-            or gets read alongside the photo/caption underneath it. */}
-        <div className="home-showcase-light" aria-hidden="true" />
         {images.map((img, i) => {
           if (!mounted.has(i)) return null;
           const state = i === current ? "is-active" : i === prev ? "is-prev" : "";

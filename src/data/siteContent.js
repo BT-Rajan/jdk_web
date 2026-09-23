@@ -159,6 +159,7 @@ const FALLBACK_THEME = {
   // 5 cps matches the site's original (pre-setting) hardcoded speed.
   headlineTypingSpeedCps: 5,
   headlineDissolveMs: 2500,
+  showcaseScale: 1,
   surfaceStyle: "glass",
   buttonStyle: "default",
   typeScale: "standard",
@@ -229,6 +230,7 @@ function apiTheme(publicConfig) {
     headlineStyle: publicConfig["theme.headlineStyle"] || "ripple-gradient",
     headlineTypingSpeedCps: publicConfig["theme.headlineTypingSpeedCps"] || 5,
     headlineDissolveMs: publicConfig["theme.headlineDissolveMs"] || 2500,
+    showcaseScale: publicConfig["theme.showcaseScale"] ?? 1,
     surfaceStyle: publicConfig["theme.surfaceStyle"] || "glass",
     buttonStyle: publicConfig["theme.buttonStyle"] || "default",
     typeScale: publicConfig["theme.typeScale"] || "standard",

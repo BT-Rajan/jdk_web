@@ -16,6 +16,7 @@ import BackgroundIntensityPicker from "../components/BackgroundIntensityPicker.j
 import DensityPicker from "../components/DensityPicker.jsx";
 import SectionRhythmPicker from "../components/SectionRhythmPicker.jsx";
 import LogoZoomControl from "../components/LogoZoomControl.jsx";
+import ShowcaseScaleControl from "../components/ShowcaseScaleControl.jsx";
 import WebhooksPage from "./WebhooksPage.jsx";
 import PagesPage from "./PagesPage.jsx";
 import FaqPage from "./FaqPage.jsx";
@@ -299,6 +300,16 @@ export default function SettingsPage() {
                     if (field.key === "theme.backgroundIntensity") return null;
                     if (field.key === "theme.density") return null;
                     if (field.key === "theme.sectionRhythm") return null;
+                    // Slider with live preview instead of a bare number box.
+                    if (field.key === "theme.showcaseScale") {
+                      return (
+                        <ShowcaseScaleControl
+                          key={field.key}
+                          scale={values[field.key]}
+                          onScaleChange={(v) => handleFieldChange(field.key, v)}
+                        />
+                      );
+                    }
                     return (
                       <div key={field.key}>
                         <SettingField

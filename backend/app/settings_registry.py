@@ -246,6 +246,13 @@ _DEFS: list[SettingDef] = [
                help_text="How long the crossfade from the typed statement to the permanent tagline "
                           "(taglineLine1/taglineLine2) takes, in milliseconds.",
                validator=_int_range(200, 8000)),
+    # Size of the photo inside the homepage showcase (the cement bag).
+    # 1.0 = fills its frame; lower = zoomed out / smaller. Rendered by an
+    # admin slider (see src/admin/components/ShowcaseScaleControl.jsx).
+    SettingDef("theme.showcaseScale", "theme", "Showcase image size", SettingType.FLOAT, 1.0,
+               help_text="Size of the homepage showcase photo (e.g. the cement bag). "
+                          "Lower = smaller / zoomed out.",
+               validator=_float_range(0.3, 1.2)),
     # ── Pass 1 of the whole-page style system (surfaces + buttons).
     # Both are unified, cross-component toggles — one setting changes
     # every covered element at once, not per-component overrides. See

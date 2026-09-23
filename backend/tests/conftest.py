@@ -81,5 +81,5 @@ def logged_in_client() -> TestClient:
     c = TestClient(app)
     resp = c.post("/admin/api/auth/login", json={"username": username, "password": password})
     resp.raise_for_status()
-    c.headers.update({"X-CSRF-Token": resp.json()["csrf_token"]})
+    c.headers.update({"X-CSRF-Token": resp.json()["csrfToken"]})
     return c

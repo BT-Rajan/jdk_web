@@ -48,9 +48,9 @@ class CallbackOut(BaseModel):
 
 
 def _redirect_uri(db: Session) -> str:
-    redirect_uri = get_setting(db, "calendar_sync.google_redirect_uri")
+    redirect_uri = get_setting(db, "calendarSync.googleRedirectUri")
     if not redirect_uri:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "calendar_sync.google_redirect_uri must be configured first")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "calendarSync.googleRedirectUri must be configured first")
     return redirect_uri
 
 
@@ -77,7 +77,7 @@ def sync_now(admin: AdminUser = Depends(get_current_admin), db: Session = Depend
     """On-demand two-way drift check — pulls whatever changed on the
     connected Google Calendar since the last check and reconciles it
     against linked appointments (see calendar_sync_service.detect_drift).
-    Also run automatically on a timer if calendar_sync.drift_poll_minutes
+    Also run automatically on a timer if calendarSync.driftPollMinutes
     is set — see app/scheduler.py."""
     from app import calendar_sync_service
     result = calendar_sync_service.detect_drift(db)

@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { adminApi } from "../api/client.js";
 import "./CalendarSyncConnector.css";
 
-// Google redirects back to this very Settings page (calendar_sync.
+// Google redirects back to this very Settings page (calendarSync.
 // google_redirect_uri should point here) with ?code=&state= — this
 // component picks those up on mount and completes the exchange itself,
 // rather than the browser landing on a raw JSON response. See

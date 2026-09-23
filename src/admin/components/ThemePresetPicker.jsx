@@ -46,17 +46,17 @@ export default function ThemePresetPicker({ values, onApply }) {
             <span
               className="theme-preset-swatch"
               style={{
-                background: p.values["theme.background_color"],
-                borderColor: p.values["theme.primary_color"],
+                background: p.values["theme.backgroundColor"],
+                borderColor: p.values["theme.primaryColor"],
               }}
             >
-              <span className="theme-preset-dot" style={{ background: p.values["theme.primary_color"] }} />
-              <span className="theme-preset-dot" style={{ background: p.values["theme.accent_color"] }} />
+              <span className="theme-preset-dot" style={{ background: p.values["theme.primaryColor"] }} />
+              <span className="theme-preset-dot" style={{ background: p.values["theme.accentColor"] }} />
               <span
                 className="theme-preset-sample"
                 style={{
-                  color: p.values["theme.text_color"],
-                  fontFamily: p.values["theme.font_display"],
+                  color: p.values["theme.textColor"],
+                  fontFamily: p.values["theme.fontDisplay"],
                 }}
               >
                 Aa

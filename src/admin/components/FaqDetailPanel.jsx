@@ -17,7 +17,7 @@ export default function FaqDetailPanel({ mode, item, onClose, onCreated, onUpdat
   const [translations, setTranslations] = useState(
     mode === "edit" ? { ...emptyTranslations(), ...item.translations } : emptyTranslations()
   );
-  const [isActive, setIsActive] = useState(mode === "edit" ? item.is_active : true);
+  const [isActive, setIsActive] = useState(mode === "edit" ? item.isActive : true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -35,11 +35,11 @@ export default function FaqDetailPanel({ mode, item, onClose, onCreated, onUpdat
     setError("");
     try {
       if (mode === "create") {
-        const created = await adminApi.createFaq({ translations, is_active: isActive, order: 0 });
+        const created = await adminApi.createFaq({ translations, isActive, order: 0 });
         onCreated(created);
       } else {
         const updated = await adminApi.updateFaq(item.id, {
-          translations, is_active: isActive, order: item.order,
+          translations, isActive, order: item.order,
         });
         onUpdated(updated);
       }

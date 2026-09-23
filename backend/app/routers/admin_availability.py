@@ -154,7 +154,7 @@ def effective(
         # preview matches what a real booking request would see.
         from app.settings_service import get_setting
         workdays = set(get_setting(db, "booking.workdays"))
-        start_h, end_h = get_setting(db, "booking.day_start_hour"), get_setting(db, "booking.day_end_hour")
+        start_h, end_h = get_setting(db, "booking.dayStartHour"), get_setting(db, "booking.dayEndHour")
         if d.weekday() not in workdays or end_h <= start_h:
             return EffectiveOut(is_closed=True, source="legacy_settings", ranges=[])
         return EffectiveOut(

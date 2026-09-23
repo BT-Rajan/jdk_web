@@ -50,7 +50,7 @@ class RescheduleRequest(BaseModel):
 def list_services(db: Session = Depends(get_db)):
     """Active services only — a service becomes visible here the moment
     an admin activates it (services_service.py), with no
-    features.booking_enabled gate: browsing what's offered is harmless
+    features.bookingEnabled gate: browsing what's offered is harmless
     even while booking itself is switched off."""
     from app import services_service
     return [
@@ -68,7 +68,7 @@ def list_services(db: Session = Depends(get_db)):
 
 @router.get("/slots")
 def get_slots(date: str, service_id: str | None = None, db: Session = Depends(get_db)):
-    if not get_setting(db, "features.booking_enabled"):
+    if not get_setting(db, "features.bookingEnabled"):
         return {"slots": []}
     try:
         slots = booking_service.available_slots(db, date, service_id=service_id)
@@ -89,7 +89,7 @@ def get_slots(date: str, service_id: str | None = None, db: Session = Depends(ge
 @router.post("/appointments")
 @limiter.limit(settings.RATE_LIMIT_APPOINTMENT)
 def create_appointment(request: Request, body: CreateAppointmentRequest, db: Session = Depends(get_db)):
-    if not get_setting(db, "features.booking_enabled"):
+    if not get_setting(db, "features.bookingEnabled"):
         return {"ok": False, "error": "booking_disabled"}
     result = booking_service.create_appointment(
         db, date_str=body.date, time_str=body.slot, name=body.name, email=body.email,

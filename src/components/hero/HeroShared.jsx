@@ -3,7 +3,7 @@ import { isSafeHref } from "../../data/siteContent.js";
 import ChatInput from "../chat/ChatInput.jsx";
 
 /**
- * Resolves admin-provisioned hero buttons (copy.home_hero_buttons) into
+ * Resolves admin-provisioned hero buttons (copy.homeHeroButtons) into
  * a flat, render-ready list — i18n label lookup + href safety check
  * done once, shared by every place that renders this same config
  * (HeroButtons above, CenteredCardLayout's pill row).
@@ -42,7 +42,7 @@ export function HeroButtons({ buttons, lang }) {
 }
 
 /**
- * Small circular avatar — an uploaded image (chat.avatar_url, admin-
+ * Small circular avatar — an uploaded image (chat.avatarUrl, admin-
  * configurable, Settings > Chat / AI assistant) if set, otherwise a
  * plain initial letter. Used by both HeroChatComposer here and
  * ChatWidget's header, so the homepage entry point and the sticky
@@ -145,7 +145,7 @@ export function FitOneLine({ text, className, styleId }) {
   );
 }
 
-// Admin-configurable — theme.headline_typing_speed_cps (characters per
+// Admin-configurable — theme.headlineTypingSpeedCps (characters per
 // second; see backend/app/settings_registry.py and applyTheme.js). This
 // is only the fallback for when no theme value has loaded yet.
 const DEFAULT_TYPING_SPEED_CPS = 5;
@@ -179,7 +179,7 @@ export function HeroHeadline({ statement, taglineLine1, taglineLine2, className,
   const [phase, setPhase] = useState(skip ? "tagline" : "typing"); // "typing" -> "tagline"
   const [count, setCount] = useState(0);
 
-  // Admin-configurable (theme.headline_typing_speed_cps) characters-
+  // Admin-configurable (theme.headlineTypingSpeedCps) characters-
   // per-second, converted to a per-character delay. Falls back to
   // DEFAULT_TYPING_SPEED_CPS if the theme hasn't loaded / is unset.
   const typeSpeedMs = Math.max(1, Math.round(1000 / (typingSpeedCps || DEFAULT_TYPING_SPEED_CPS)));
@@ -195,7 +195,7 @@ export function HeroHeadline({ statement, taglineLine1, taglineLine2, className,
   }, [phase, count, statement, skip, typeSpeedMs]);
 
   const typingDone = phase !== "typing";
-  // A literal newline in copy.home.hero_statement (admin-editable, see
+  // A literal newline in copy.home.heroStatement (admin-editable, see
   // settings_registry.py) types across two lines instead of one — the
   // typed-so-far substring is split on "\n" and each line renders as
   // its own FitOneLine, stacked (FitOneLine is block-level, so this

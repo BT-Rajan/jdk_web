@@ -18,10 +18,10 @@ def _widen_booking_window():
     """This file's dates start at nth-workday 250, clear of every other
     file's window (see PASS9_NOTES.md)."""
     with session_scope() as db:
-        set_setting(db, "booking.max_days_ahead", 365, actor_id=None, actor_username="test-setup")
+        set_setting(db, "booking.maxDaysAhead", 365, actor_id=None, actor_username="test-setup")
     yield
     with session_scope() as db:
-        set_setting(db, "booking.max_days_ahead", 30, actor_id=None, actor_username="test-teardown")
+        set_setting(db, "booking.maxDaysAhead", 30, actor_id=None, actor_username="test-teardown")
 
 
 @pytest.fixture(autouse=True)
@@ -32,8 +32,8 @@ def _clear_calendar_state_after_test():
     yield
     with session_scope() as db:
         db.query(CalendarCredential).delete()
-        set_setting(db, "features.calendar_sync_enabled", False, actor_id=None, actor_username="test-teardown")
-        set_setting(db, "booking.calendar_sync_fail_open", False, actor_id=None, actor_username="test-teardown")
+        set_setting(db, "features.calendarSyncEnabled", False, actor_id=None, actor_username="test-teardown")
+        set_setting(db, "booking.calendarSyncFailOpen", False, actor_id=None, actor_username="test-teardown")
 
 
 def _nth_future_workday(n: int) -> str:
@@ -49,7 +49,7 @@ def _nth_future_workday(n: int) -> str:
 
 def _enable_sync(logged_in_client=None):
     with session_scope() as db:
-        set_setting(db, "features.calendar_sync_enabled", True, actor_id=None, actor_username="test-setup")
+        set_setting(db, "features.calendarSyncEnabled", True, actor_id=None, actor_username="test-setup")
 
 
 def _create_active_credential(calendar_id="primary@group.calendar.google.com", expires_in_future=True):
@@ -69,10 +69,10 @@ def _create_active_credential(calendar_id="primary@group.calendar.google.com", e
 
 
 def _configure_oauth_client(logged_in_client, redirect_uri="https://example.com/admin/api/calendar-sync/callback"):
-    resp = logged_in_client.put("/admin/api/settings/calendar_sync", json={
-        "calendar_sync.google_client_id": "test-client-id",
-        "calendar_sync.google_client_secret": "test-client-secret",
-        "calendar_sync.google_redirect_uri": redirect_uri,
+    resp = logged_in_client.put("/admin/api/settings/calendarSync", json={
+        "calendarSync.googleClientId": "test-client-id",
+        "calendarSync.googleClientSecret": "test-client-secret",
+        "calendarSync.googleRedirectUri": redirect_uri,
     })
     assert resp.status_code == 200, resp.text
 
@@ -248,7 +248,7 @@ def test_busy_block_removes_overlapping_slot_leaves_adjacent(logged_in_client, c
 
 
 def test_sync_disabled_ignores_busy_times(client, monkeypatch):
-    # features.calendar_sync_enabled defaults False - no credential even
+    # features.calendarSyncEnabled defaults False - no credential even
     # configured, so get_busy_times must never be called.
     called = []
     monkeypatch.setattr("app.google_calendar_client.get_busy_times", lambda *a, **k: called.append(1) or [])
@@ -276,7 +276,7 @@ def test_fail_open_setting_ignores_api_failure(logged_in_client, client, monkeyp
     _enable_sync()
     _create_active_credential()
     with session_scope() as db:
-        set_setting(db, "booking.calendar_sync_fail_open", True, actor_id=None, actor_username="test")
+        set_setting(db, "booking.calendarSyncFailOpen", True, actor_id=None, actor_username="test")
     date = _nth_future_workday(253)
 
     def boom(*a, **k):
@@ -320,8 +320,8 @@ def test_expired_token_is_refreshed_before_freebusy_call(client, monkeypatch):
         return []
 
     with session_scope() as db:
-        set_setting(db, "calendar_sync.google_client_id", "cid", actor_id=None, actor_username="test")
-        set_setting(db, "calendar_sync.google_client_secret", "csecret", actor_id=None, actor_username="test")
+        set_setting(db, "calendarSync.googleClientId", "cid", actor_id=None, actor_username="test")
+        set_setting(db, "calendarSync.googleClientSecret", "csecret", actor_id=None, actor_username="test")
 
     monkeypatch.setattr("app.google_calendar_client.refresh_access_token", fake_refresh)
     monkeypatch.setattr("app.google_calendar_client.get_busy_times", fake_busy)

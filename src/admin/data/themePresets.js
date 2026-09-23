@@ -24,20 +24,20 @@ export const THEME_PRESETS = [
     name: "Midnight Gold",
     description: "Deep navy with a warm gold signature — the original JDK look.",
     values: {
-      "theme.background_color": "#0a0e27",
-      "theme.primary_color": "#fbbf24",
-      "theme.accent_color": "#3b82f6",
-      "theme.text_color": "#f0f5ff",
-      "theme.font_display": '"Cormorant Garamond", Georgia, serif',
-      "theme.font_body": '"Inter", system-ui, -apple-system, sans-serif',
-      "theme.font_ar": '"Noto Kufi Arabic", "Arial Unicode MS", sans-serif',
-      "theme.google_fonts_url":
+      "theme.backgroundColor": "#0a0e27",
+      "theme.primaryColor": "#fbbf24",
+      "theme.accentColor": "#3b82f6",
+      "theme.textColor": "#f0f5ff",
+      "theme.fontDisplay": '"Cormorant Garamond", Georgia, serif',
+      "theme.fontBody": '"Inter", system-ui, -apple-system, sans-serif',
+      "theme.fontAr": '"Noto Kufi Arabic", "Arial Unicode MS", sans-serif',
+      "theme.googleFontsUrl":
         "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700" +
         "&family=Cormorant+Garamond:wght@500;600;700&family=Noto+Kufi+Arabic:wght@300;400;500;600;700" +
         "&display=swap",
-      "theme.header_height_px": 64,
-      "theme.content_max_width_px": 1180,
-      "theme.corner_radius_px": 16,
+      "theme.headerHeightPx": 64,
+      "theme.contentMaxWidthPx": 1180,
+      "theme.cornerRadiusPx": 16,
     },
   },
   {
@@ -45,20 +45,20 @@ export const THEME_PRESETS = [
     name: "Emerald Noir",
     description: "Near-black emerald with antique gold and a crisp, architectural edge.",
     values: {
-      "theme.background_color": "#071a16",
-      "theme.primary_color": "#d4af37",
-      "theme.accent_color": "#10b981",
-      "theme.text_color": "#f2ede1",
-      "theme.font_display": '"Playfair Display", Georgia, serif',
-      "theme.font_body": '"Manrope", system-ui, -apple-system, sans-serif',
-      "theme.font_ar": '"Noto Kufi Arabic", "Arial Unicode MS", sans-serif',
-      "theme.google_fonts_url":
+      "theme.backgroundColor": "#071a16",
+      "theme.primaryColor": "#d4af37",
+      "theme.accentColor": "#10b981",
+      "theme.textColor": "#f2ede1",
+      "theme.fontDisplay": '"Playfair Display", Georgia, serif',
+      "theme.fontBody": '"Manrope", system-ui, -apple-system, sans-serif',
+      "theme.fontAr": '"Noto Kufi Arabic", "Arial Unicode MS", sans-serif',
+      "theme.googleFontsUrl":
         "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700" +
         "&family=Playfair+Display:wght@500;600;700&family=Noto+Kufi+Arabic:wght@300;400;500;600;700" +
         "&display=swap",
-      "theme.header_height_px": 68,
-      "theme.content_max_width_px": 1180,
-      "theme.corner_radius_px": 10,
+      "theme.headerHeightPx": 68,
+      "theme.contentMaxWidthPx": 1180,
+      "theme.cornerRadiusPx": 10,
     },
   },
   {
@@ -66,20 +66,20 @@ export const THEME_PRESETS = [
     name: "Onyx & Rose Gold",
     description: "Near-black onyx, soft rose gold, and a hint of amethyst — softer, boutique feel.",
     values: {
-      "theme.background_color": "#120d14",
-      "theme.primary_color": "#e0b0a3",
-      "theme.accent_color": "#a78bfa",
-      "theme.text_color": "#f5eef0",
-      "theme.font_display": '"Bodoni Moda", Georgia, serif',
-      "theme.font_body": '"Inter", system-ui, -apple-system, sans-serif',
-      "theme.font_ar": '"Noto Kufi Arabic", "Arial Unicode MS", sans-serif',
-      "theme.google_fonts_url":
+      "theme.backgroundColor": "#120d14",
+      "theme.primaryColor": "#e0b0a3",
+      "theme.accentColor": "#a78bfa",
+      "theme.textColor": "#f5eef0",
+      "theme.fontDisplay": '"Bodoni Moda", Georgia, serif',
+      "theme.fontBody": '"Inter", system-ui, -apple-system, sans-serif',
+      "theme.fontAr": '"Noto Kufi Arabic", "Arial Unicode MS", sans-serif',
+      "theme.googleFontsUrl":
         "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700" +
         "&family=Bodoni+Moda:wght@500;600;700&family=Noto+Kufi+Arabic:wght@300;400;500;600;700" +
         "&display=swap",
-      "theme.header_height_px": 64,
-      "theme.content_max_width_px": 1180,
-      "theme.corner_radius_px": 20,
+      "theme.headerHeightPx": 64,
+      "theme.contentMaxWidthPx": 1180,
+      "theme.cornerRadiusPx": 20,
     },
   },
   {
@@ -87,20 +87,20 @@ export const THEME_PRESETS = [
     name: "Ember Pulse",
     description: "Deep violet-black with a warm coral signature and an electric violet accent — bold, modern, voice-tech energy.",
     values: {
-      "theme.background_color": "#0c0a16",
-      "theme.primary_color": "#ff7a45",
-      "theme.accent_color": "#a855f7",
-      "theme.text_color": "#f4f0fa",
-      "theme.font_display": '"Space Grotesk", system-ui, -apple-system, sans-serif',
-      "theme.font_body": '"Inter", system-ui, -apple-system, sans-serif',
-      "theme.font_ar": '"Noto Kufi Arabic", "Arial Unicode MS", sans-serif',
-      "theme.google_fonts_url":
+      "theme.backgroundColor": "#0c0a16",
+      "theme.primaryColor": "#ff7a45",
+      "theme.accentColor": "#a855f7",
+      "theme.textColor": "#f4f0fa",
+      "theme.fontDisplay": '"Space Grotesk", system-ui, -apple-system, sans-serif',
+      "theme.fontBody": '"Inter", system-ui, -apple-system, sans-serif',
+      "theme.fontAr": '"Noto Kufi Arabic", "Arial Unicode MS", sans-serif',
+      "theme.googleFontsUrl":
         "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700" +
         "&family=Space+Grotesk:wght@500;600;700&family=Noto+Kufi+Arabic:wght@300;400;500;600;700" +
         "&display=swap",
-      "theme.header_height_px": 64,
-      "theme.content_max_width_px": 1180,
-      "theme.corner_radius_px": 18,
+      "theme.headerHeightPx": 64,
+      "theme.contentMaxWidthPx": 1180,
+      "theme.cornerRadiusPx": 18,
     },
   },
 ];
@@ -109,10 +109,10 @@ export const THEME_PRESETS = [
 // detect whether the current form values match a known preset (so the
 // dropdown reflects reality) or have been hand-edited since.
 const SIGNATURE_KEYS = [
-  "theme.background_color",
-  "theme.primary_color",
-  "theme.accent_color",
-  "theme.text_color",
+  "theme.backgroundColor",
+  "theme.primaryColor",
+  "theme.accentColor",
+  "theme.textColor",
 ];
 
 export function detectActivePreset(values) {

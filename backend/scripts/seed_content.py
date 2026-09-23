@@ -26,42 +26,42 @@ from app.settings_service import set_many
 
 FRONTEND_CONTENT_DIR = Path(__file__).resolve().parent.parent.parent / "src" / "content"
 
-# nav_label / section_title / section_body / tagline_* hand-ported once
+# navLabel / sectionTitle / sectionBody / tagline_* hand-ported once
 # here from the JS structures that used to hold them (NAV, SECTIONS,
 # PAGE_META in src/data/content.js and pages.js). Full body copy is read
 # directly from the .md files below rather than duplicated inline.
 PAGE_META = {
     "about": {
-        "en": {"nav_label": "About", "section_title": "About Perennia",
-               "section_body": "Perennia is an AI-powered technology and innovation company. We partner with businesses to design, build, and operate intelligent products — from first concept through to production support.",
-               "tagline_line1": "Who We ", "tagline_line2": "Are", "tagline_sub": "AI-POWERED TECHNOLOGY & INNOVATION"},
-        "ar": {"nav_label": "من نحن", "section_title": "عن بيرينيا",
-               "section_body": "بيرينيا شركة تقنية وابتكار مدعومة بالذكاء الاصطناعي. نتعاون مع الشركات لتصميم وبناء وتشغيل منتجات ذكية — من الفكرة الأولى وحتى الدعم الإنتاجي.",
-               "tagline_line1": "من ", "tagline_line2": "نحن", "tagline_sub": "تقنية وابتكار مدعومان بالذكاء الاصطناعي"},
+        "en": {"navLabel": "About", "sectionTitle": "About Perennia",
+               "sectionBody": "Perennia is an AI-powered technology and innovation company. We partner with businesses to design, build, and operate intelligent products — from first concept through to production support.",
+               "taglineLine1": "Who We ", "taglineLine2": "Are", "taglineSub": "AI-POWERED TECHNOLOGY & INNOVATION"},
+        "ar": {"navLabel": "من نحن", "sectionTitle": "عن بيرينيا",
+               "sectionBody": "بيرينيا شركة تقنية وابتكار مدعومة بالذكاء الاصطناعي. نتعاون مع الشركات لتصميم وبناء وتشغيل منتجات ذكية — من الفكرة الأولى وحتى الدعم الإنتاجي.",
+               "taglineLine1": "من ", "taglineLine2": "نحن", "taglineSub": "تقنية وابتكار مدعومان بالذكاء الاصطناعي"},
     },
     "products": {
-        "en": {"nav_label": "Products", "section_title": "Products",
-               "section_body": "AI assistants, automation workflows, and custom digital platforms — built on modern stacks and tuned to how your team actually works.",
-               "tagline_line1": "What We ", "tagline_line2": "Build", "tagline_sub": "PRODUCTS & PLATFORMS"},
-        "ar": {"nav_label": "المنتجات", "section_title": "المنتجات",
-               "section_body": "مساعدون بالذكاء الاصطناعي، وأتمتة سير العمل، ومنصات رقمية مخصصة — مبنية على تقنيات حديثة ومصممة لتناسب طريقة عمل فريقك.",
-               "tagline_line1": "ماذا ", "tagline_line2": "نبني", "tagline_sub": "المنتجات والمنصات"},
+        "en": {"navLabel": "Products", "sectionTitle": "Products",
+               "sectionBody": "AI assistants, automation workflows, and custom digital platforms — built on modern stacks and tuned to how your team actually works.",
+               "taglineLine1": "What We ", "taglineLine2": "Build", "taglineSub": "PRODUCTS & PLATFORMS"},
+        "ar": {"navLabel": "المنتجات", "sectionTitle": "المنتجات",
+               "sectionBody": "مساعدون بالذكاء الاصطناعي، وأتمتة سير العمل، ومنصات رقمية مخصصة — مبنية على تقنيات حديثة ومصممة لتناسب طريقة عمل فريقك.",
+               "taglineLine1": "ماذا ", "taglineLine2": "نبني", "taglineSub": "المنتجات والمنصات"},
     },
     "services": {
-        "en": {"nav_label": "Services", "section_title": "Services",
-               "section_body": "Consulting, product design, and full-cycle engineering. We embed with your team or run the build end-to-end, whichever fits your roadmap.",
-               "tagline_line1": "How We ", "tagline_line2": "Work", "tagline_sub": "CONSULTING & ENGINEERING"},
-        "ar": {"nav_label": "الخدمات", "section_title": "الخدمات",
-               "section_body": "استشارات، وتصميم منتجات، وهندسة متكاملة. نندمج مع فريقك أو ننفذ المشروع بالكامل، وفق ما يناسب خطتك.",
-               "tagline_line1": "كيف ", "tagline_line2": "نعمل", "tagline_sub": "استشارات وهندسة"},
+        "en": {"navLabel": "Services", "sectionTitle": "Services",
+               "sectionBody": "Consulting, product design, and full-cycle engineering. We embed with your team or run the build end-to-end, whichever fits your roadmap.",
+               "taglineLine1": "How We ", "taglineLine2": "Work", "taglineSub": "CONSULTING & ENGINEERING"},
+        "ar": {"navLabel": "الخدمات", "sectionTitle": "الخدمات",
+               "sectionBody": "استشارات، وتصميم منتجات، وهندسة متكاملة. نندمج مع فريقك أو ننفذ المشروع بالكامل، وفق ما يناسب خطتك.",
+               "taglineLine1": "كيف ", "taglineLine2": "نعمل", "taglineSub": "استشارات وهندسة"},
     },
     "contact": {
-        "en": {"nav_label": "Contact Us", "section_title": "Contact Us",
-               "section_body": "Ready to talk? Use \"Talk to Us\" to book time directly, or start a chat below and our assistant will connect you with the right person.",
-               "tagline_line1": "Let's ", "tagline_line2": "Talk", "tagline_sub": "GET IN TOUCH"},
-        "ar": {"nav_label": "تواصل معنا", "section_title": "تواصل معنا",
-               "section_body": "جاهز للتحدث؟ استخدم \"تحدث إلينا\" لحجز موعد مباشرة، أو ابدأ محادثة أدناه وسيقوم مساعدنا بتوصيلك بالشخص المناسب.",
-               "tagline_line1": "لنتحدث", "tagline_line2": "", "tagline_sub": "تواصل معنا"},
+        "en": {"navLabel": "Contact Us", "sectionTitle": "Contact Us",
+               "sectionBody": "Ready to talk? Use \"Talk to Us\" to book time directly, or start a chat below and our assistant will connect you with the right person.",
+               "taglineLine1": "Let's ", "taglineLine2": "Talk", "taglineSub": "GET IN TOUCH"},
+        "ar": {"navLabel": "تواصل معنا", "sectionTitle": "تواصل معنا",
+               "sectionBody": "جاهز للتحدث؟ استخدم \"تحدث إلينا\" لحجز موعد مباشرة، أو ابدأ محادثة أدناه وسيقوم مساعدنا بتوصيلك بالشخص المناسب.",
+               "taglineLine1": "لنتحدث", "taglineLine2": "", "taglineSub": "تواصل معنا"},
     },
 }
 
@@ -92,35 +92,35 @@ FAQ_SEED = [
 # frontend-side safety net this is meant to make unnecessary.
 COPY_HOME = {
     "en": {"welcome": "Welcome to Perennia", "tagline": "Visit our V-Lounge for more",
-           "hero_statement": "Practical AI\nBuilt for Businesses",
-           "tagline_line1": "Solving Today.", "tagline_line2": "Shaping Tomorrow.",
-           "supporting_text": "Digital products for businesses across India and the GCC.",
-           "example_prompts": ["What does Perennia build?", "How can Perennia help my business?",
+           "heroStatement": "Practical AI\nBuilt for Businesses",
+           "taglineLine1": "Solving Today.", "taglineLine2": "Shaping Tomorrow.",
+           "supportingText": "Digital products for businesses across India and the GCC.",
+           "examplePrompts": ["What does Perennia build?", "How can Perennia help my business?",
                                 "Explore our products"],
-           "hint": "Start chatting", "lang_switch": "AR | عربي"},
+           "hint": "Start chatting", "langSwitch": "AR | عربي"},
     "ar": {"welcome": "مرحبا بك في بيرينيا", "tagline": "زوروا V-Lounge الخاص بنا لمزيد من المعلومات",
-           "hero_statement": "حلول ذكاء اصطناعي عملية ومنتجات رقمية للأعمال",
-           "tagline_line1": "حلول اليوم.", "tagline_line2": "لصناعة الغد.",
-           "supporting_text": "منتجات رقمية للشركات في الهند ودول الخليج.",
-           "example_prompts": ["ما الذي تبنيه بيرينيا؟", "كيف يمكن لبيرينيا مساعدة أعمالي؟", "استكشف منتجاتنا"],
-           "hint": "ابدأ المحادثة", "lang_switch": "EN | English"},
+           "heroStatement": "حلول ذكاء اصطناعي عملية ومنتجات رقمية للأعمال",
+           "taglineLine1": "حلول اليوم.", "taglineLine2": "لصناعة الغد.",
+           "supportingText": "منتجات رقمية للشركات في الهند ودول الخليج.",
+           "examplePrompts": ["ما الذي تبنيه بيرينيا؟", "كيف يمكن لبيرينيا مساعدة أعمالي؟", "استكشف منتجاتنا"],
+           "hint": "ابدأ المحادثة", "langSwitch": "EN | English"},
 }
 
 COPY_CHAT = {
-    "en": {"tagline_line1": "Solving Today. ", "tagline_line2": "Shaping Tomorrow.",
+    "en": {"taglineLine1": "Solving Today. ", "taglineLine2": "Shaping Tomorrow.",
            "sub": "AI-POWERED TECHNOLOGY & INNOVATION", "header": "Perennia Assistant",
-           "book_btn": "Talk to Us", "faq_title": "Quick Questions",
-           "input_placeholder": "Type your message…",
-           "welcome_msg": "Hello! I'm Perennia's AI assistant. Before we get started, may I know your name? "
+           "bookBtn": "Talk to Us", "faqTitle": "Quick Questions",
+           "inputPlaceholder": "Type your message…",
+           "welcomeMsg": "Hello! I'm Perennia's AI assistant. Before we get started, may I know your name? "
                           "It helps us build a good relationship with you and follow up properly.",
-           "lang_switch": "AR | عربي"},
-    "ar": {"tagline_line1": "حلول اليوم. ", "tagline_line2": "لصناعة الغد.",
+           "langSwitch": "AR | عربي"},
+    "ar": {"taglineLine1": "حلول اليوم. ", "taglineLine2": "لصناعة الغد.",
            "sub": "تقنية وابتكار مدعومان بالذكاء الاصطناعي", "header": "مساعد بيرينيا",
-           "book_btn": "تحدث إلينا", "faq_title": "أسئلة سريعة",
-           "input_placeholder": "اكتب رسالتك…",
-           "welcome_msg": "مرحباً! أنا المساعد الذكي لبيرينيا. قبل أن نبدأ، هل لي أن أعرف اسمك؟ "
+           "bookBtn": "تحدث إلينا", "faqTitle": "أسئلة سريعة",
+           "inputPlaceholder": "اكتب رسالتك…",
+           "welcomeMsg": "مرحباً! أنا المساعد الذكي لبيرينيا. قبل أن نبدأ، هل لي أن أعرف اسمك؟ "
                           "هذا يساعدنا على بناء علاقة أفضل معك ومتابعة طلبك بشكل صحيح.",
-           "lang_switch": "EN | English"},
+           "langSwitch": "EN | English"},
 }
 
 COPY_BOOKING = {
@@ -192,7 +192,7 @@ COPY_BOOKING = {
 def _read_md(lang: str, slug: str) -> str:
     path = FRONTEND_CONTENT_DIR / lang / f"{slug}.md"
     if not path.exists():
-        print(f"  WARNING: {path} not found, leaving body_markdown empty for {slug}/{lang}")
+        print(f"  WARNING: {path} not found, leaving bodyMarkdown empty for {slug}/{lang}")
         return ""
     return path.read_text(encoding="utf-8").strip()
 
@@ -207,7 +207,7 @@ def main() -> None:
                 print(f"Page '{slug}' already exists — skipping.")
                 continue
             translations = {
-                lang: {**fields, "body_markdown": _read_md(lang, slug)}
+                lang: {**fields, "bodyMarkdown": _read_md(lang, slug)}
                 for lang, fields in per_lang.items()
             }
             content_service.upsert_page(db, slug, translations=translations, order=order,

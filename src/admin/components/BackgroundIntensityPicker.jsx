@@ -1,6 +1,6 @@
 import "./BackgroundIntensityPicker.css";
 
-// Mirrors theme.background_intensity's ENUM choices in
+// Mirrors theme.backgroundIntensity's ENUM choices in
 // backend/app/settings_registry.py and the
 // [data-background-intensity="..."] rules in
 // src/styles/themeVariants.css. Opacity values here are illustrative
@@ -14,7 +14,7 @@ const LEVELS = [
 ];
 
 /**
- * Visual picker for theme.background_intensity — how strong the
+ * Visual picker for theme.backgroundIntensity — how strong the
  * background pattern (selected above) renders.
  */
 export default function BackgroundIntensityPicker({ value, onChange }) {

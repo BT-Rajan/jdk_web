@@ -1,6 +1,6 @@
 import "./SurfaceStylePicker.css";
 
-// Mirrors theme.surface_style's ENUM choices in
+// Mirrors theme.surfaceStyle's ENUM choices in
 // backend/app/settings_registry.py and the [data-surface-style="..."]
 // rules in src/styles/themeVariants.css.
 const STYLES = [
@@ -15,7 +15,7 @@ function SurfaceThumb({ id }) {
 }
 
 /**
- * Visual picker for theme.surface_style — covers every card/panel
+ * Visual picker for theme.surfaceStyle — covers every card/panel
  * surface site-wide (the chat widget, booking panel, homepage nav and
  * content cards) with one toggle. Same gallery pattern as the other
  * theme pickers; only ever writes this one enum field.

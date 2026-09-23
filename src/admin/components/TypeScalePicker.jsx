@@ -1,6 +1,6 @@
 import "./TypeScalePicker.css";
 
-// Mirrors theme.type_scale's ENUM choices in
+// Mirrors theme.typeScale's ENUM choices in
 // backend/app/settings_registry.py and the [data-type-scale="..."]
 // rules in src/styles/themeVariants.css.
 const SCALES = [
@@ -11,7 +11,7 @@ const SCALES = [
 ];
 
 /**
- * Visual picker for theme.type_scale — one toggle for body text,
+ * Visual picker for theme.typeScale — one toggle for body text,
  * small text, and section-card heading sizes site-wide. Doesn't touch
  * the homepage headline, which sizes itself to fit the page.
  */

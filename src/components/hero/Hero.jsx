@@ -8,7 +8,7 @@ import CenteredCardLayout from "./layouts/CenteredCardLayout.jsx";
 import EditorialLayout from "./layouts/EditorialLayout.jsx";
 import "./Hero.css";
 
-// Keyed by theme.layout_template (see backend/app/settings_registry.py).
+// Keyed by theme.layoutTemplate (see backend/app/settings_registry.py).
 // "classic" is both the map's fallback and the default admin value, so
 // an unset or unrecognized template can never fail to render — it
 // just renders the site's original layout. Every layout receives the

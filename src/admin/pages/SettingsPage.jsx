@@ -36,7 +36,7 @@ const CATEGORY_LABELS = {
   notifications: "Notifications",
   templates: "Message templates",
   copy: "On-screen text",
-  calendar_sync: "Calendar Sync",
+  calendarSync: "Calendar Sync",
   webhooks: "Webhooks",
   pages: "Pages",
   faq: "FAQ",
@@ -95,12 +95,12 @@ export default function SettingsPage() {
       adminApi
         .getSettingCategory(category)
         .then((data) => {
-          setSchema(data.schema_);
+          setSchema(data.schema);
           // Secret fields never arrive with a real value (see backend) —
           // start them blank; a blank secret field on save just means
           // "leave the stored value alone".
           const initial = { ...data.values };
-          for (const f of data.schema_) {
+          for (const f of data.schema) {
             if (f.secret) initial[f.key] = "";
           }
           setValues(initial);
@@ -215,57 +215,57 @@ export default function SettingsPage() {
 
                   {categoryParam === "theme" && (
                     <LayoutTemplatePicker
-                      value={values["theme.layout_template"]}
-                      onChange={(v) => handleFieldChange("theme.layout_template", v)}
+                      value={values["theme.layoutTemplate"]}
+                      onChange={(v) => handleFieldChange("theme.layoutTemplate", v)}
                     />
                   )}
 
                   {categoryParam === "theme" && (
                     <HeadlineStylePicker
-                      value={values["theme.headline_style"]}
-                      onChange={(v) => handleFieldChange("theme.headline_style", v)}
+                      value={values["theme.headlineStyle"]}
+                      onChange={(v) => handleFieldChange("theme.headlineStyle", v)}
                     />
                   )}
 
                   {categoryParam === "theme" && (
                     <SurfaceStylePicker
-                      value={values["theme.surface_style"]}
-                      onChange={(v) => handleFieldChange("theme.surface_style", v)}
+                      value={values["theme.surfaceStyle"]}
+                      onChange={(v) => handleFieldChange("theme.surfaceStyle", v)}
                     />
                   )}
 
                   {categoryParam === "theme" && (
                     <ButtonStylePicker
-                      value={values["theme.button_style"]}
-                      onChange={(v) => handleFieldChange("theme.button_style", v)}
+                      value={values["theme.buttonStyle"]}
+                      onChange={(v) => handleFieldChange("theme.buttonStyle", v)}
                     />
                   )}
 
                   {categoryParam === "theme" && (
                     <TypeScalePicker
-                      value={values["theme.type_scale"]}
-                      onChange={(v) => handleFieldChange("theme.type_scale", v)}
+                      value={values["theme.typeScale"]}
+                      onChange={(v) => handleFieldChange("theme.typeScale", v)}
                     />
                   )}
 
                   {categoryParam === "theme" && (
                     <HeadingCasePicker
-                      value={values["theme.heading_case"]}
-                      onChange={(v) => handleFieldChange("theme.heading_case", v)}
+                      value={values["theme.headingCase"]}
+                      onChange={(v) => handleFieldChange("theme.headingCase", v)}
                     />
                   )}
 
                   {categoryParam === "theme" && (
                     <BackgroundStylePicker
-                      value={values["theme.background_style"]}
-                      onChange={(v) => handleFieldChange("theme.background_style", v)}
+                      value={values["theme.backgroundStyle"]}
+                      onChange={(v) => handleFieldChange("theme.backgroundStyle", v)}
                     />
                   )}
 
                   {categoryParam === "theme" && (
                     <BackgroundIntensityPicker
-                      value={values["theme.background_intensity"]}
-                      onChange={(v) => handleFieldChange("theme.background_intensity", v)}
+                      value={values["theme.backgroundIntensity"]}
+                      onChange={(v) => handleFieldChange("theme.backgroundIntensity", v)}
                     />
                   )}
 
@@ -278,30 +278,30 @@ export default function SettingsPage() {
 
                   {categoryParam === "theme" && (
                     <SectionRhythmPicker
-                      value={values["theme.section_rhythm"]}
-                      onChange={(v) => handleFieldChange("theme.section_rhythm", v)}
+                      value={values["theme.sectionRhythm"]}
+                      onChange={(v) => handleFieldChange("theme.sectionRhythm", v)}
                     />
                   )}
 
                   {schema.map((field) => {
                     // Superseded by the LogoZoomControl composite below
-                    // (rendered right after branding.logo_url) — a bare
+                    // (rendered right after branding.logoUrl) — a bare
                     // number input for a zoom factor isn't useful without
                     // a live preview next to it.
-                    if (field.key === "branding.logo_scale") return null;
+                    if (field.key === "branding.logoScale") return null;
                     // Superseded by the picker galleries above — bare
                     // dropdowns of opaque ids aren't useful without the
                     // mini visual previews.
-                    if (field.key === "theme.layout_template") return null;
-                    if (field.key === "theme.headline_style") return null;
-                    if (field.key === "theme.surface_style") return null;
-                    if (field.key === "theme.button_style") return null;
-                    if (field.key === "theme.type_scale") return null;
-                    if (field.key === "theme.heading_case") return null;
-                    if (field.key === "theme.background_style") return null;
-                    if (field.key === "theme.background_intensity") return null;
+                    if (field.key === "theme.layoutTemplate") return null;
+                    if (field.key === "theme.headlineStyle") return null;
+                    if (field.key === "theme.surfaceStyle") return null;
+                    if (field.key === "theme.buttonStyle") return null;
+                    if (field.key === "theme.typeScale") return null;
+                    if (field.key === "theme.headingCase") return null;
+                    if (field.key === "theme.backgroundStyle") return null;
+                    if (field.key === "theme.backgroundIntensity") return null;
                     if (field.key === "theme.density") return null;
-                    if (field.key === "theme.section_rhythm") return null;
+                    if (field.key === "theme.sectionRhythm") return null;
                     return (
                       <div key={field.key}>
                         <SettingField
@@ -311,11 +311,11 @@ export default function SettingsPage() {
                           onChange={(v) => handleFieldChange(field.key, v)}
                           onError={(msg) => handleFieldError(field.key, msg)}
                         />
-                        {field.key === "branding.logo_url" && (
+                        {field.key === "branding.logoUrl" && (
                           <LogoZoomControl
-                            logoUrl={values["branding.logo_url"]}
-                            scale={values["branding.logo_scale"]}
-                            onScaleChange={(v) => handleFieldChange("branding.logo_scale", v)}
+                            logoUrl={values["branding.logoUrl"]}
+                            scale={values["branding.logoScale"]}
+                            onScaleChange={(v) => handleFieldChange("branding.logoScale", v)}
                           />
                         )}
                       </div>
@@ -329,7 +329,7 @@ export default function SettingsPage() {
                     {savedAt && <span className="settings-saved-msg">Saved.</span>}
                   </div>
 
-                  {categoryParam === "calendar_sync" && <CalendarSyncConnector />}
+                  {categoryParam === "calendarSync" && <CalendarSyncConnector />}
                 </form>
               )}
             </div>

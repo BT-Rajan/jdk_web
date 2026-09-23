@@ -193,7 +193,7 @@ def _tool_book_appointment(db: Session, lang: str, args: dict[str, Any]) -> dict
     from app import booking_service, calendar_sync_service, notification_service, webhook_service
     from app.settings_service import get_setting
 
-    if not get_setting(db, "features.booking_enabled"):
+    if not get_setting(db, "features.bookingEnabled"):
         return {"ok": False, "error": "booking_disabled"}
 
     raw_answers = args.get("answers")

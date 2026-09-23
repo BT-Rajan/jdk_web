@@ -103,27 +103,27 @@ function apiCopyForLang(copyBlobs, lang) {
 
 function buildFromApi(publicConfig, contentPages, faqItems, supportedLanguages) {
   const visiblePages = [...contentPages].sort((a, b) => a.order - b.order);
-  const navPages = visiblePages.filter((p) => p.show_in_nav);
+  const navPages = visiblePages.filter((p) => p.showInNav);
 
   const copy = {}, nav = {}, sections = {}, faq = {}, pages = {};
   for (const lang of supportedLanguages) {
     copy[lang] = apiCopyForLang(publicConfig, lang);
 
-    nav[lang] = navPages.map((p) => ({ id: p.slug, label: p.translations[lang]?.nav_label ?? p.slug }));
+    nav[lang] = navPages.map((p) => ({ id: p.slug, label: p.translations[lang]?.navLabel ?? p.slug }));
 
     sections[lang] = Object.fromEntries(
       navPages.map((p) => [p.slug, {
-        title: p.translations[lang]?.section_title ?? "",
-        body: p.translations[lang]?.section_body ?? "",
+        title: p.translations[lang]?.sectionTitle ?? "",
+        body: p.translations[lang]?.sectionBody ?? "",
       }])
     );
 
     pages[lang] = Object.fromEntries(
       visiblePages.map((p) => [p.slug, {
-        line1: p.translations[lang]?.tagline_line1 ?? "",
-        line2: p.translations[lang]?.tagline_line2 ?? "",
-        sub: p.translations[lang]?.tagline_sub ?? "",
-        body: p.translations[lang]?.body_markdown ?? "",
+        line1: p.translations[lang]?.taglineLine1 ?? "",
+        line2: p.translations[lang]?.taglineLine2 ?? "",
+        sub: p.translations[lang]?.taglineSub ?? "",
+        body: p.translations[lang]?.bodyMarkdown ?? "",
       }])
     );
 
@@ -136,7 +136,7 @@ function buildFromApi(publicConfig, contentPages, faqItems, supportedLanguages) 
   // Admin-provisioned home hero buttons — shared across languages (only
   // each button's label is per-language); validated again on the way in
   // since this is rendered straight into <a href>.
-  const heroButtons = (toCamel(publicConfig["copy.home_hero_buttons"]) ?? [])
+  const heroButtons = (toCamel(publicConfig["copy.homeHeroButtons"]) ?? [])
     .filter((b) => b && typeof b.url === "string" && isSafeHref(b.url) && b.label && typeof b.label === "object")
     .slice(0, 8);
 
@@ -174,8 +174,8 @@ const FALLBACK_THEME = {
   // regress an existing deployment. See Hero.jsx / HeroShared.jsx.
   layoutTemplate: "classic",
   headlineStyle: "ripple-gradient",
-  // Homepage headline pacing — see theme.headline_typing_speed_cps /
-  // theme.headline_dissolve_ms in backend/app/settings_registry.py.
+  // Homepage headline pacing — see theme.headlineTypingSpeedCps /
+  // theme.headlineDissolveMs in backend/app/settings_registry.py.
   // 5 cps matches the site's original (pre-setting) hardcoded speed.
   headlineTypingSpeedCps: 5,
   headlineDissolveMs: 2500,
@@ -212,9 +212,9 @@ export function buildFallbackSite() {
 
 function apiFeatures(publicConfig) {
   return {
-    bookingEnabled: publicConfig["features.booking_enabled"],
-    chatEnabled: publicConfig["features.chat_enabled"],
-    whatsappWidgetEnabled: publicConfig["features.whatsapp_widget_enabled"],
+    bookingEnabled: publicConfig["features.bookingEnabled"],
+    chatEnabled: publicConfig["features.chatEnabled"],
+    whatsappWidgetEnabled: publicConfig["features.whatsappWidgetEnabled"],
   };
 }
 
@@ -224,7 +224,7 @@ function apiContact(publicConfig) {
   return {
     email: publicConfig["contact.email"] ?? "",
     phone: publicConfig["contact.phone"] ?? "",
-    whatsappNumber: publicConfig["contact.whatsapp_number"] ?? "",
+    whatsappNumber: publicConfig["contact.whatsappNumber"] ?? "",
     addressByLang: publicConfig["contact.address"] ?? { en: "", ar: "" },
   };
 }
@@ -233,31 +233,31 @@ const FALLBACK_CONTACT = { email: "", phone: "", whatsappNumber: "", addressByLa
 
 function apiTheme(publicConfig) {
   return {
-    backgroundColor: publicConfig["theme.background_color"],
-    primaryColor: publicConfig["theme.primary_color"],
-    accentColor: publicConfig["theme.accent_color"],
-    textColor: publicConfig["theme.text_color"],
-    fontDisplay: publicConfig["theme.font_display"],
-    fontBody: publicConfig["theme.font_body"],
-    fontAr: publicConfig["theme.font_ar"],
-    googleFontsUrl: publicConfig["theme.google_fonts_url"],
-    headerHeightPx: publicConfig["theme.header_height_px"],
-    contentMaxWidthPx: publicConfig["theme.content_max_width_px"],
-    cornerRadiusPx: publicConfig["theme.corner_radius_px"],
-    heroAutoAdvanceSeconds: publicConfig["theme.hero_auto_advance_seconds"],
+    backgroundColor: publicConfig["theme.backgroundColor"],
+    primaryColor: publicConfig["theme.primaryColor"],
+    accentColor: publicConfig["theme.accentColor"],
+    textColor: publicConfig["theme.textColor"],
+    fontDisplay: publicConfig["theme.fontDisplay"],
+    fontBody: publicConfig["theme.fontBody"],
+    fontAr: publicConfig["theme.fontAr"],
+    googleFontsUrl: publicConfig["theme.googleFontsUrl"],
+    headerHeightPx: publicConfig["theme.headerHeightPx"],
+    contentMaxWidthPx: publicConfig["theme.contentMaxWidthPx"],
+    cornerRadiusPx: publicConfig["theme.cornerRadiusPx"],
+    heroAutoAdvanceSeconds: publicConfig["theme.heroAutoAdvanceSeconds"],
     // See FALLBACK_THEME above on why these fallbacks are safe.
-    layoutTemplate: publicConfig["theme.layout_template"] || "classic",
-    headlineStyle: publicConfig["theme.headline_style"] || "ripple-gradient",
-    headlineTypingSpeedCps: publicConfig["theme.headline_typing_speed_cps"] || 5,
-    headlineDissolveMs: publicConfig["theme.headline_dissolve_ms"] || 2500,
-    surfaceStyle: publicConfig["theme.surface_style"] || "glass",
-    buttonStyle: publicConfig["theme.button_style"] || "default",
-    typeScale: publicConfig["theme.type_scale"] || "standard",
-    headingCase: publicConfig["theme.heading_case"] || "as-is",
-    backgroundStyle: publicConfig["theme.background_style"] || "grid",
-    backgroundIntensity: publicConfig["theme.background_intensity"] || "subtle",
+    layoutTemplate: publicConfig["theme.layoutTemplate"] || "classic",
+    headlineStyle: publicConfig["theme.headlineStyle"] || "ripple-gradient",
+    headlineTypingSpeedCps: publicConfig["theme.headlineTypingSpeedCps"] || 5,
+    headlineDissolveMs: publicConfig["theme.headlineDissolveMs"] || 2500,
+    surfaceStyle: publicConfig["theme.surfaceStyle"] || "glass",
+    buttonStyle: publicConfig["theme.buttonStyle"] || "default",
+    typeScale: publicConfig["theme.typeScale"] || "standard",
+    headingCase: publicConfig["theme.headingCase"] || "as-is",
+    backgroundStyle: publicConfig["theme.backgroundStyle"] || "grid",
+    backgroundIntensity: publicConfig["theme.backgroundIntensity"] || "subtle",
     density: publicConfig["theme.density"] || "comfortable",
-    sectionRhythm: publicConfig["theme.section_rhythm"] || "standard",
+    sectionRhythm: publicConfig["theme.sectionRhythm"] || "standard",
   };
 }
 
@@ -274,8 +274,8 @@ export async function loadSiteContent() {
     fetchFaqItems(),
   ]);
 
-  const supportedLanguages = publicConfig?.["locale.supported_languages"] ?? Object.keys(COPY);
-  const defaultLanguage = publicConfig?.["locale.default_language"] ?? "en";
+  const supportedLanguages = publicConfig?.["locale.supportedLanguages"] ?? Object.keys(COPY);
+  const defaultLanguage = publicConfig?.["locale.defaultLanguage"] ?? "en";
 
   const haveFullApiData = publicConfig && contentPages && faqItems;
   const site = haveFullApiData
@@ -292,12 +292,12 @@ export async function loadSiteContent() {
       : { bookingEnabled: true, chatEnabled: true, whatsappWidgetEnabled: false },
     contact: haveFullApiData ? apiContact(publicConfig) : FALLBACK_CONTACT,
     branding: {
-      siteNameByLang: publicConfig?.["branding.site_name"] ?? { en: BRAND.name, ar: BRAND.wordmarkAr },
-      logoUrl: publicConfig?.["branding.logo_url"] ?? "/static/logo.svg",
-      logoScale: publicConfig?.["branding.logo_scale"] ?? 1,
-      faviconUrl: publicConfig?.["branding.favicon_url"] ?? "/favicon.svg",
-      metaDescriptionByLang: publicConfig?.["branding.meta_description"] ?? { en: "", ar: "" },
-      chatAvatarUrl: publicConfig?.["chat.avatar_url"] ?? "",
+      siteNameByLang: publicConfig?.["branding.siteName"] ?? { en: BRAND.name, ar: BRAND.wordmarkAr },
+      logoUrl: publicConfig?.["branding.logoUrl"] ?? "/static/logo.svg",
+      logoScale: publicConfig?.["branding.logoScale"] ?? 1,
+      faviconUrl: publicConfig?.["branding.faviconUrl"] ?? "/favicon.svg",
+      metaDescriptionByLang: publicConfig?.["branding.metaDescription"] ?? { en: "", ar: "" },
+      chatAvatarUrl: publicConfig?.["chat.avatarUrl"] ?? "",
     },
     ...site,
   };

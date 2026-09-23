@@ -3,24 +3,24 @@ from __future__ import annotations
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.content_schema import FAQ_FIELDS, PAGE_FIELDS
 from app.db import get_db
 from app.deps import get_current_admin, require_csrf
 from app.models import AdminUser
+from app.schema_base import CamelModel
 
 router = APIRouter(prefix="/admin/api/content", tags=["admin-content"], dependencies=[Depends(require_csrf)])
 
 
 # ── Schemas ──────────────────────────────────────────────────────────
 
-class PageSchemaOut(BaseModel):
+class PageSchemaOut(CamelModel):
     fields: list[dict]
 
 
-class PageOut(BaseModel):
+class PageOut(CamelModel):
     slug: str
     order: int
     is_visible: bool
@@ -28,38 +28,38 @@ class PageOut(BaseModel):
     translations: dict[str, dict[str, str]]
 
 
-class PageUpsertIn(BaseModel):
+class PageUpsertIn(CamelModel):
     translations: dict[str, dict[str, str]]
     order: int | None = None
     is_visible: bool | None = None
     show_in_nav: bool | None = None
 
 
-class PageReorderIn(BaseModel):
+class PageReorderIn(CamelModel):
     ordered_slugs: list[str]
 
 
-class VersionOut(BaseModel):
+class VersionOut(CamelModel):
     id: str
     saved_at: str
     saved_by_username: str | None
     translations: dict[str, dict[str, str]]
 
 
-class FaqOut(BaseModel):
+class FaqOut(CamelModel):
     id: str
     order: int
     is_active: bool
     translations: dict[str, dict[str, str]]
 
 
-class FaqUpsertIn(BaseModel):
+class FaqUpsertIn(CamelModel):
     translations: dict[str, dict[str, str]]
     order: int = 0
     is_active: bool = True
 
 
-class FaqReorderIn(BaseModel):
+class FaqReorderIn(CamelModel):
     ordered_ids: list[str]
 
 

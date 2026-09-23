@@ -43,19 +43,19 @@ def render_text(template, lang: str, **kwargs) -> str:
 # ── Low-level senders ──────────────────────────────────────────────
 
 def send_email(db: Session, *, to_email: str, subject: str, body_text: str) -> bool:
-    if not get_setting(db, "notifications.email_enabled"):
+    if not get_setting(db, "notifications.emailEnabled"):
         return False
-    host = get_setting(db, "notifications.smtp_host")
-    from_email = get_setting(db, "notifications.from_email")
+    host = get_setting(db, "notifications.smtpHost")
+    from_email = get_setting(db, "notifications.fromEmail")
     if not host or not from_email:
         logger.info("Email notification skipped: SMTP not fully configured")
         return False
 
-    from_name = get_setting(db, "notifications.from_name") or _lang_value(get_setting(db, "branding.site_name"), "en")
-    port = get_setting(db, "notifications.smtp_port")
-    use_tls = get_setting(db, "notifications.smtp_use_tls")
-    username = get_setting(db, "notifications.smtp_username")
-    password = get_setting(db, "notifications.smtp_password")
+    from_name = get_setting(db, "notifications.fromName") or _lang_value(get_setting(db, "branding.siteName"), "en")
+    port = get_setting(db, "notifications.smtpPort")
+    use_tls = get_setting(db, "notifications.smtpUseTls")
+    username = get_setting(db, "notifications.smtpUsername")
+    password = get_setting(db, "notifications.smtpPassword")
 
     msg = MIMEMultipart()
     msg["Subject"] = subject
@@ -77,17 +77,17 @@ def send_email(db: Session, *, to_email: str, subject: str, body_text: str) -> b
 
 
 def send_whatsapp(db: Session, *, to_number: str, message: str) -> bool:
-    if not get_setting(db, "notifications.whatsapp_enabled") or not to_number:
+    if not get_setting(db, "notifications.whatsappEnabled") or not to_number:
         return False
-    provider = get_setting(db, "notifications.whatsapp_provider")
+    provider = get_setting(db, "notifications.whatsappProvider")
     if provider == "none":
         return False
     try:
         whatsapp_client.send_message(
             provider=provider,
-            account_id=get_setting(db, "notifications.whatsapp_account_id"),
-            api_key=get_setting(db, "notifications.whatsapp_api_key"),
-            from_number=get_setting(db, "notifications.whatsapp_from_number"),
+            account_id=get_setting(db, "notifications.whatsappAccountId"),
+            api_key=get_setting(db, "notifications.whatsappApiKey"),
+            from_number=get_setting(db, "notifications.whatsappFromNumber"),
             to_number=to_number,
             message=message,
         )
@@ -123,19 +123,19 @@ def _notify_booking(db: Session, appt: dict, *, email_template_key: str, whatsap
 
 
 def notify_booking_confirmed(db: Session, appt: dict) -> None:
-    _notify_booking(db, appt, email_template_key="templates.booking_confirmed_email",
-                     whatsapp_template_key="templates.booking_confirmed_whatsapp")
+    _notify_booking(db, appt, email_template_key="templates.bookingConfirmedEmail",
+                     whatsapp_template_key="templates.bookingConfirmedWhatsapp")
     _notify_admin_new_booking(db, appt)
 
 
 def notify_booking_cancelled(db: Session, appt: dict) -> None:
-    _notify_booking(db, appt, email_template_key="templates.booking_cancelled_email",
-                     whatsapp_template_key="templates.booking_cancelled_whatsapp")
+    _notify_booking(db, appt, email_template_key="templates.bookingCancelledEmail",
+                     whatsapp_template_key="templates.bookingCancelledWhatsapp")
 
 
 def notify_booking_rescheduled(db: Session, appt: dict) -> None:
-    _notify_booking(db, appt, email_template_key="templates.booking_rescheduled_email",
-                     whatsapp_template_key="templates.booking_rescheduled_whatsapp")
+    _notify_booking(db, appt, email_template_key="templates.bookingRescheduledEmail",
+                     whatsapp_template_key="templates.bookingRescheduledWhatsapp")
 
 
 # ── Confirmation workflow (Pass 10) ──────────────────────────────────
@@ -151,8 +151,8 @@ def notify_booking_requested(db: Session, appt: dict) -> None:
     nothing about their appointment is settled yet.
 
     Pass 13: goes out via whichever internal-alert channel(s) are
-    configured — email (notifications.admin_alert_email), WhatsApp
-    (notifications.admin_alert_whatsapp_number), both, or neither if
+    configured — email (notifications.adminAlertEmail), WhatsApp
+    (notifications.adminAlertWhatsappNumber), both, or neither if
     nothing's set. Each channel is attempted independently so one
     being unconfigured or failing never blocks the other."""
     ctx = {
@@ -163,23 +163,23 @@ def notify_booking_requested(db: Session, appt: dict) -> None:
     to_email = _admin_email(db)
     if to_email:
         try:
-            rendered = render(get_setting(db, "templates.booking_requested_admin_alert"), "en", **ctx)
+            rendered = render(get_setting(db, "templates.bookingRequestedAdminAlert"), "en", **ctx)
             send_email(db, to_email=to_email, subject=rendered["subject"], body_text=rendered["body"])
         except Exception:
             logger.exception("Booking-requested admin email alert failed for appointment %s", appt.get("id"))
 
-    to_whatsapp = get_setting(db, "notifications.admin_alert_whatsapp_number")
+    to_whatsapp = get_setting(db, "notifications.adminAlertWhatsappNumber")
     if to_whatsapp:
         try:
-            message = render_text(get_setting(db, "templates.booking_requested_admin_whatsapp"), "en", **ctx)
+            message = render_text(get_setting(db, "templates.bookingRequestedAdminWhatsapp"), "en", **ctx)
             send_whatsapp(db, to_number=to_whatsapp, message=message)
         except Exception:
             logger.exception("Booking-requested admin WhatsApp alert failed for appointment %s", appt.get("id"))
 
 
 def notify_booking_accepted(db: Session, appt: dict) -> None:
-    _notify_booking(db, appt, email_template_key="templates.booking_accepted_email",
-                     whatsapp_template_key="templates.booking_accepted_whatsapp")
+    _notify_booking(db, appt, email_template_key="templates.bookingAcceptedEmail",
+                     whatsapp_template_key="templates.bookingAcceptedWhatsapp")
 
 
 def notify_booking_declined(db: Session, appt: dict, *, reason: str = "") -> None:
@@ -197,12 +197,12 @@ def notify_booking_declined(db: Session, appt: dict, *, reason: str = "") -> Non
         }
         lang = appt.get("lang", "en")
 
-        email_tpl = get_setting(db, "templates.booking_declined_email")
+        email_tpl = get_setting(db, "templates.bookingDeclinedEmail")
         rendered = render(email_tpl, lang, **ctx)
         send_email(db, to_email=appt["email"], subject=rendered["subject"], body_text=rendered["body"])
 
         if appt.get("phone"):
-            wa_tpl = get_setting(db, "templates.booking_declined_whatsapp")
+            wa_tpl = get_setting(db, "templates.bookingDeclinedWhatsapp")
             send_whatsapp(db, to_number=appt["phone"], message=render_text(wa_tpl, lang, **ctx))
     except Exception:
         logger.exception("Booking-declined notification failed for appointment %s", appt.get("id"))
@@ -211,7 +211,7 @@ def notify_booking_declined(db: Session, appt: dict, *, reason: str = "") -> Non
 # ── Internal staff alerts ────────────────────────────────────────────
 
 def _admin_email(db: Session) -> str:
-    return get_setting(db, "notifications.admin_alert_email")
+    return get_setting(db, "notifications.adminAlertEmail")
 
 
 def _notify_admin_new_booking(db: Session, appt: dict) -> None:
@@ -219,7 +219,7 @@ def _notify_admin_new_booking(db: Session, appt: dict) -> None:
     if not to:
         return
     try:
-        rendered = render(get_setting(db, "templates.new_booking_admin_alert"), "en", **{
+        rendered = render(get_setting(db, "templates.newBookingAdminAlert"), "en", **{
             "name": appt["name"], "email": appt["email"], "date": appt["date"], "time": appt["time"],
             "id": appt["id"], "service": appt.get("service") or "general enquiry",
         })
@@ -233,7 +233,7 @@ def notify_admin_new_lead(db: Session, *, email: str, message: str) -> None:
     if not to:
         return
     try:
-        rendered = render(get_setting(db, "templates.new_lead_admin_alert"), "en", email=email, message=message)
+        rendered = render(get_setting(db, "templates.newLeadAdminAlert"), "en", email=email, message=message)
         send_email(db, to_email=to, subject=rendered["subject"], body_text=rendered["body"])
     except Exception:
         logger.exception("New-lead admin alert failed for %s", email)

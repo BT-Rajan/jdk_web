@@ -20,16 +20,16 @@ def _widen_booking_window():
     unwidened default window (30 calendar days) and of
     test_calendar_sync.py's window (nth-workday 250, comfortably far
     away). Bump the starting n here if a future test file also needs
-    its own untouched booking window — but note booking.max_days_ahead
+    its own untouched booking window — but note booking.maxDaysAhead
     is capped at 365 (settings_registry.py), which is only ~260
     *weekdays*, so there's limited room for many such windows; n=250
     already leaves test_calendar_sync.py little headroom below that
     cap, which is worth knowing before picking another big offset."""
     with session_scope() as db:
-        set_setting(db, "booking.max_days_ahead", 90, actor_id=None, actor_username="test-setup")
+        set_setting(db, "booking.maxDaysAhead", 90, actor_id=None, actor_username="test-setup")
     yield
     with session_scope() as db:
-        set_setting(db, "booking.max_days_ahead", 30, actor_id=None, actor_username="test-teardown")
+        set_setting(db, "booking.maxDaysAhead", 30, actor_id=None, actor_username="test-teardown")
 
 
 def _nth_future_workday(n: int) -> str:

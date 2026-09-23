@@ -43,7 +43,7 @@ class SettingType(str, Enum):
 
 @dataclass(frozen=True)
 class SettingDef:
-    key: str                      # dotted path, e.g. "branding.site_name"
+    key: str                      # dotted path, e.g. "branding.siteName"
     category: str                 # admin panel section, e.g. "branding"
     label: str                    # human label shown in admin UI
     type: SettingType
@@ -158,30 +158,30 @@ def _valid_workdays(v: list) -> None:
 
 _DEFS: list[SettingDef] = [
     # branding ------------------------------------------------------
-    SettingDef("branding.site_name", "branding", "Site name", SettingType.STRING,
+    SettingDef("branding.siteName", "branding", "Site name", SettingType.STRING,
                {"en": "Perennia", "ar": "بيرينيا"}, i18n=True,
                help_text="Shown in the header, browser tab, and emails. Per-language, since a wordmark "
                           "often isn't a literal translation."),
     SettingDef("branding.tagline", "branding", "Tagline", SettingType.STRING, {"en": "", "ar": ""}, i18n=True),
-    SettingDef("branding.logo_url", "branding", "Logo", SettingType.IMAGE, "/static/logo.svg"),
-    SettingDef("branding.logo_scale", "branding", "Logo zoom", SettingType.FLOAT, 1.0,
+    SettingDef("branding.logoUrl", "branding", "Logo", SettingType.IMAGE, "/static/logo.svg"),
+    SettingDef("branding.logoScale", "branding", "Logo zoom", SettingType.FLOAT, 1.0,
                help_text="Display size of the logo image relative to its default — logos with a lot "
                           "of built-in padding often look small next to the header text at 1.0x.",
                validator=_float_range(0.5, 3.0)),
-    SettingDef("branding.favicon_url", "branding", "Favicon", SettingType.IMAGE, "/favicon.svg"),
-    SettingDef("branding.meta_description", "branding", "Search/share description", SettingType.TEXT,
+    SettingDef("branding.faviconUrl", "branding", "Favicon", SettingType.IMAGE, "/favicon.svg"),
+    SettingDef("branding.metaDescription", "branding", "Search/share description", SettingType.TEXT,
                {"en": "Perennia — AI-powered technology & innovation.", "ar": ""}, i18n=True,
                help_text="Shown in search results and link previews (og:description)."),
 
     # locale ----------------------------------------------------------
-    SettingDef("locale.default_language", "locale", "Default language", SettingType.ENUM, "en",
+    SettingDef("locale.defaultLanguage", "locale", "Default language", SettingType.ENUM, "en",
                choices=("en", "ar")),
-    SettingDef("locale.supported_languages", "locale", "Supported languages", SettingType.LIST, ["en", "ar"]),
+    SettingDef("locale.supportedLanguages", "locale", "Supported languages", SettingType.LIST, ["en", "ar"]),
 
     # contact -----------------------------------------------------------
     SettingDef("contact.email", "contact", "Contact email", SettingType.EMAIL, ""),
     SettingDef("contact.phone", "contact", "Contact phone", SettingType.STRING, ""),
-    SettingDef("contact.whatsapp_number", "contact", "WhatsApp number", SettingType.STRING, "",
+    SettingDef("contact.whatsappNumber", "contact", "WhatsApp number", SettingType.STRING, "",
                help_text="Include country code, digits only, e.g. 96599999999."),
     SettingDef("contact.address", "contact", "Address", SettingType.TEXT, {"en": "", "ar": ""}, i18n=True),
 
@@ -192,71 +192,71 @@ _DEFS: list[SettingDef] = [
     # these few values using CSS color-mix(), so a full re-theme only
     # ever requires changing what's here — see src/styles/tokens.css
     # and PASS3_NOTES.md for the derivation.
-    SettingDef("theme.primary_color", "theme", "Primary color", SettingType.COLOR, "#c9a84c",
+    SettingDef("theme.primaryColor", "theme", "Primary color", SettingType.COLOR, "#c9a84c",
                help_text="Main accent — buttons, links, highlights."),
-    SettingDef("theme.accent_color", "theme", "Accent color", SettingType.COLOR, "#e8c96a",
+    SettingDef("theme.accentColor", "theme", "Accent color", SettingType.COLOR, "#e8c96a",
                help_text="Secondary accent, used alongside the primary color in gradients."),
-    SettingDef("theme.background_color", "theme", "Background color", SettingType.COLOR, "#07060a",
+    SettingDef("theme.backgroundColor", "theme", "Background color", SettingType.COLOR, "#07060a",
                help_text="Base dark surface color the whole app is built on."),
-    SettingDef("theme.text_color", "theme", "Text color", SettingType.COLOR, "#f5f0e8",
+    SettingDef("theme.textColor", "theme", "Text color", SettingType.COLOR, "#f5f0e8",
                help_text="Primary light text color against the background."),
-    SettingDef("theme.font_display", "theme", "Display font (headings)", SettingType.STRING,
+    SettingDef("theme.fontDisplay", "theme", "Display font (headings)", SettingType.STRING,
                '"Cormorant Garamond", Georgia, serif'),
-    SettingDef("theme.font_body", "theme", "Body font", SettingType.STRING,
+    SettingDef("theme.fontBody", "theme", "Body font", SettingType.STRING,
                '"Syne", system-ui, -apple-system, sans-serif'),
-    SettingDef("theme.font_ar", "theme", "Arabic font", SettingType.STRING,
+    SettingDef("theme.fontAr", "theme", "Arabic font", SettingType.STRING,
                '"Noto Kufi Arabic", "Arial Unicode MS", sans-serif'),
-    SettingDef("theme.google_fonts_url", "theme", "Google Fonts stylesheet URL", SettingType.URL,
+    SettingDef("theme.googleFontsUrl", "theme", "Google Fonts stylesheet URL", SettingType.URL,
                "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700"
                "&family=Syne:wght@500;600;700;800&family=Noto+Kufi+Arabic:wght@300;400;500;600;700"
                "&display=swap",
                help_text="Must include every font family referenced above, or those fonts won't load."),
-    SettingDef("theme.header_height_px", "theme", "Header height (px)", SettingType.INT, 64,
+    SettingDef("theme.headerHeightPx", "theme", "Header height (px)", SettingType.INT, 64,
                validator=_px_range(40, 160)),
-    SettingDef("theme.content_max_width_px", "theme", "Content max width (px)", SettingType.INT, 1180,
+    SettingDef("theme.contentMaxWidthPx", "theme", "Content max width (px)", SettingType.INT, 1180,
                validator=_px_range(600, 2400)),
-    SettingDef("theme.corner_radius_px", "theme", "Corner radius (px)", SettingType.INT, 10,
+    SettingDef("theme.cornerRadiusPx", "theme", "Corner radius (px)", SettingType.INT, 10,
                help_text="Base radius — smaller and larger UI elements scale proportionally from this.",
                validator=_px_range(0, 48)),
-    SettingDef("theme.hero_auto_advance_seconds", "theme", "Home auto-advance (seconds)", SettingType.INT, 7,
+    SettingDef("theme.heroAutoAdvanceSeconds", "theme", "Home auto-advance (seconds)", SettingType.INT, 7,
                help_text="How long the home screen waits before auto-continuing into chat.",
                validator=_int_range(2, 60)),
     # Which homepage layout arrangement to render — purely a client-side
     # choice of *structure* (how the same headline/tagline/quick-chat/nav
     # pieces are composed on the page), never colors/fonts (those stay
-    # theme.primary_color etc. above) and never which features exist.
+    # theme.primaryColor etc. above) and never which features exist.
     # "classic" is both the default and the site's original/only layout
     # before this setting existed, so an unset or unrecognized value here
     # can never regress an existing deployment — the frontend falls back
     # to it (see src/components/hero/Hero.jsx).
-    SettingDef("theme.layout_template", "theme", "Homepage layout", SettingType.ENUM, "classic",
+    SettingDef("theme.layoutTemplate", "theme", "Homepage layout", SettingType.ENUM, "classic",
                choices=("classic", "split", "centered-card", "editorial"),
                help_text="How the homepage headline, quick-chat box, and page-navigation cards are arranged. "
                           "Colors and fonts are unaffected — set those above."),
     # Purely the headline's text *treatment* (fill/animation) — never
     # its content (that's copy.home.welcome) and never layout (that's
-    # theme.layout_template above). "ripple-gradient" is both the
+    # theme.layoutTemplate above). "ripple-gradient" is both the
     # default and the site's original/only headline style before this
     # setting existed, so it's the safe fallback for any unset or
     # unrecognized value (see src/components/hero/HeroShared.jsx).
-    SettingDef("theme.headline_style", "theme", "Headline style", SettingType.ENUM, "ripple-gradient",
+    SettingDef("theme.headlineStyle", "theme", "Headline style", SettingType.ENUM, "ripple-gradient",
                choices=("ripple-gradient", "solid-gold", "solid-white", "two-tone", "outline"),
                help_text="Visual treatment of the homepage headline text. Uses the theme colors above — "
                           "changing the theme preset changes how each of these looks too."),
-    # Homepage headline pacing — how fast copy.home.hero_statement types
+    # Homepage headline pacing — how fast copy.home.heroStatement types
     # out, and how slowly it dissolves into the permanent tagline once
     # done. Split into two settings (rather than one "speed" enum)
     # because they're genuinely independent: an admin might want a slow,
     # dramatic type-out with a snappy handoff, or vice versa. 5 cps is a
     # deliberately unhurried default (the site's original hardcoded rate
     # was ~45 cps); admins with a short statement may want it faster.
-    SettingDef("theme.headline_typing_speed_cps", "theme", "Headline typing speed (characters/second)",
+    SettingDef("theme.headlineTypingSpeedCps", "theme", "Headline typing speed (characters/second)",
                SettingType.INT, 5,
                help_text="How fast the homepage headline types itself out. Lower = slower, more dramatic. "
-                          "Only affects copy.home.hero_statement — the permanent tagline beneath it is never "
+                          "Only affects copy.home.heroStatement — the permanent tagline beneath it is never "
                           "animated.",
                validator=_int_range(1, 40)),
-    SettingDef("theme.headline_dissolve_ms", "theme", "Headline dissolve transition (ms)",
+    SettingDef("theme.headlineDissolveMs", "theme", "Headline dissolve transition (ms)",
                SettingType.INT, 2500,
                help_text="How long the crossfade from the typed statement to the permanent tagline "
                           "(taglineLine1/taglineLine2) takes, in milliseconds.",
@@ -273,11 +273,11 @@ _DEFS: list[SettingDef] = [
     # uniform — the CTA pills are outlined/glass, the sticky buttons
     # are solid-filled). Either is always the safe fallback for an
     # unset or unrecognized value, so no existing deployment regresses.
-    SettingDef("theme.surface_style", "theme", "Card & panel surface", SettingType.ENUM, "glass",
+    SettingDef("theme.surfaceStyle", "theme", "Card & panel surface", SettingType.ENUM, "glass",
                choices=("glass", "solid", "outline", "elevated"),
                help_text="Fill treatment for cards and panels site-wide: the chat widget, booking panel, "
                           "and homepage nav/content cards. 'glass' is today's blurred, translucent look."),
-    SettingDef("theme.button_style", "theme", "Buttons & pills", SettingType.ENUM, "default",
+    SettingDef("theme.buttonStyle", "theme", "Buttons & pills", SettingType.ENUM, "default",
                choices=("default", "solid", "outline", "ghost", "gradient"),
                help_text="Fill treatment for call-to-action buttons and pills site-wide: homepage quick-"
                           "link buttons, the centered-card pills, and the sticky Appointments/AI Assistant "
@@ -287,11 +287,11 @@ _DEFS: list[SettingDef] = [
     # / "as-is" reproduce today's actual font sizes and heading
     # casing exactly, so they're the safe fallback for any unset or
     # unrecognized value. See src/styles/themeVariants.css.
-    SettingDef("theme.type_scale", "theme", "Text size scale", SettingType.ENUM, "standard",
+    SettingDef("theme.typeScale", "theme", "Text size scale", SettingType.ENUM, "standard",
                choices=("standard", "compact", "comfortable", "large"),
                help_text="Global size for body text, small text, and section-card headings site-wide. "
                           "Doesn't affect the homepage headline, which sizes itself to fit the page."),
-    SettingDef("theme.heading_case", "theme", "Section heading style", SettingType.ENUM, "as-is",
+    SettingDef("theme.headingCase", "theme", "Section heading style", SettingType.ENUM, "as-is",
                choices=("as-is", "uppercase-tracked", "sentence-case"),
                help_text="Casing and letter-spacing for section/card titles (e.g. the homepage nav "
                           "cards). 'as-is' keeps today's normal-case headings."),
@@ -299,11 +299,11 @@ _DEFS: list[SettingDef] = [
     # "grid" / "subtle" reproduce today's actual background exactly —
     # a solid fill plus a faint grid-mesh overlay — so they're the
     # safe fallback for any unset or unrecognized value.
-    SettingDef("theme.background_style", "theme", "Background pattern", SettingType.ENUM, "grid",
+    SettingDef("theme.backgroundStyle", "theme", "Background pattern", SettingType.ENUM, "grid",
                choices=("grid", "dot-grid", "radial-glow", "solid"),
                help_text="Texture behind all page content. 'grid' is today's faint line-mesh overlay; "
                           "'solid' removes the overlay entirely."),
-    SettingDef("theme.background_intensity", "theme", "Background intensity", SettingType.ENUM, "subtle",
+    SettingDef("theme.backgroundIntensity", "theme", "Background intensity", SettingType.ENUM, "subtle",
                choices=("subtle", "soft", "bold", "off"),
                help_text="How strong the background pattern above is. 'off' hides it regardless of "
                           "which pattern is selected."),
@@ -315,7 +315,7 @@ _DEFS: list[SettingDef] = [
                choices=("compact", "comfortable", "spacious"),
                help_text="Padding, gaps, and prose line-height site-wide — every card, button, and "
                           "text block scales together. 'comfortable' is today's spacing."),
-    SettingDef("theme.section_rhythm", "theme", "Section rhythm", SettingType.ENUM, "standard",
+    SettingDef("theme.sectionRhythm", "theme", "Section rhythm", SettingType.ENUM, "standard",
                choices=("tight", "standard", "loose"),
                help_text="Breathing room specifically between major page sections (e.g. the gap before "
                           "the homepage's nav-card grid) — independent of the density setting above, "
@@ -324,10 +324,10 @@ _DEFS: list[SettingDef] = [
     # features (toggles for capabilities landing in later passes,
     # declared now so the admin can already see what's coming and
     # nothing needs a hardcoded `if` for "is this feature on") --------
-    SettingDef("features.booking_enabled", "features", "Enable appointment booking", SettingType.BOOL, True),
-    SettingDef("features.chat_enabled", "features", "Enable AI chat widget", SettingType.BOOL, True),
-    SettingDef("features.whatsapp_widget_enabled", "features", "Enable WhatsApp widget", SettingType.BOOL, False),
-    SettingDef("features.calendar_sync_enabled", "features", "Enable Google Calendar sync", SettingType.BOOL, False,
+    SettingDef("features.bookingEnabled", "features", "Enable appointment booking", SettingType.BOOL, True),
+    SettingDef("features.chatEnabled", "features", "Enable AI chat widget", SettingType.BOOL, True),
+    SettingDef("features.whatsappWidgetEnabled", "features", "Enable WhatsApp widget", SettingType.BOOL, False),
+    SettingDef("features.calendarSyncEnabled", "features", "Enable Google Calendar sync", SettingType.BOOL, False,
                help_text="Pass 12: once connected (see Calendar Sync), busy time on the linked Google "
                          "Calendar blocks booking slots. Off by default even after connecting — a "
                          "deliberate two-step opt-in."),
@@ -344,17 +344,17 @@ _DEFS: list[SettingDef] = [
     SettingDef("booking.timezone", "booking", "Timezone", SettingType.STRING, "Asia/Kuwait",
                help_text="IANA timezone name — determines what 'today' and business hours mean.",
                validator=_valid_timezone),
-    SettingDef("booking.slot_minutes", "booking", "Slot length (minutes)", SettingType.INT, 30,
+    SettingDef("booking.slotMinutes", "booking", "Slot length (minutes)", SettingType.INT, 30,
                validator=_int_range(5, 240)),
-    SettingDef("booking.day_start_hour", "booking", "Day starts at (hour, 24h)", SettingType.INT, 9,
+    SettingDef("booking.dayStartHour", "booking", "Day starts at (hour, 24h)", SettingType.INT, 9,
                validator=_int_range(0, 23)),
-    SettingDef("booking.day_end_hour", "booking", "Day ends at (hour, 24h)", SettingType.INT, 17,
+    SettingDef("booking.dayEndHour", "booking", "Day ends at (hour, 24h)", SettingType.INT, 17,
                validator=_int_range(0, 23)),
     SettingDef("booking.workdays", "booking", "Working days", SettingType.LIST, [0, 1, 2, 3, 4],
                help_text="0=Monday .. 6=Sunday.", validator=_valid_workdays),
-    SettingDef("booking.max_days_ahead", "booking", "Max days ahead bookable", SettingType.INT, 30,
+    SettingDef("booking.maxDaysAhead", "booking", "Max days ahead bookable", SettingType.INT, 30,
                validator=_int_range(1, 365)),
-    SettingDef("booking.min_notice_hours", "booking", "Minimum notice (hours)", SettingType.INT, 6,
+    SettingDef("booking.minNoticeHours", "booking", "Minimum notice (hours)", SettingType.INT, 6,
                help_text="Required lead time to book, cancel, or reschedule.", validator=_int_range(0, 168)),
     # A pending appointment holds its slot exactly like a confirmed one
     # (booking_service.py::_booked_intervals) - deliberately, per
@@ -367,16 +367,16 @@ _DEFS: list[SettingDef] = [
     # run every pending_expiry_poll_minutes by app/scheduler.py) so it
     # doesn't just quietly stop blocking while still sitting there
     # showing "pending" forever.
-    SettingDef("booking.pending_expiry_hours", "booking", "Auto-decline pending requests after (hours)",
+    SettingDef("booking.pendingExpiryHours", "booking", "Auto-decline pending requests after (hours)",
                SettingType.INT, 48, validator=_int_range(0, 720),
                help_text="A pending appointment awaiting approval stops holding its slot, and is "
                          "auto-declined, after this many hours with no admin action. 0 disables this — "
                          "a pending appointment then holds its slot indefinitely, as it always did before "
                          "this setting existed."),
-    SettingDef("booking.pending_expiry_poll_minutes", "booking", "Check for expired pending requests every (minutes)",
+    SettingDef("booking.pendingExpiryPollMinutes", "booking", "Check for expired pending requests every (minutes)",
                SettingType.INT, 30, validator=_int_range(5, 1440),
                help_text="How often the background sweep runs. Irrelevant if pending_expiry_hours is 0."),
-    SettingDef("booking.calendar_sync_fail_open", "booking", "If Google Calendar is unreachable, show slots anyway",
+    SettingDef("booking.calendarSyncFailOpen", "booking", "If Google Calendar is unreachable, show slots anyway",
                SettingType.BOOL, False,
                help_text="Pass 12: when the connected Google Calendar can't be reached (timeout, revoked "
                          "access, quota), the safe default is to show NO slots rather than risk double-"
@@ -390,12 +390,12 @@ _DEFS: list[SettingDef] = [
     # parameters, and the fallback message shown when no key is
     # configured — is ordinary admin-editable config, so the whole
     # assistant's behavior and persona can be retuned without a deploy.
-    SettingDef("chat.llm_provider", "chat", "LLM provider", SettingType.ENUM, "none",
+    SettingDef("chat.llmProvider", "chat", "LLM provider", SettingType.ENUM, "none",
                choices=("none", "anthropic", "openai", "deepseek"),
                help_text="'none' disables real LLM calls; the assistant uses the fallback message below."),
-    SettingDef("chat.llm_model", "chat", "Model", SettingType.STRING, "claude-sonnet-4-6"),
-    SettingDef("chat.llm_api_key", "chat", "API key", SettingType.STRING, "", secret=True),
-    SettingDef("chat.max_tokens", "chat", "Max response tokens", SettingType.INT, 512,
+    SettingDef("chat.llmModel", "chat", "Model", SettingType.STRING, "claude-sonnet-4-6"),
+    SettingDef("chat.llmApiKey", "chat", "API key", SettingType.STRING, "", secret=True),
+    SettingDef("chat.maxTokens", "chat", "Max response tokens", SettingType.INT, 512,
                validator=_int_range(16, 4096)),
     SettingDef("chat.temperature", "chat", "Temperature", SettingType.FLOAT, 0.7,
                validator=_float_range(0.0, 1.0)),
@@ -404,10 +404,10 @@ _DEFS: list[SettingDef] = [
     # places, so the two entry points read as one assistant rather than
     # two different ones. Blank falls back to a plain initial-letter
     # avatar (see src/components/chat/ChatWidget.jsx).
-    SettingDef("chat.avatar_url", "chat", "Assistant avatar", SettingType.IMAGE, "",
+    SettingDef("chat.avatarUrl", "chat", "Assistant avatar", SettingType.IMAGE, "",
                help_text="Shown next to the assistant in the AI Assistant widget and the homepage "
                           "quick-chat box. Leave blank to use a plain initial-letter avatar instead."),
-    SettingDef("chat.system_prompt", "chat", "System prompt", SettingType.TEXT, {
+    SettingDef("chat.systemPrompt", "chat", "System prompt", SettingType.TEXT, {
         "en": "You are Perennia's AI assistant. Be warm, concise, and professional. Early in the "
               "conversation, ask the visitor's name so you can personalize the chat and so the team can "
               "follow up. Help visitors understand Perennia's AI products and services, and encourage "
@@ -416,23 +416,23 @@ _DEFS: list[SettingDef] = [
               "الزائر عن اسمه حتى تتمكن من تخصيص المحادثة ومتابعة الطلب. ساعد الزوار على فهم منتجات وخدمات "
               "بيرينيا، وشجعهم على حجز مكالمة عبر \"تحدث إلينا\" عند إبداء اهتمام حقيقي.",
     }, i18n=True),
-    SettingDef("chat.unavailable_message", "chat", "Fallback message (LLM unavailable)", SettingType.TEXT, {
+    SettingDef("chat.unavailableMessage", "chat", "Fallback message (LLM unavailable)", SettingType.TEXT, {
         "en": "Thanks for sharing that! Someone from our team will follow up shortly. "
               "Would you like to book a time to talk?",
         "ar": "شكرًا لك! سيقوم أحد أعضاء فريقنا بمتابعة رسالتك قريبًا. هل ترغب في حجز موعد؟",
     }, i18n=True, help_text="Shown when no LLM provider is configured, or if a request to it fails."),
-    SettingDef("chat.max_turns", "chat", "Max exchanges per session", SettingType.INT, 15,
+    SettingDef("chat.maxTurns", "chat", "Max exchanges per session", SettingType.INT, 15,
                help_text="Once a visitor's user-turn count in one session passes this, the turn-limit "
                           "message below is shown instead of calling the LLM again.",
                validator=_int_range(3, 100)),
-    SettingDef("chat.turn_limit_message", "chat", "Turn-limit message", SettingType.TEXT, {
+    SettingDef("chat.turnLimitMessage", "chat", "Turn-limit message", SettingType.TEXT, {
         "en": "You've reached the message limit for this session. We'd love to keep the conversation "
               "going directly — please book a quick call with our team.",
         "ar": "لقد وصلت إلى الحد الأقصى لعدد الرسائل في هذه الجلسة. يسعدنا مواصلة الحديث مباشرة — "
               "احجز موعداً سريعاً مع فريقنا.",
     }, i18n=True, help_text="Shown once a visitor exceeds the max exchanges above, in place of a real reply."),
 
-    # calendar_sync — Pass 12 (docs/CALENDAR_MODULE_PLAN.md): Google
+    # calendarSync — Pass 12 (docs/CALENDAR_MODULE_PLAN.md): Google
     # OAuth app credentials for the Calendar Sync connect flow. These
     # identify *this deployment* to Google (same client id/secret for
     # every admin who ever connects, since there's one business
@@ -440,17 +440,17 @@ _DEFS: list[SettingDef] = [
     # CalendarCredential (app/models.py), which identify *which Google
     # account* got connected and are Fernet-encrypted the same way
     # google_client_secret is.
-    SettingDef("calendar_sync.google_client_id", "calendar_sync", "Google OAuth client ID", SettingType.STRING, "",
+    SettingDef("calendarSync.googleClientId", "calendarSync", "Google OAuth client ID", SettingType.STRING, "",
                help_text="From Google Cloud Console — an OAuth 2.0 Client ID for a 'Web application'."),
-    SettingDef("calendar_sync.google_client_secret", "calendar_sync", "Google OAuth client secret",
+    SettingDef("calendarSync.googleClientSecret", "calendarSync", "Google OAuth client secret",
                SettingType.STRING, "", secret=True),
-    SettingDef("calendar_sync.google_redirect_uri", "calendar_sync", "OAuth redirect URI", SettingType.URL, "",
+    SettingDef("calendarSync.googleRedirectUri", "calendarSync", "OAuth redirect URI", SettingType.URL, "",
                help_text="Must exactly match an 'Authorized redirect URI' configured on the Google OAuth "
                          "client. Point this at the admin Settings page itself — "
-                         "https://yourdomain.com/admin/settings/calendar_sync — the page picks up "
+                         "https://yourdomain.com/admin/settings/calendarSync — the page picks up "
                          "Google's ?code=&state= and completes the connection without a full page reload.",
                validator=_url_or_empty),
-    SettingDef("calendar_sync.drift_poll_minutes", "calendar_sync", "Auto-check for external changes every (minutes)",
+    SettingDef("calendarSync.driftPollMinutes", "calendarSync", "Auto-check for external changes every (minutes)",
                SettingType.INT, 15, validator=_int_range(0, 1440),
                help_text="How often to check the connected Google Calendar for events that were edited or "
                          "deleted directly in Google (not through this app) and flag the mismatched "
@@ -464,32 +464,32 @@ _DEFS: list[SettingDef] = [
     # notification_service.py. Both channels default fully OFF so an
     # admin opts in deliberately rather than the app silently trying
     # (and failing) to send mail with no configuration.
-    SettingDef("notifications.email_enabled", "notifications", "Enable email notifications", SettingType.BOOL, False),
-    SettingDef("notifications.smtp_host", "notifications", "SMTP host", SettingType.STRING, ""),
-    SettingDef("notifications.smtp_port", "notifications", "SMTP port", SettingType.INT, 587,
+    SettingDef("notifications.emailEnabled", "notifications", "Enable email notifications", SettingType.BOOL, False),
+    SettingDef("notifications.smtpHost", "notifications", "SMTP host", SettingType.STRING, ""),
+    SettingDef("notifications.smtpPort", "notifications", "SMTP port", SettingType.INT, 587,
                validator=_int_range(1, 65535)),
-    SettingDef("notifications.smtp_username", "notifications", "SMTP username", SettingType.STRING, ""),
-    SettingDef("notifications.smtp_password", "notifications", "SMTP password", SettingType.STRING, "", secret=True),
-    SettingDef("notifications.smtp_use_tls", "notifications", "Use STARTTLS", SettingType.BOOL, True),
-    SettingDef("notifications.from_email", "notifications", "From address", SettingType.EMAIL, ""),
-    SettingDef("notifications.from_name", "notifications", "From name", SettingType.STRING, "",
+    SettingDef("notifications.smtpUsername", "notifications", "SMTP username", SettingType.STRING, ""),
+    SettingDef("notifications.smtpPassword", "notifications", "SMTP password", SettingType.STRING, "", secret=True),
+    SettingDef("notifications.smtpUseTls", "notifications", "Use STARTTLS", SettingType.BOOL, True),
+    SettingDef("notifications.fromEmail", "notifications", "From address", SettingType.EMAIL, ""),
+    SettingDef("notifications.fromName", "notifications", "From name", SettingType.STRING, "",
                help_text="Falls back to the site name if left blank."),
-    SettingDef("notifications.admin_alert_email", "notifications", "Internal alert email", SettingType.EMAIL, "",
+    SettingDef("notifications.adminAlertEmail", "notifications", "Internal alert email", SettingType.EMAIL, "",
                help_text="Where new-booking and new-lead alerts are sent. Leave blank to disable."),
-    SettingDef("notifications.admin_alert_whatsapp_number", "notifications", "Internal alert WhatsApp number",
+    SettingDef("notifications.adminAlertWhatsappNumber", "notifications", "Internal alert WhatsApp number",
                SettingType.STRING, "",
                help_text="Pass 13: where the 'a booking needs your confirmation' alert is sent by "
                          "WhatsApp (in addition to, or instead of, the email above — whichever of "
                          "the two is configured is used). Requires WhatsApp notifications enabled "
                          "below. Leave blank to skip WhatsApp for this alert."),
-    SettingDef("notifications.whatsapp_enabled", "notifications", "Enable WhatsApp notifications", SettingType.BOOL, False),
-    SettingDef("notifications.whatsapp_provider", "notifications", "WhatsApp provider", SettingType.ENUM, "none",
+    SettingDef("notifications.whatsappEnabled", "notifications", "Enable WhatsApp notifications", SettingType.BOOL, False),
+    SettingDef("notifications.whatsappProvider", "notifications", "WhatsApp provider", SettingType.ENUM, "none",
                choices=("none", "twilio", "meta_cloud")),
-    SettingDef("notifications.whatsapp_account_id", "notifications", "Account ID", SettingType.STRING, "",
+    SettingDef("notifications.whatsappAccountId", "notifications", "Account ID", SettingType.STRING, "",
                help_text="Twilio Account SID, or Meta phone number ID."),
-    SettingDef("notifications.whatsapp_api_key", "notifications", "API key / auth token", SettingType.STRING, "",
+    SettingDef("notifications.whatsappApiKey", "notifications", "API key / auth token", SettingType.STRING, "",
                secret=True),
-    SettingDef("notifications.whatsapp_from_number", "notifications", "Sender number", SettingType.STRING, "",
+    SettingDef("notifications.whatsappFromNumber", "notifications", "Sender number", SettingType.STRING, "",
                help_text="Required for Twilio; unused for Meta Cloud API (the account ID identifies the sender)."),
 
     # templates — editable, bilingual notification content. Every
@@ -498,14 +498,14 @@ _DEFS: list[SettingDef] = [
     # a confirmation email or WhatsApp message is an admin edit like
     # everything else. {name}/{date}/{time}/{id}/{service} placeholders
     # are filled in at send time — see notification_service.render().
-    SettingDef("templates.booking_confirmed_email", "templates", "Booking confirmed — email", SettingType.JSON, {
+    SettingDef("templates.bookingConfirmedEmail", "templates", "Booking confirmed — email", SettingType.JSON, {
         "en": {"subject": "Your appointment is confirmed — {id}",
                "body": "Hi {name},\n\nYour appointment is confirmed for {date} at {time}.\n"
                        "Confirmation code: {id}\n\nWe look forward to speaking with you."},
         "ar": {"subject": "تم تأكيد موعدك — {id}",
                "body": "مرحباً {name}،\n\nتم تأكيد موعدك في {date} الساعة {time}.\nرمز التأكيد: {id}\n\nنتطلع للحديث معك."},
     }, i18n=True),
-    SettingDef("templates.booking_cancelled_email", "templates", "Booking cancelled — email", SettingType.JSON, {
+    SettingDef("templates.bookingCancelledEmail", "templates", "Booking cancelled — email", SettingType.JSON, {
         "en": {"subject": "Your appointment has been cancelled — {id}",
                "body": "Hi {name},\n\nYour appointment on {date} at {time} (code {id}) has been cancelled.\n"
                        "Feel free to book a new time whenever suits you."},
@@ -513,29 +513,29 @@ _DEFS: list[SettingDef] = [
                "body": "مرحباً {name}،\n\nتم إلغاء موعدك في {date} الساعة {time} (الرمز {id}).\n"
                        "يمكنك حجز موعد جديد في أي وقت يناسبك."},
     }, i18n=True),
-    SettingDef("templates.booking_rescheduled_email", "templates", "Booking rescheduled — email", SettingType.JSON, {
+    SettingDef("templates.bookingRescheduledEmail", "templates", "Booking rescheduled — email", SettingType.JSON, {
         "en": {"subject": "Your appointment was rescheduled — {id}",
                "body": "Hi {name},\n\nYour appointment (code {id}) is now confirmed for {date} at {time}."},
         "ar": {"subject": "تم تغيير موعد الحجز — {id}",
                "body": "مرحباً {name}،\n\nموعدك (الرمز {id}) أصبح الآن في {date} الساعة {time}."},
     }, i18n=True),
-    SettingDef("templates.booking_confirmed_whatsapp", "templates", "Booking confirmed — WhatsApp", SettingType.TEXT, {
+    SettingDef("templates.bookingConfirmedWhatsapp", "templates", "Booking confirmed — WhatsApp", SettingType.TEXT, {
         "en": "Hi {name}! Your appointment is confirmed for {date} at {time}. Code: {id}",
         "ar": "مرحباً {name}! تم تأكيد موعدك في {date} الساعة {time}. الرمز: {id}",
     }, i18n=True),
-    SettingDef("templates.booking_cancelled_whatsapp", "templates", "Booking cancelled — WhatsApp", SettingType.TEXT, {
+    SettingDef("templates.bookingCancelledWhatsapp", "templates", "Booking cancelled — WhatsApp", SettingType.TEXT, {
         "en": "Hi {name}, your appointment on {date} at {time} (code {id}) has been cancelled.",
         "ar": "مرحباً {name}، تم إلغاء موعدك في {date} الساعة {time} (الرمز {id}).",
     }, i18n=True),
-    SettingDef("templates.booking_rescheduled_whatsapp", "templates", "Booking rescheduled — WhatsApp", SettingType.TEXT, {
+    SettingDef("templates.bookingRescheduledWhatsapp", "templates", "Booking rescheduled — WhatsApp", SettingType.TEXT, {
         "en": "Hi {name}, your appointment (code {id}) is now confirmed for {date} at {time}.",
         "ar": "مرحباً {name}، موعدك (الرمز {id}) أصبح الآن في {date} الساعة {time}.",
     }, i18n=True),
-    SettingDef("templates.new_booking_admin_alert", "templates", "New booking — internal alert", SettingType.JSON, {
+    SettingDef("templates.newBookingAdminAlert", "templates", "New booking — internal alert", SettingType.JSON, {
         "en": {"subject": "New booking: {name} — {date} {time}",
                "body": "{name} ({email}) booked {date} at {time}.\nService: {service}\nCode: {id}"},
     }, help_text="Internal alert, English only by default — this is for staff, not visitors."),
-    SettingDef("templates.new_lead_admin_alert", "templates", "New lead — internal alert", SettingType.JSON, {
+    SettingDef("templates.newLeadAdminAlert", "templates", "New lead — internal alert", SettingType.JSON, {
         "en": {"subject": "New lead from chat: {email}",
                "body": "A new lead came in via chat.\nEmail: {email}\nMessage: {message}"},
     }, help_text="Internal alert, English only by default — this is for staff, not visitors."),
@@ -547,18 +547,18 @@ _DEFS: list[SettingDef] = [
     # new_booking_admin_alert) instead of the attendee getting an
     # immediate confirmation; the attendee only hears back once an
     # admin accepts or declines the request.
-    SettingDef("templates.booking_requested_admin_alert", "templates", "Booking requested — internal alert",
+    SettingDef("templates.bookingRequestedAdminAlert", "templates", "Booking requested — internal alert",
                SettingType.JSON, {
         "en": {"subject": "Booking request: {name} — {date} {time}",
                "body": "{name} ({email}) requested {date} at {time}.\nService: {service}\nCode: {id}\n\n"
                        "This service requires confirmation — accept or decline it from the admin dashboard."},
     }, help_text="Internal alert, English only by default — this is for staff, not visitors."),
-    SettingDef("templates.booking_requested_admin_whatsapp", "templates", "Booking requested — internal WhatsApp",
+    SettingDef("templates.bookingRequestedAdminWhatsapp", "templates", "Booking requested — internal WhatsApp",
                SettingType.TEXT, "New booking request from {name} for {date} at {time} ({service}, code {id}) "
                                   "needs your confirmation — check the admin dashboard.",
-               help_text="Pass 13: sent to notifications.admin_alert_whatsapp_number when set, alongside "
+               help_text="Pass 13: sent to notifications.adminAlertWhatsappNumber when set, alongside "
                          "(or instead of) the email alert above."),
-    SettingDef("templates.booking_accepted_email", "templates", "Booking request accepted — email", SettingType.JSON, {
+    SettingDef("templates.bookingAcceptedEmail", "templates", "Booking request accepted — email", SettingType.JSON, {
         "en": {"subject": "Your appointment is confirmed — {id}",
                "body": "Hi {name},\n\nGood news — your request for {date} at {time} has been accepted "
                        "and is now confirmed.\nConfirmation code: {id}\n\nWe look forward to speaking with you."},
@@ -566,7 +566,7 @@ _DEFS: list[SettingDef] = [
                "body": "مرحباً {name}،\n\nخبر سار — تم قبول طلبك في {date} الساعة {time} وأصبح مؤكداً الآن.\n"
                        "رمز التأكيد: {id}\n\nنتطلع للحديث معك."},
     }, i18n=True),
-    SettingDef("templates.booking_declined_email", "templates", "Booking request declined — email", SettingType.JSON, {
+    SettingDef("templates.bookingDeclinedEmail", "templates", "Booking request declined — email", SettingType.JSON, {
         "en": {"subject": "About your appointment request — {id}",
                "body": "Hi {name},\n\nWe're sorry, but we're unable to confirm your request for {date} "
                        "at {time}.{reason}\n\nPlease feel free to reach out or book another time.\n\nCode: {id}"},
@@ -575,12 +575,12 @@ _DEFS: list[SettingDef] = [
                        "لا تتردد في التواصل معنا أو حجز موعد آخر.\n\nالرمز: {id}"},
     }, i18n=True, help_text="{reason} is filled with the admin's decline note when one is given, "
                               "or left blank otherwise — leave it in the template even if you rarely use it."),
-    SettingDef("templates.booking_accepted_whatsapp", "templates", "Booking request accepted — WhatsApp",
+    SettingDef("templates.bookingAcceptedWhatsapp", "templates", "Booking request accepted — WhatsApp",
                SettingType.TEXT, {
         "en": "Hi {name}! Your request for {date} at {time} has been accepted and is now confirmed. Code: {id}",
         "ar": "مرحباً {name}! تم قبول طلبك في {date} الساعة {time} وأصبح مؤكداً. الرمز: {id}",
     }, i18n=True),
-    SettingDef("templates.booking_declined_whatsapp", "templates", "Booking request declined — WhatsApp",
+    SettingDef("templates.bookingDeclinedWhatsapp", "templates", "Booking request declined — WhatsApp",
                SettingType.TEXT, {
         "en": "Hi {name}, we're unable to confirm your request for {date} at {time}.{reason} "
               "Feel free to reach out or book another time.",
@@ -601,48 +601,48 @@ _DEFS: list[SettingDef] = [
         "en": {
             "welcome": "Welcome to Perennia",
             "tagline": "Visit our V-Lounge for more",
-            "hero_statement": "Practical AI\nBuilt for Businesses",
-            "tagline_line1": "Solving Today.",
-            "tagline_line2": "Shaping Tomorrow.",
-            "supporting_text": "Digital products for businesses across India and the GCC.",
-            "example_prompts": ["What does Perennia build?", "How can Perennia help my business?",
+            "heroStatement": "Practical AI\nBuilt for Businesses",
+            "taglineLine1": "Solving Today.",
+            "taglineLine2": "Shaping Tomorrow.",
+            "supportingText": "Digital products for businesses across India and the GCC.",
+            "examplePrompts": ["What does Perennia build?", "How can Perennia help my business?",
                                  "Explore our products"],
             "hint": "Start chatting",
-            "lang_switch": "AR | عربي",
+            "langSwitch": "AR | عربي",
         },
         "ar": {
             "welcome": "مرحبا بك في بيرينيا",
             "tagline": "زوروا V-Lounge الخاص بنا لمزيد من المعلومات",
-            "hero_statement": "حلول ذكاء اصطناعي عملية ومنتجات رقمية للأعمال",
-            "tagline_line1": "حلول اليوم.",
-            "tagline_line2": "لصناعة الغد.",
-            "supporting_text": "منتجات رقمية للشركات في الهند ودول الخليج.",
-            "example_prompts": ["ما الذي تبنيه بيرينيا؟", "كيف يمكن لبيرينيا مساعدة أعمالي؟", "استكشف منتجاتنا"],
+            "heroStatement": "حلول ذكاء اصطناعي عملية ومنتجات رقمية للأعمال",
+            "taglineLine1": "حلول اليوم.",
+            "taglineLine2": "لصناعة الغد.",
+            "supportingText": "منتجات رقمية للشركات في الهند ودول الخليج.",
+            "examplePrompts": ["ما الذي تبنيه بيرينيا؟", "كيف يمكن لبيرينيا مساعدة أعمالي؟", "استكشف منتجاتنا"],
             "hint": "ابدأ المحادثة",
-            "lang_switch": "EN | English",
+            "langSwitch": "EN | English",
         },
     }, i18n=True,
-               help_text="welcome, tagline, hint, lang_switch, hero_statement, tagline_line1, tagline_line2, "
-                          "supporting_text, example_prompts. hero_statement types itself out on the homepage "
-                          "before handing off to tagline_line1/2 (see theme.headline_typing_speed_cps and "
-                          "theme.headline_dissolve_ms above) — include a literal newline in the string to "
+               help_text="welcome, tagline, hint, langSwitch, heroStatement, taglineLine1, taglineLine2, "
+                          "supportingText, examplePrompts. heroStatement types itself out on the homepage "
+                          "before handing off to taglineLine1/2 (see theme.headlineTypingSpeedCps and "
+                          "theme.headlineDissolveMs above) — include a literal newline in the string to "
                           "have it type across two lines instead of one."),
     SettingDef("copy.chat", "copy", "Chat screen text", SettingType.JSON, {"en": {}, "ar": {}}, i18n=True,
-               help_text="tagline_line1, tagline_line2, sub, header, book_btn, faq_title, input_placeholder, welcome_msg, lang_switch"),
+               help_text="taglineLine1, taglineLine2, sub, header, bookBtn, faqTitle, inputPlaceholder, welcomeMsg, langSwitch"),
     SettingDef("copy.booking", "copy", "Booking flow text", SettingType.JSON, {"en": {}, "ar": {}}, i18n=True,
                help_text="Field labels and status messages for the booking panel, including validation and "
                           "error messages so a visitor never sees a raw error code. Status messages support "
                           "{id}/{date}/{time} placeholders."),
     SettingDef("copy.common", "copy", "Shared accessibility labels", SettingType.JSON, {
-        "en": {"close": "Close", "back": "Back", "send": "Send", "quick_menu": "Quick menu",
-               "primary_nav": "Primary", "go_home": "Go to home", "assistant_typing": "Assistant is typing"},
-        "ar": {"close": "إغلاق", "back": "رجوع", "send": "إرسال", "quick_menu": "قائمة سريعة",
-               "primary_nav": "الأساسية", "go_home": "الذهاب إلى الرئيسية", "assistant_typing": "المساعد يكتب"},
+        "en": {"close": "Close", "back": "Back", "send": "Send", "quickMenu": "Quick menu",
+               "primaryNav": "Primary", "goHome": "Go to home", "assistantTyping": "Assistant is typing"},
+        "ar": {"close": "إغلاق", "back": "رجوع", "send": "إرسال", "quickMenu": "قائمة سريعة",
+               "primaryNav": "الأساسية", "goHome": "الذهاب إلى الرئيسية", "assistantTyping": "المساعد يكتب"},
     }, i18n=True,
                help_text="Screen-reader labels used across multiple screens (close/back/send buttons, nav "
                           "landmarks) — not visible text, but still shown to assistive-technology users in "
                           "whichever language they're browsing in."),
-    SettingDef("copy.home_hero_buttons", "copy", "Home hero buttons", SettingType.JSON, [],
+    SettingDef("copy.homeHeroButtons", "copy", "Home hero buttons", SettingType.JSON, [],
                help_text="Slim buttons shown on the home screen in place of the tagline. List of "
                           "objects: {\"label\": {\"en\": \"...\", \"ar\": \"...\"}, \"url\": \"...\"}. "
                           "Empty list falls back to the tagline text. URL must be absolute http(s) "
@@ -656,13 +656,13 @@ _DEFS: list[SettingDef] = [
     # knowledge_service.py. These settings bound how much that can
     # grow, since prompt size directly affects LLM cost and latency.
     SettingDef("knowledge.enabled", "knowledge", "Use knowledge base in chat replies", SettingType.BOOL, True),
-    SettingDef("knowledge.max_total_sources", "knowledge", "Max sources", SettingType.INT, 20,
+    SettingDef("knowledge.maxTotalSources", "knowledge", "Max sources", SettingType.INT, 20,
                help_text="Uploads/URLs beyond this must be removed before adding another.",
                validator=_int_range(1, 200)),
-    SettingDef("knowledge.max_chars_per_source", "knowledge", "Max characters per source", SettingType.INT, 8000,
+    SettingDef("knowledge.maxCharsPerSource", "knowledge", "Max characters per source", SettingType.INT, 8000,
                help_text="Longer documents are truncated at upload/fetch time.",
                validator=_int_range(500, 50000)),
-    SettingDef("knowledge.max_lines_in_prompt", "knowledge", "Max lines per source sent to the LLM",
+    SettingDef("knowledge.maxLinesInPrompt", "knowledge", "Max lines per source sent to the LLM",
                SettingType.INT, 50,
                help_text="Defense-in-depth against prompt injection via an uploaded document: caps how much "
                           "of any one source can reach the model, so a huge or adversarial upload can't crowd "

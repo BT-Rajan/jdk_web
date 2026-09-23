@@ -12,8 +12,8 @@ simply hasn't touched Availability) keeps behaving identically.
 Pass 8 adds what a *service* contributes on top of the day's open
 hours: its own duration and buffer time. A booking's service_id is
 optional — a site that has never defined a Service occupies one
-booking.slot_minutes-sized grid slot with no buffer. When a service is
-given, slot generation still snaps to the same booking.slot_minutes
+booking.slotMinutes-sized grid slot with no buffer. When a service is
+given, slot generation still snaps to the same booking.slotMinutes
 grid (so times stay predictable and stable across services) but each
 candidate slot's *occupied span* is the service's own duration plus its
 buffers, checked for overlap against every other booking that day
@@ -49,13 +49,13 @@ class InvalidServiceError(Exception):
 def _booking_config(db: Session) -> dict:
     return {
         "timezone": get_setting(db, "booking.timezone"),
-        "slot_minutes": get_setting(db, "booking.slot_minutes"),
-        "day_start_hour": get_setting(db, "booking.day_start_hour"),
-        "day_end_hour": get_setting(db, "booking.day_end_hour"),
+        "slot_minutes": get_setting(db, "booking.slotMinutes"),
+        "day_start_hour": get_setting(db, "booking.dayStartHour"),
+        "day_end_hour": get_setting(db, "booking.dayEndHour"),
         "workdays": set(get_setting(db, "booking.workdays")),
-        "max_days_ahead": get_setting(db, "booking.max_days_ahead"),
-        "min_notice_hours": get_setting(db, "booking.min_notice_hours"),
-        "pending_expiry_hours": get_setting(db, "booking.pending_expiry_hours"),
+        "max_days_ahead": get_setting(db, "booking.maxDaysAhead"),
+        "min_notice_hours": get_setting(db, "booking.minNoticeHours"),
+        "pending_expiry_hours": get_setting(db, "booking.pendingExpiryHours"),
     }
 
 
@@ -64,7 +64,7 @@ def _now(cfg: dict) -> dt.datetime:
 
 
 def _pending_cutoff(cfg: dict) -> dt.datetime | None:
-    """None means disabled (booking.pending_expiry_hours == 0) — a
+    """None means disabled (booking.pendingExpiryHours == 0) — a
     pending appointment holds its slot indefinitely, as it always did
     before this setting existed. Otherwise, the UTC instant a pending
     appointment's created_at has to be older than to stop counting as
@@ -129,7 +129,7 @@ def _day_ranges(db: Session, cfg: dict, date: dt.date, service_id: str | None) -
 
 
 def _grid_slots_for_ranges(cfg: dict, ranges: list[tuple[int, int]]) -> list[str]:
-    """Candidate start times on the booking.slot_minutes grid, across
+    """Candidate start times on the booking.slotMinutes grid, across
     every open range for the day (a split day — e.g. 09:00-12:00 and
     13:00-17:00 — just means two ranges, each gridded independently;
     duplicates across overlapping ranges are deduped defensively)."""
@@ -166,7 +166,7 @@ def _booked_intervals(db: Session, cfg: dict, date_str: str, *, exclude_id: str 
     a second visitor booking the same slot while the first request
     awaits organizer approval — is a worse failure mode for a small
     business than a slot looking briefly unavailable. But only up to
-    booking.pending_expiry_hours old (_pending_cutoff) — past that, an
+    booking.pendingExpiryHours old (_pending_cutoff) — past that, an
     admin has had a full expiry window to act and didn't, so this stops
     counting it as blocking even before the background sweep
     (expire_stale_pending_appointments) gets around to formally
@@ -190,7 +190,7 @@ def _booked_intervals(db: Session, cfg: dict, date_str: str, *, exclude_id: str 
 
 class CalendarSyncUnavailableError(Exception):
     """Raised internally when calendar sync is enabled, connected, and
-    the Google API call failed, AND booking.calendar_sync_fail_open is
+    the Google API call failed, AND booking.calendarSyncFailOpen is
     False (the default) — signals available_slots to return no slots
     for the day rather than book against unconfirmed real availability.
     Never escapes available_slots itself."""
@@ -200,10 +200,10 @@ def _google_busy_intervals(db: Session, cfg: dict, date_str: str) -> list[tuple[
     """Busy ranges from the connected Google Calendar, or [] if sync
     isn't enabled/connected. Raises CalendarSyncUnavailableError if
     sync is enabled+connected but the Google API call failed and
-    booking.calendar_sync_fail_open is False — the caller propagates
+    booking.calendarSyncFailOpen is False — the caller propagates
     that straight into "no slots today," the documented safety-over-
     convenience default (see PASS12_NOTES.md)."""
-    if not get_setting(db, "features.calendar_sync_enabled"):
+    if not get_setting(db, "features.calendarSyncEnabled"):
         return []
     from app import calendar_sync_service
     credential = calendar_sync_service.get_active_credential(db)
@@ -212,7 +212,7 @@ def _google_busy_intervals(db: Session, cfg: dict, date_str: str) -> list[tuple[
     try:
         return calendar_sync_service.busy_minutes_for_date(db, credential, date_str, timezone=cfg["timezone"])
     except Exception:
-        if get_setting(db, "booking.calendar_sync_fail_open"):
+        if get_setting(db, "booking.calendarSyncFailOpen"):
             return []  # ignore the external calendar for this request, admin opted into this
         raise CalendarSyncUnavailableError(date_str)
 
@@ -594,7 +594,7 @@ def admin_reject_appointment(db: Session, appt_id: str, *, reason: str = "") -> 
 
 def expire_stale_pending_appointments(db: Session) -> list[dict]:
     """Transitions every pending appointment older than
-    booking.pending_expiry_hours to cancelled — an admin-side twin of
+    booking.pendingExpiryHours to cancelled — an admin-side twin of
     admin_reject_appointment, just triggered by age instead of an
     admin click. _booked_intervals already stops treating an
     appointment this stale as blocking a slot; this is what makes the
@@ -602,13 +602,13 @@ def expire_stale_pending_appointments(db: Session) -> list[dict]:
     forever showing "pending" while quietly no longer holding anything.
 
     Called from app/scheduler.py on a timer
-    (booking.pending_expiry_poll_minutes), not from any HTTP route —
+    (booking.pendingExpiryPollMinutes), not from any HTTP route —
     there's no request to hang side effects (notification, webhook,
     calendar cleanup) off, so this only does the state transition and
     returns the newly-expired appointments (serialized) for the caller
     to run those side effects against, the same division of
     responsibility the routers already use for a normal cancel. A
-    no-op, returning [], when booking.pending_expiry_hours is 0."""
+    no-op, returning [], when booking.pendingExpiryHours is 0."""
     cfg = _booking_config(db)
     cutoff = _pending_cutoff(cfg)
     if cutoff is None:

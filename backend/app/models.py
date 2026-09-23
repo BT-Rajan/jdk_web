@@ -68,7 +68,7 @@ class AdminSession(Base):
 
 class SiteSetting(Base):
     """One row per configurable value. `key` is a dotted path (e.g.
-    'branding.site_name', 'hours.workdays') that must exist in the
+    'branding.siteName', 'hours.workdays') that must exist in the
     settings registry — the registry is the schema; this table is just
     storage. `value` is always stored as text (JSON-encoded for
     non-string types); `is_secret` rows are Fernet-encrypted before
@@ -191,7 +191,7 @@ class Appointment(Base):
     # points here; nothing enforces every booking having one, since a
     # site can run booking without ever defining a Service, exactly as
     # it did before this pass. When null, slot duration/buffers fall
-    # back to the global booking.slot_minutes setting — see
+    # back to the global booking.slotMinutes setting — see
     # booking_service.py.
     service_id: Mapped[str | None] = mapped_column(String(32), ForeignKey("service.id"), nullable=True)
     notes: Mapped[str] = mapped_column(String(1000), default="", nullable=False)
@@ -283,7 +283,7 @@ class Service(Base):
     exists as its own resource, but the public booking flow
     (app/booking_service.py, app/models.py::Appointment) is not yet
     wired to it — that migration is the next slice of Pass 8. Until
-    then `booking.slot_minutes` in the settings registry remains the
+    then `booking.slotMinutes` in the settings registry remains the
     live scheduling value; it becomes only a default once Appointment
     gains a service_id.
 

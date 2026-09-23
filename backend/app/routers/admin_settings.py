@@ -3,19 +3,20 @@ from __future__ import annotations
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from pydantic import BaseModel
+from pydantic import Field
 from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.deps import get_current_admin, require_csrf
 from app.models import AdminUser
+from app.schema_base import CamelModel
 from app.settings_registry import CATEGORIES, SettingType, defs_for_category
 from app.settings_service import get_all, get_category, set_many, all_secret_placeholders
 
 router = APIRouter(prefix="/admin/api/settings", tags=["admin-settings"], dependencies=[Depends(require_csrf)])
 
 
-class SettingSchema(BaseModel):
+class SettingSchema(CamelModel):
     key: str
     category: str
     label: str
@@ -24,12 +25,19 @@ class SettingSchema(BaseModel):
     help_text: str
     secret: bool
     choices: list[str] | None
-    i18n: bool
+    # Explicit alias: pydantic's to_camel mangles this to "i18N" (it
+    # treats the digit-to-letter transition in "i18n" as a word
+    # boundary) — verified with pydantic.alias_generators.to_camel("i18n").
+    i18n: bool = Field(alias="i18n")
 
 
-class CategoryResponse(BaseModel):
+class CategoryResponse(CamelModel):
     category: str
-    schema_: list[SettingSchema]
+    # Trailing underscore avoids shadowing BaseModel's deprecated
+    # .schema() method — the explicit alias keeps the wire field a plain
+    # "schema" instead of the alias_generator's literal (unstripped)
+    # "schema_".
+    schema_: list[SettingSchema] = Field(alias="schema")
     values: dict[str, Any]
 
 
@@ -84,12 +92,12 @@ def update_settings_for_category(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e))
 
     db.commit()
-    if category == "calendar_sync" and "calendar_sync.drift_poll_minutes" in updated:
+    if category == "calendarSync" and "calendarSync.driftPollMinutes" in updated:
         from app import scheduler
-        scheduler.reschedule(body["calendar_sync.drift_poll_minutes"])
-    if category == "booking" and "booking.pending_expiry_poll_minutes" in updated:
+        scheduler.reschedule(body["calendarSync.driftPollMinutes"])
+    if category == "booking" and "booking.pendingExpiryPollMinutes" in updated:
         from app import scheduler
-        scheduler.reschedule_pending_expiry(body["booking.pending_expiry_poll_minutes"])
+        scheduler.reschedule_pending_expiry(body["booking.pendingExpiryPollMinutes"])
     return {"updated": updated}
 
 

@@ -179,7 +179,7 @@ export const adminApi = {
   upsertPage: (slug, body) => request(`admin/api/content/pages/${slug}`, { method: "PUT", body: JSON.stringify(body) }),
   deletePage: (slug) => request(`admin/api/content/pages/${slug}`, { method: "DELETE" }),
   reorderPages: (orderedSlugs) =>
-    request("admin/api/content/pages/reorder", { method: "POST", body: JSON.stringify({ ordered_slugs: orderedSlugs }) }),
+    request("admin/api/content/pages/reorder", { method: "POST", body: JSON.stringify({ orderedSlugs }) }),
   listPageVersions: (slug) => request(`admin/api/content/pages/${slug}/versions`),
   rollbackPage: (slug, versionId) => request(`admin/api/content/pages/${slug}/rollback/${versionId}`, { method: "POST" }),
 
@@ -189,7 +189,7 @@ export const adminApi = {
   updateFaq: (id, body) => request(`admin/api/content/faq/${id}`, { method: "PUT", body: JSON.stringify(body) }),
   deleteFaq: (id) => request(`admin/api/content/faq/${id}`, { method: "DELETE" }),
   reorderFaq: (orderedIds) =>
-    request("admin/api/content/faq/reorder", { method: "POST", body: JSON.stringify({ ordered_ids: orderedIds }) }),
+    request("admin/api/content/faq/reorder", { method: "POST", body: JSON.stringify({ orderedIds }) }),
 };
 
 export { ApiError };

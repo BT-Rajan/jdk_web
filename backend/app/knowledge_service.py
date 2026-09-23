@@ -16,11 +16,11 @@ from app.settings_service import get_setting
 
 
 def _max_chars(db: Session) -> int:
-    return get_setting(db, "knowledge.max_chars_per_source")
+    return get_setting(db, "knowledge.maxCharsPerSource")
 
 
 def _max_total(db: Session) -> int:
-    return get_setting(db, "knowledge.max_total_sources")
+    return get_setting(db, "knowledge.maxTotalSources")
 
 
 def _check_capacity(db: Session) -> None:
@@ -131,7 +131,7 @@ def build_prompt_block(db: Session) -> str:
     if not get_setting(db, "knowledge.enabled"):
         return ""
 
-    max_lines = get_setting(db, "knowledge.max_lines_in_prompt")
+    max_lines = get_setting(db, "knowledge.maxLinesInPrompt")
     sources = [s for s in list_sources(db) if s.is_active and s.ok and s.text]
     if not sources:
         return ""

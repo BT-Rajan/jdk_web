@@ -15,7 +15,7 @@ router = APIRouter(prefix="/admin/api/uploads", tags=["admin-uploads"], dependen
 # attacker-controlled. SVG is deliberately not accepted here: an SVG
 # can embed <script> and event-handler attributes, so serving one
 # back verbatim from this endpoint would be a stored-XSS vector. An
-# admin who wants an SVG logo can still point branding.logo_url at one
+# admin who wants an SVG logo can still point branding.logoUrl at one
 # hosted elsewhere (the setting is a plain URL) — this endpoint just
 # doesn't allow *uploading* one for us to re-serve.
 _MAGIC_BYTES: dict[bytes, tuple[str, str]] = {

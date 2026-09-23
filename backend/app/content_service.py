@@ -15,7 +15,7 @@ from app.settings_service import get_setting
 
 
 def _supported_languages(db: Session) -> list[str]:
-    return get_setting(db, "locale.supported_languages")
+    return get_setting(db, "locale.supportedLanguages")
 
 
 # ── Content pages ────────────────────────────────────────────────────

@@ -78,7 +78,7 @@ def _nudge_text(lang: str, turns_used: int, max_turns: int) -> str:
 
 def _brevity_instructions(lang: str) -> str:
     """Always appended, regardless of what the admin wrote in
-    chat.system_prompt — a persona edit shouldn't have to remember to
+    chat.systemPrompt — a persona edit shouldn't have to remember to
     re-state "keep it short" every time, and a visitor on a chat widget
     wants a quick back-and-forth, not an essay per turn."""
     if lang == "ar":
@@ -176,7 +176,7 @@ def _lead_capture_instructions(lang: str) -> str:
 def _build_system_prompt(
     db: Session, *, lang: str, turns_used: int, max_turns: int, lead_captured: bool, booking_enabled: bool
 ) -> str:
-    base = _lang_value(get_setting(db, "chat.system_prompt"), lang)
+    base = _lang_value(get_setting(db, "chat.systemPrompt"), lang)
 
     kb_block = knowledge_service.build_prompt_block(db)
     if not kb_block:
@@ -219,21 +219,21 @@ def get_reply(
     re-running the lead-capture instructions once a lead is in."""
     lang = "ar" if lang == "ar" else "en"
 
-    if not get_setting(db, "features.chat_enabled"):
-        return _lang_value(get_setting(db, "chat.unavailable_message"), lang), lead_captured
+    if not get_setting(db, "features.chatEnabled"):
+        return _lang_value(get_setting(db, "chat.unavailableMessage"), lang), lead_captured
 
     turns_used = len([h for h in history if h.get("from") == "user"]) + 1
-    max_turns = get_setting(db, "chat.max_turns")
+    max_turns = get_setting(db, "chat.maxTurns")
     if turns_used > max_turns:
-        return _lang_value(get_setting(db, "chat.turn_limit_message"), lang), lead_captured
+        return _lang_value(get_setting(db, "chat.turnLimitMessage"), lang), lead_captured
 
-    provider = get_setting(db, "chat.llm_provider")
-    unavailable = _lang_value(get_setting(db, "chat.unavailable_message"), lang)
+    provider = get_setting(db, "chat.llmProvider")
+    unavailable = _lang_value(get_setting(db, "chat.unavailableMessage"), lang)
 
     if provider == "none":
         reply = unavailable
     else:
-        booking_enabled = bool(get_setting(db, "features.booking_enabled"))
+        booking_enabled = bool(get_setting(db, "features.bookingEnabled"))
         try:
             system_prompt = _build_system_prompt(
                 db, lang=lang, turns_used=turns_used, max_turns=max_turns, lead_captured=lead_captured,
@@ -241,12 +241,12 @@ def get_reply(
             )
             reply = llm_client.generate_reply(
                 provider=provider,
-                api_key=get_setting(db, "chat.llm_api_key"),
-                model=get_setting(db, "chat.llm_model"),
+                api_key=get_setting(db, "chat.llmApiKey"),
+                model=get_setting(db, "chat.llmModel"),
                 system_prompt=system_prompt,
                 history=history,
                 message=message,
-                max_tokens=get_setting(db, "chat.max_tokens"),
+                max_tokens=get_setting(db, "chat.maxTokens"),
                 temperature=get_setting(db, "chat.temperature"),
                 tools=chat_tools.BOOKING_TOOLS if booking_enabled else None,
                 tool_executor=chat_tools.make_executor(db, lang=lang) if booking_enabled else None,

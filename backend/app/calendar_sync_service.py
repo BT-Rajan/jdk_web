@@ -26,17 +26,17 @@ _REFRESH_SKEW = dt.timedelta(minutes=2)
 
 
 class CalendarSyncNotConfigured(Exception):
-    """Raised when calendar_sync.google_client_id/secret aren't set —
+    """Raised when calendarSync.googleClientId/secret aren't set —
     distinct from GoogleCalendarError (a real API failure) since this
     is an admin setup gap, not something retrying would fix."""
 
 
 def _oauth_client(db: Session) -> tuple[str, str]:
-    client_id = get_setting(db, "calendar_sync.google_client_id")
-    client_secret = get_setting(db, "calendar_sync.google_client_secret")
+    client_id = get_setting(db, "calendarSync.googleClientId")
+    client_secret = get_setting(db, "calendarSync.googleClientSecret")
     if not client_id or not client_secret:
         raise CalendarSyncNotConfigured(
-            "calendar_sync.google_client_id / google_client_secret must be set before connecting"
+            "calendarSync.googleClientId / google_client_secret must be set before connecting"
         )
     return client_id, client_secret
 
@@ -95,7 +95,7 @@ def complete_oauth_callback(db: Session, *, redirect_uri: str, code: str) -> tup
         calendar_id=None, is_active=False,
     )
     db.add(credential)
-    db.add(AuditLog(action="calendar_sync.connect"))
+    db.add(AuditLog(action="calendarSync.connect"))
     db.flush()
 
     calendars = google.list_calendars(token_data["access_token"])
@@ -121,7 +121,7 @@ def select_calendar(db: Session, credential_id: str, *, calendar_id: str,
     credential.calendar_id = calendar_id
     credential.is_active = True
     db.add(AuditLog(actor_id=actor_id, actor_username=actor_username,
-                     action="calendar_sync.select_calendar", target=credential_id, detail=calendar_id))
+                     action="calendarSync.select_calendar", target=credential_id, detail=calendar_id))
     return credential
 
 
@@ -138,7 +138,7 @@ def disconnect(db: Session, *, actor_id: str | None, actor_username: str | None)
     except Exception:
         pass  # best-effort; local disconnect proceeds regardless
     db.delete(credential)
-    db.add(AuditLog(actor_id=actor_id, actor_username=actor_username, action="calendar_sync.disconnect"))
+    db.add(AuditLog(actor_id=actor_id, actor_username=actor_username, action="calendarSync.disconnect"))
     return True
 
 
@@ -171,7 +171,7 @@ def busy_minutes_for_date(db: Session, credential: CalendarCredential, date_str:
     uses for every other blocked-interval source, so it can be merged
     into the same overlap check with zero special-casing. Raises
     GoogleCalendarError on any failure; the caller decides fail-open vs
-    fail-closed (booking.calendar_sync_fail_open)."""
+    fail-closed (booking.calendarSyncFailOpen)."""
     from zoneinfo import ZoneInfo
 
     access_token = _ensure_fresh_access_token(db, credential)
@@ -206,7 +206,7 @@ def create_event_for_appointment(db: Session, appt_id: str) -> str | None:
     confirmed by the time this runs, and a calendar-sync hiccup must
     never turn that into a broken booking response, matching
     notification_service.py's philosophy exactly."""
-    if not get_setting(db, "features.calendar_sync_enabled"):
+    if not get_setting(db, "features.calendarSyncEnabled"):
         return None
     credential = get_active_credential(db)
     if credential is None or not credential.calendar_id:
@@ -237,7 +237,7 @@ def create_event_for_appointment(db: Session, appt_id: str) -> str | None:
         return event_id
     except Exception:
         import logging
-        logging.getLogger("jdk.calendar_sync").exception(
+        logging.getLogger("jdk.calendarSync").exception(
             "Google Calendar event creation failed for appointment %s", appt_id
         )
         return None
@@ -261,7 +261,7 @@ def update_event_for_appointment(db: Session, appt_id: str) -> str | None:
     it. Those failures are logged and left for a retry or the next
     drift check to resolve instead of being made worse. Never raises —
     same philosophy as create_event_for_appointment."""
-    if not get_setting(db, "features.calendar_sync_enabled"):
+    if not get_setting(db, "features.calendarSyncEnabled"):
         return None
     credential = get_active_credential(db)
     if credential is None or not credential.calendar_id:
@@ -291,7 +291,7 @@ def update_event_for_appointment(db: Session, appt_id: str) -> str | None:
         return appt.external_event_id
     except google.GoogleCalendarError as e:
         import logging
-        logger = logging.getLogger("jdk.calendar_sync")
+        logger = logging.getLogger("jdk.calendarSync")
         if e.status_code == 404:
             logger.exception(
                 "Google Calendar event %s for appointment %s is gone (404) — recreating it",
@@ -312,7 +312,7 @@ def update_event_for_appointment(db: Session, appt_id: str) -> str | None:
         # own failure modes (decrypt error, refresh failure). Same
         # reasoning as the branch above: don't recreate, just report.
         import logging
-        logging.getLogger("jdk.calendar_sync").exception(
+        logging.getLogger("jdk.calendarSync").exception(
             "Google Calendar event update failed unexpectedly for appointment %s", appt_id
         )
         return None
@@ -337,7 +337,7 @@ def delete_event_for_appointment(db: Session, appt_id: str) -> None:
         db.flush()
     except Exception:
         import logging
-        logging.getLogger("jdk.calendar_sync").exception(
+        logging.getLogger("jdk.calendarSync").exception(
             "Google Calendar event deletion failed for appointment %s", appt_id
         )
 
@@ -348,7 +348,7 @@ def _appointment_duration_minutes(db: Session, appt) -> int:
         svc = db.get(Service, appt.service_id)
         if svc is not None:
             return svc.duration_minutes
-    return get_setting(db, "booking.slot_minutes")
+    return get_setting(db, "booking.slotMinutes")
 
 
 # ── Manual event management (admin's general "Calendar" screen) ─────
@@ -404,7 +404,7 @@ def create_manual_event(db: Session, *, summary: str, description: str, start_is
         description=description, start_iso=start_iso, end_iso=end_iso, timezone=timezone,
     )
     db.add(AuditLog(actor_id=actor_id, actor_username=actor_username,
-                     action="calendar_sync.create_event", target=event_id))
+                     action="calendarSync.create_event", target=event_id))
     return {"id": event_id}
 
 
@@ -417,7 +417,7 @@ def update_manual_event(db: Session, event_id: str, *, summary: str, description
         summary=summary, description=description, start_iso=start_iso, end_iso=end_iso, timezone=timezone,
     )
     db.add(AuditLog(actor_id=actor_id, actor_username=actor_username,
-                     action="calendar_sync.update_event", target=event_id))
+                     action="calendarSync.update_event", target=event_id))
     _clear_drift_for_event(db, event_id)
 
 
@@ -426,7 +426,7 @@ def delete_manual_event(db: Session, event_id: str, *, actor_id: str | None, act
     access_token = _ensure_fresh_access_token(db, credential)
     google.delete_event(access_token, calendar_id=credential.calendar_id, event_id=event_id)
     db.add(AuditLog(actor_id=actor_id, actor_username=actor_username,
-                     action="calendar_sync.delete_event", target=event_id))
+                     action="calendarSync.delete_event", target=event_id))
     appt = _appointment_for_event(db, event_id)
     if appt is not None:
         appt.calendar_drift = "Linked calendar event was deleted from the admin Calendar screen."
@@ -526,5 +526,5 @@ def detect_drift(db: Session) -> dict:
         return {"ok": True, "checked": len(items), "flagged": flagged}
     except Exception:
         import logging
-        logging.getLogger("jdk.calendar_sync").exception("Calendar drift detection failed")
+        logging.getLogger("jdk.calendarSync").exception("Calendar drift detection failed")
         return {"ok": False, "error": "sync_failed", "checked": 0, "flagged": 0}

@@ -1,6 +1,6 @@
 import "./ButtonStylePicker.css";
 
-// Mirrors theme.button_style's ENUM choices in
+// Mirrors theme.buttonStyle's ENUM choices in
 // backend/app/settings_registry.py and the [data-button-style="..."]
 // rules in src/styles/themeVariants.css.
 const STYLES = [
@@ -20,7 +20,7 @@ function ButtonThumb({ id }) {
 }
 
 /**
- * Visual picker for theme.button_style — covers CTA-style buttons and
+ * Visual picker for theme.buttonStyle — covers CTA-style buttons and
  * pills site-wide (homepage quick links, centered-card pills, the two
  * sticky buttons) with one toggle. "Default" is explicitly not
  * uniform — it's what's live today — every other choice unifies all

@@ -1,6 +1,6 @@
 import "./HeadlineStylePicker.css";
 
-// Mirrors theme.headline_style's ENUM choices in
+// Mirrors theme.headlineStyle's ENUM choices in
 // backend/app/settings_registry.py and the CSS in src/components/hero/
 // Hero.css ([data-headline-style="..."] rules). Previews approximate
 // the real effect with plain CSS (no animation in the small preview,
@@ -15,7 +15,7 @@ const STYLES = [
 ];
 
 /**
- * Visual picker for theme.headline_style — same "gallery of cards,
+ * Visual picker for theme.headlineStyle — same "gallery of cards,
  * click to select" pattern as ThemePresetPicker/LayoutTemplatePicker.
  * Deliberately narrow in scope: only ever writes this one enum field,
  * so it can't touch the headline's actual text (that's on-screen text

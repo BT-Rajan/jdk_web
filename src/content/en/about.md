@@ -1,8 +1,8 @@
-# About Perennia
+# About JDK Factory
 
 ## Solving Today. Shaping Tomorrow.
 
-Perennia is a **Kuwait-based AI-powered technology and innovation company** developing practical and affordable solutions for organizations and individuals.
+JDK Factory is a **Kuwait-based AI-powered technology and innovation company** developing practical and affordable solutions for organizations and individuals.
 
 We combine **artificial intelligence, automation, and digital technologies** to solve real problems today and create new opportunities for tomorrow.
 
@@ -26,7 +26,7 @@ We focus on practical opportunities to improve processes, reduce effort, acceler
 
 Through our India-based technology organization, **Cogzidel Technology Solutions**, with **28 years of enterprise technology experience**, we bring established software engineering and delivery capabilities together with modern AI and automation.
 
-This enables Perennia to support organizations in Kuwait as they move from individual AI use cases toward connected, scalable digital transformation.
+This enables JDK Factory to support organizations in Kuwait as they move from individual AI use cases toward connected, scalable digital transformation.
 
 ## Our Approach
 
@@ -48,6 +48,6 @@ Our **Growth Hackers** help clients discover where technology can create the gre
 
 > **Practical AI. Affordable Innovation.**
 
-Perennia is here to make technology useful today, and make tomorrow more achievable.
+JDK Factory is here to make technology useful today, and make tomorrow more achievable.
 
-**Perennia — Solving Today. Shaping Tomorrow.**
+**JDK Factory — Solving Today. Shaping Tomorrow.**

@@ -32,13 +32,12 @@ SIMPLE_EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
 
 # Minimal built-in company knowledge, used only when the admin hasn't
 # configured any knowledge-base sources — so a fresh install can still
-# answer basic "what is Perennia" / "how do I reach you" questions
+# answer basic "what is JDK Factory" / "how do I reach you" questions
 # instead of always falling back to the "someone will follow up"
 # message the moment an LLM is configured but nothing else has been.
 DEFAULT_KNOWLEDGE = """
-COMPANY: Perennia — AI-powered technology and innovation company.
+COMPANY: JDK Factory — AI-powered technology and innovation company.
 TAGLINE: "Solving Today. Shaping Tomorrow."
-NAME ORIGIN: From Latin "Perennis" — lasting, enduring, resilient, continuously growing.
 MISSION: Practical, affordable AI solutions for today's challenges and tomorrow's opportunities.
 """.strip()
 

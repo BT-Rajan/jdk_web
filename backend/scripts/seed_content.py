@@ -36,11 +36,11 @@ FRONTEND_CONTENT_DIR = Path(__file__).resolve().parent.parent.parent / "src" / "
 # directly from the .md files below rather than duplicated inline.
 PAGE_META = {
     "about": {
-        "en": {"navLabel": "About", "sectionTitle": "About Perennia",
-               "sectionBody": "Perennia is an AI-powered technology and innovation company. We partner with businesses to design, build, and operate intelligent products — from first concept through to production support.",
+        "en": {"navLabel": "About", "sectionTitle": "About JDK Factory",
+               "sectionBody": "JDK Factory is an AI-powered technology and innovation company. We partner with businesses to design, build, and operate intelligent products — from first concept through to production support.",
                "taglineLine1": "Who We ", "taglineLine2": "Are", "taglineSub": "AI-POWERED TECHNOLOGY & INNOVATION"},
-        "ar": {"navLabel": "من نحن", "sectionTitle": "عن بيرينيا",
-               "sectionBody": "بيرينيا شركة تقنية وابتكار مدعومة بالذكاء الاصطناعي. نتعاون مع الشركات لتصميم وبناء وتشغيل منتجات ذكية — من الفكرة الأولى وحتى الدعم الإنتاجي.",
+        "ar": {"navLabel": "من نحن", "sectionTitle": "عن JDK Factory",
+               "sectionBody": "JDK Factory شركة تقنية وابتكار مدعومة بالذكاء الاصطناعي. نتعاون مع الشركات لتصميم وبناء وتشغيل منتجات ذكية — من الفكرة الأولى وحتى الدعم الإنتاجي.",
                "taglineLine1": "من ", "taglineLine2": "نحن", "taglineSub": "تقنية وابتكار مدعومان بالذكاء الاصطناعي"},
     },
     "products": {
@@ -70,9 +70,9 @@ PAGE_META = {
 }
 
 FAQ_SEED = [
-    {"en": {"q": "What services does Perennia offer?",
+    {"en": {"q": "What services does JDK Factory offer?",
             "a": "We build AI-powered assistants, automation, and digital products tailored to your business — from concept through to production support."},
-     "ar": {"q": "ما هي الخدمات التي تقدمها بيرينيا؟",
+     "ar": {"q": "ما هي الخدمات التي تقدمها JDK Factory؟",
             "a": "نصمم مساعدين مدعومين بالذكاء الاصطناعي وحلول أتمتة ومنتجات رقمية مخصصة لعملك — من الفكرة وحتى الدعم الإنتاجي."}},
     {"en": {"q": "How can I book a consultation?",
             "a": "Tap \"Talk to Us\" above, choose a free slot, and you'll get an instant confirmation by email — no back-and-forth required."},
@@ -95,34 +95,34 @@ FAQ_SEED = [
 # the registry default. See withHomeFallbacks in Hero.jsx for the
 # frontend-side safety net this is meant to make unnecessary.
 COPY_HOME = {
-    "en": {"welcome": "Welcome to Perennia", "tagline": "Visit our V-Lounge for more",
+    "en": {"welcome": "Welcome to JDK Factory", "tagline": "Visit our V-Lounge for more",
            "heroStatement": "Practical AI\nBuilt for Businesses",
            "taglineLine1": "Solving Today.", "taglineLine2": "Shaping Tomorrow.",
            "supportingText": "Digital products for businesses across India and the GCC.",
-           "examplePrompts": ["What does Perennia build?", "How can Perennia help my business?",
+           "examplePrompts": ["What does JDK Factory build?", "How can JDK Factory help my business?",
                                 "Explore our products"],
            "hint": "Start chatting", "langSwitch": "AR | عربي"},
-    "ar": {"welcome": "مرحبا بك في بيرينيا", "tagline": "زوروا V-Lounge الخاص بنا لمزيد من المعلومات",
+    "ar": {"welcome": "مرحبا بك في JDK Factory", "tagline": "زوروا V-Lounge الخاص بنا لمزيد من المعلومات",
            "heroStatement": "حلول ذكاء اصطناعي عملية ومنتجات رقمية للأعمال",
            "taglineLine1": "حلول اليوم.", "taglineLine2": "لصناعة الغد.",
            "supportingText": "منتجات رقمية للشركات في الهند ودول الخليج.",
-           "examplePrompts": ["ما الذي تبنيه بيرينيا؟", "كيف يمكن لبيرينيا مساعدة أعمالي؟", "استكشف منتجاتنا"],
+           "examplePrompts": ["ما الذي تبنيه JDK Factory؟", "كيف يمكن لـ JDK Factory مساعدة أعمالي؟", "استكشف منتجاتنا"],
            "hint": "ابدأ المحادثة", "langSwitch": "EN | English"},
 }
 
 COPY_CHAT = {
     "en": {"taglineLine1": "Solving Today. ", "taglineLine2": "Shaping Tomorrow.",
-           "sub": "AI-POWERED TECHNOLOGY & INNOVATION", "header": "Perennia Assistant",
+           "sub": "AI-POWERED TECHNOLOGY & INNOVATION", "header": "JDK Factory Assistant",
            "bookBtn": "Talk to Us", "faqTitle": "Quick Questions",
            "inputPlaceholder": "Type your message…",
-           "welcomeMsg": "Hello! I'm Perennia's AI assistant. Before we get started, may I know your name? "
+           "welcomeMsg": "Hello! I'm JDK Factory's AI assistant. Before we get started, may I know your name? "
                           "It helps us build a good relationship with you and follow up properly.",
            "langSwitch": "AR | عربي"},
     "ar": {"taglineLine1": "حلول اليوم. ", "taglineLine2": "لصناعة الغد.",
-           "sub": "تقنية وابتكار مدعومان بالذكاء الاصطناعي", "header": "مساعد بيرينيا",
+           "sub": "تقنية وابتكار مدعومان بالذكاء الاصطناعي", "header": "مساعد JDK Factory",
            "bookBtn": "تحدث إلينا", "faqTitle": "أسئلة سريعة",
            "inputPlaceholder": "اكتب رسالتك…",
-           "welcomeMsg": "مرحباً! أنا المساعد الذكي لبيرينيا. قبل أن نبدأ، هل لي أن أعرف اسمك؟ "
+           "welcomeMsg": "مرحباً! أنا المساعد الذكي لـ JDK Factory. قبل أن نبدأ، هل لي أن أعرف اسمك؟ "
                           "هذا يساعدنا على بناء علاقة أفضل معك ومتابعة طلبك بشكل صحيح.",
            "langSwitch": "EN | English"},
 }

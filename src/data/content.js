@@ -6,8 +6,8 @@
 // ──────────────────────────────────────────────────────────
 
 export const BRAND = {
-  name: "Perennia",
-  wordmarkAr: "بيرينيا",
+  name: "JDK Factory",
+  wordmarkAr: "JDK Factory",
 };
 
 // Top-level site sections, mirrored in the header nav menu and the
@@ -38,19 +38,19 @@ export const HOME_TOPICS = {
       id: "artificial-intelligence",
       label: "Artificial Intelligence",
       body: "AI assistants, automation, and intelligent workflows tailored to your business.",
-      question: "Tell us about Artificial Intelligence at Perennia.",
+      question: "Tell us about Artificial Intelligence at JDK Factory.",
     },
     {
       id: "software-development",
       label: "Software Development",
       body: "Custom web, mobile, and enterprise software built around how your team actually works.",
-      question: "Tell us about Software Development at Perennia.",
+      question: "Tell us about Software Development at JDK Factory.",
     },
     {
       id: "digital-transformation",
       label: "Digital Transformation",
       body: "Modernizing processes and systems to help your organization move faster.",
-      question: "Tell us about Digital Transformation at Perennia.",
+      question: "Tell us about Digital Transformation at JDK Factory.",
     },
   ],
   ar: [
@@ -58,19 +58,19 @@ export const HOME_TOPICS = {
       id: "artificial-intelligence",
       label: "الذكاء الاصطناعي",
       body: "مساعدون بالذكاء الاصطناعي وأتمتة وسير عمل ذكي مصمم خصيصًا لعملك.",
-      question: "أخبرنا عن الذكاء الاصطناعي في بيرينيا.",
+      question: "أخبرنا عن الذكاء الاصطناعي في JDK Factory.",
     },
     {
       id: "software-development",
       label: "تطوير البرمجيات",
       body: "برمجيات وتطبيقات ويب وجوال وحلول مؤسسية مصممة وفق طريقة عمل فريقك.",
-      question: "أخبرنا عن تطوير البرمجيات في بيرينيا.",
+      question: "أخبرنا عن تطوير البرمجيات في JDK Factory.",
     },
     {
       id: "digital-transformation",
       label: "التحول الرقمي",
       body: "تحديث الأنظمة والعمليات لمساعدة مؤسستك على العمل بشكل أسرع.",
-      question: "أخبرنا عن التحول الرقمي في بيرينيا.",
+      question: "أخبرنا عن التحول الرقمي في JDK Factory.",
     },
   ],
 };
@@ -78,8 +78,8 @@ export const HOME_TOPICS = {
 export const SECTIONS = {
   en: {
     about: {
-      title: "About Perennia",
-      body: "Perennia is an AI-powered technology and innovation company. We partner with businesses to design, build, and operate intelligent products — from first concept through to production support.",
+      title: "About JDK Factory",
+      body: "JDK Factory is an AI-powered technology and innovation company. We partner with businesses to design, build, and operate intelligent products — from first concept through to production support.",
     },
     products: {
       title: "Products",
@@ -96,8 +96,8 @@ export const SECTIONS = {
   },
   ar: {
     about: {
-      title: "عن بيرينيا",
-      body: "بيرينيا شركة تقنية وابتكار مدعومة بالذكاء الاصطناعي. نتعاون مع الشركات لتصميم وبناء وتشغيل منتجات ذكية — من الفكرة الأولى وحتى الدعم الإنتاجي.",
+      title: "عن JDK Factory",
+      body: "JDK Factory شركة تقنية وابتكار مدعومة بالذكاء الاصطناعي. نتعاون مع الشركات لتصميم وبناء وتشغيل منتجات ذكية — من الفكرة الأولى وحتى الدعم الإنتاجي.",
     },
     products: {
       title: "المنتجات",
@@ -122,13 +122,13 @@ export const COPY = {
       primaryNav: "Primary", goHome: "Go to home", assistantTyping: "Assistant is typing",
     },
     home: {
-      welcome: "Welcome to Perennia",
+      welcome: "Welcome to JDK Factory",
       tagline: "Visit our V-Lounge for more",
       heroStatement: "Practical AI\nBuilt for Businesses",
       taglineLine1: "Solving Today.",
       taglineLine2: "Shaping Tomorrow.",
       supportingText: "Digital products for businesses across India and the GCC.",
-      examplePrompts: ["What does Perennia build?", "How can Perennia help my business?", "Explore our products"],
+      examplePrompts: ["What does JDK Factory build?", "How can JDK Factory help my business?", "Explore our products"],
       hint: "Start chatting",
       langSwitch: "AR | عربي",
     },
@@ -140,9 +140,9 @@ export const COPY = {
       onlineStatus: "Online · AI Assistant",
       poweredBy: "Powered by",
       faqTitle: "Quick Questions",
-      inputPlaceholder: "Ask Perennia AI anything…",
+      inputPlaceholder: "Ask JDK Factory AI anything…",
       welcomeMsg:
-        "Hello! I'm Perennia's AI assistant. Before we get started, may I know your name? It helps us build a good relationship with you and follow up properly.",
+        "Hello! I'm JDK Factory's AI assistant. Before we get started, may I know your name? It helps us build a good relationship with you and follow up properly.",
       langSwitch: "AR | عربي",
       micLabel: "Talk",
       micLabelListening: "Listening…",
@@ -160,13 +160,13 @@ export const COPY = {
       primaryNav: "الأساسية", goHome: "الذهاب إلى الرئيسية", assistantTyping: "المساعد يكتب",
     },
     home: {
-      welcome: "مرحبا بك في بيرينيا",
+      welcome: "مرحبا بك في JDK Factory",
       tagline: "زوروا V-Lounge الخاص بنا لمزيد من المعلومات",
       heroStatement: "حلول ذكاء اصطناعي عملية ومنتجات رقمية للأعمال",
       taglineLine1: "حلول اليوم.",
       taglineLine2: "لصناعة الغد.",
       supportingText: "منتجات رقمية للشركات في الهند ودول الخليج.",
-      examplePrompts: ["ما الذي تبنيه بيرينيا؟", "كيف يمكن لبيرينيا مساعدة أعمالي؟", "استكشف منتجاتنا"],
+      examplePrompts: ["ما الذي تبنيه JDK Factory؟", "كيف يمكن لـ JDK Factory مساعدة أعمالي؟", "استكشف منتجاتنا"],
       hint: "ابدأ المحادثة",
       langSwitch: "EN | English",
     },
@@ -178,9 +178,9 @@ export const COPY = {
       onlineStatus: "متصل الآن · مساعد ذكي",
       poweredBy: "بدعم من",
       faqTitle: "أسئلة سريعة",
-      inputPlaceholder: "اسأل مساعد بيرينيا أي شيء…",
+      inputPlaceholder: "اسأل مساعد JDK Factory أي شيء…",
       welcomeMsg:
-        "مرحباً! أنا المساعد الذكي لبيرينيا. قبل أن نبدأ، هل لي أن أعرف اسمك؟ هذا يساعدنا على بناء علاقة أفضل معك ومتابعة طلبك بشكل صحيح.",
+        "مرحباً! أنا المساعد الذكي لـ JDK Factory. قبل أن نبدأ، هل لي أن أعرف اسمك؟ هذا يساعدنا على بناء علاقة أفضل معك ومتابعة طلبك بشكل صحيح.",
       langSwitch: "EN | English",
       micLabel: "تحدث",
       micLabelListening: "جارٍ الاستماع…",
@@ -195,13 +195,13 @@ export const COPY = {
 
 export const FAQ = {
   en: [
-    { q: "What services does Perennia offer?", a: "We build AI-powered assistants, automation, and digital products tailored to your business — from concept through to production support." },
+    { q: "What services does JDK Factory offer?", a: "We build AI-powered assistants, automation, and digital products tailored to your business — from concept through to production support." },
     { q: "How can I get in touch?", a: "Chat with our AI assistant above, or reach out via the contact details on our Contact page — we'll get back to you quickly." },
     { q: "Do you support Arabic and English?", a: "Yes — the whole experience, including this assistant, works fully in both English and Arabic with proper right-to-left layout." },
     { q: "Where are you located?", a: "We work with clients globally and meet either virtually or in person — just ask and we'll accommodate you." },
   ],
   ar: [
-    { q: "ما هي الخدمات التي تقدمها بيرينيا؟", a: "نصمم مساعدين مدعومين بالذكاء الاصطناعي وحلول أتمتة ومنتجات رقمية مخصصة لعملك — من الفكرة وحتى الدعم الإنتاجي." },
+    { q: "ما هي الخدمات التي تقدمها JDK Factory؟", a: "نصمم مساعدين مدعومين بالذكاء الاصطناعي وحلول أتمتة ومنتجات رقمية مخصصة لعملك — من الفكرة وحتى الدعم الإنتاجي." },
     { q: "كيف يمكنني التواصل معكم؟", a: "تحدث مع مساعدنا الذكي أعلاه، أو تواصل معنا عبر بيانات التواصل في صفحة اتصل بنا — سنرد عليك بسرعة." },
     { q: "هل تدعمون اللغتين العربية والإنجليزية؟", a: "نعم — التجربة بأكملها، بما في ذلك هذا المساعد، تعمل بالكامل باللغتين مع تخطيط صحيح من اليمين إلى اليسار." },
     { q: "أين يقع مقركم؟", a: "نعمل مع عملاء حول العالم ونلتقي افتراضيًا أو شخصيًا — فقط أخبرنا وسنوفر لك ما يناسبك." },

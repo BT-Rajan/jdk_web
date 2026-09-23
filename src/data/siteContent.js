@@ -183,7 +183,7 @@ export function buildFallbackSite() {
       logoUrl: "/static/logo.svg",
       logoScale: 1,
       faviconUrl: "/favicon.svg",
-      metaDescriptionByLang: { en: "Perennia — AI-powered technology & innovation.", ar: "" },
+      metaDescriptionByLang: { en: "JDK Factory — AI-powered technology & innovation.", ar: "" },
       chatAvatarUrl: "",
     },
     ...buildFromLocalFallback(supportedLanguages),

@@ -144,7 +144,7 @@ def _hero_buttons(v: list) -> None:
 _DEFS: list[SettingDef] = [
     # branding ------------------------------------------------------
     SettingDef("branding.siteName", "branding", "Site name", SettingType.STRING,
-               {"en": "Perennia", "ar": "بيرينيا"}, i18n=True,
+               {"en": "JDK Factory", "ar": "JDK Factory"}, i18n=True,
                help_text="Shown in the header, browser tab, and emails. Per-language, since a wordmark "
                           "often isn't a literal translation."),
     SettingDef("branding.tagline", "branding", "Tagline", SettingType.STRING, {"en": "", "ar": ""}, i18n=True),
@@ -155,7 +155,7 @@ _DEFS: list[SettingDef] = [
                validator=_float_range(0.5, 3.0)),
     SettingDef("branding.faviconUrl", "branding", "Favicon", SettingType.IMAGE, "/favicon.svg"),
     SettingDef("branding.metaDescription", "branding", "Search/share description", SettingType.TEXT,
-               {"en": "Perennia — AI-powered technology & innovation.", "ar": ""}, i18n=True,
+               {"en": "JDK Factory — AI-powered technology & innovation.", "ar": ""}, i18n=True,
                help_text="Shown in search results and link previews (og:description)."),
 
     # locale ----------------------------------------------------------
@@ -337,12 +337,12 @@ _DEFS: list[SettingDef] = [
                help_text="Shown next to the assistant in the AI Assistant widget and the homepage "
                           "quick-chat box. Leave blank to use a plain initial-letter avatar instead."),
     SettingDef("chat.systemPrompt", "chat", "System prompt", SettingType.TEXT, {
-        "en": "You are Perennia's AI assistant. Be warm, concise, and professional. Early in the "
+        "en": "You are JDK Factory's AI assistant. Be warm, concise, and professional. Early in the "
               "conversation, ask the visitor's name so you can personalize the chat and so the team can "
-              "follow up. Help visitors understand Perennia's AI products and services.",
-        "ar": "أنت المساعد الذكي لشركة بيرينيا. كن ودودًا ومختصرًا ومحترفًا. في وقت مبكر من المحادثة، اسأل "
+              "follow up. Help visitors understand JDK Factory's AI products and services.",
+        "ar": "أنت المساعد الذكي لشركة JDK Factory. كن ودودًا ومختصرًا ومحترفًا. في وقت مبكر من المحادثة، اسأل "
               "الزائر عن اسمه حتى تتمكن من تخصيص المحادثة ومتابعة الطلب. ساعد الزوار على فهم منتجات وخدمات "
-              "بيرينيا.",
+              "JDK Factory.",
     }, i18n=True),
     SettingDef("chat.unavailableMessage", "chat", "Fallback message (LLM unavailable)", SettingType.TEXT, {
         "en": "Thanks for sharing that! Someone from our team will follow up shortly.",
@@ -408,25 +408,25 @@ _DEFS: list[SettingDef] = [
     # PASS2_NOTES.md for why the split.
     SettingDef("copy.home", "copy", "Home screen text", SettingType.JSON, {
         "en": {
-            "welcome": "Welcome to Perennia",
+            "welcome": "Welcome to JDK Factory",
             "tagline": "Visit our V-Lounge for more",
             "heroStatement": "Practical AI\nBuilt for Businesses",
             "taglineLine1": "Solving Today.",
             "taglineLine2": "Shaping Tomorrow.",
             "supportingText": "Digital products for businesses across India and the GCC.",
-            "examplePrompts": ["What does Perennia build?", "How can Perennia help my business?",
+            "examplePrompts": ["What does JDK Factory build?", "How can JDK Factory help my business?",
                                  "Explore our products"],
             "hint": "Start chatting",
             "langSwitch": "AR | عربي",
         },
         "ar": {
-            "welcome": "مرحبا بك في بيرينيا",
+            "welcome": "مرحبا بك في JDK Factory",
             "tagline": "زوروا V-Lounge الخاص بنا لمزيد من المعلومات",
             "heroStatement": "حلول ذكاء اصطناعي عملية ومنتجات رقمية للأعمال",
             "taglineLine1": "حلول اليوم.",
             "taglineLine2": "لصناعة الغد.",
             "supportingText": "منتجات رقمية للشركات في الهند ودول الخليج.",
-            "examplePrompts": ["ما الذي تبنيه بيرينيا؟", "كيف يمكن لبيرينيا مساعدة أعمالي؟", "استكشف منتجاتنا"],
+            "examplePrompts": ["ما الذي تبنيه JDK Factory؟", "كيف يمكن لـ JDK Factory مساعدة أعمالي؟", "استكشف منتجاتنا"],
             "hint": "ابدأ المحادثة",
             "langSwitch": "EN | English",
         },

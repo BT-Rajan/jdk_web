@@ -24,6 +24,14 @@ ExecStart=/opt/jdk_web/start_server.sh
 Environment=WEB_CONCURRENCY=3
 Restart=on-failure
 RestartSec=5
+# Without this, systemd treats ANY signal-terminated exit — including a
+# plain `kill <pid>` or `kill -9` run outside systemctl — as a failure
+# and immediately relaunches the process, so the service looks like it
+# "refuses to die" (and reads as malware persistence to AV/EDR
+# heuristics). This keeps real crashes (non-zero Python exit codes)
+# auto-restarting while letting a direct kill actually stop it; use
+# `systemctl stop jdk-web` for the normal, non-signal-racing shutdown.
+SuccessExitStatus=SIGTERM SIGINT SIGKILL
 
 [Install]
 WantedBy=multi-user.target

@@ -24,43 +24,15 @@ export default function OverviewPage() {
 
   return (
     <div>
-      <PageHeader title="Overview" subtitle="What's happening across bookings and leads." />
+      <PageHeader title="Overview" subtitle="What's happening across leads." />
 
       <div className="stat-grid">
         <Link to="/admin/leads" className="stat-card-link">
           <StatCard label="Leads" value={stats.leads_total} detail={`${stats.leads_by_status.new ?? 0} new`} />
         </Link>
-        <Link to="/admin/appointments" className="stat-card-link">
-          <StatCard label="Appointments" value={stats.appointments_total} detail={`${stats.appointments_upcoming} upcoming`} />
-        </Link>
-        <Link to="/admin/appointments" className="stat-card-link">
-          <StatCard label="This week" value={stats.appointments_this_week} detail="confirmed appointments" />
-        </Link>
       </div>
 
       <div className="overview-columns">
-        <section className="card overview-panel">
-          <div className="overview-panel-head">
-            <h2>Upcoming appointments</h2>
-            <Link to="/admin/appointments">View all →</Link>
-          </div>
-          {stats.upcoming_appointments.length === 0 ? (
-            <p className="overview-empty">Nothing booked yet.</p>
-          ) : (
-            <table>
-              <tbody>
-                {stats.upcoming_appointments.map((a) => (
-                  <tr key={a.id} className="overview-row" onClick={() => navigate(`/admin/appointments/${a.id}`)}>
-                    <td><span className="mono-chip">{a.id}</span></td>
-                    <td>{a.name}</td>
-                    <td>{a.date} · {a.time}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </section>
-
         <section className="card overview-panel">
           <div className="overview-panel-head">
             <h2>Recent leads</h2>

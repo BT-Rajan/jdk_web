@@ -8,7 +8,7 @@ import LeadCreatePanel from "../components/LeadCreatePanel.jsx";
 import "./LeadsPage.css";
 
 const STATUS_OPTIONS = ["", "new", "contacted", "qualified", "converted", "lost"];
-const SOURCE_OPTIONS = ["", "chat", "booking"];
+const SOURCE_OPTIONS = ["", "chat", "cart"];
 
 export default function LeadsPage() {
   const { handleSessionExpired } = useAuth();
@@ -22,7 +22,7 @@ export default function LeadsPage() {
 
   const load = useCallback(() => {
     adminApi
-      .listLeads({ status_filter: statusFilter, source: sourceFilter })
+      .listLeads({ statusFilter, source: sourceFilter })
       .then(setLeads)
       .catch((e) => (e.status === 401 ? handleSessionExpired() : setError(e.message)));
   }, [statusFilter, sourceFilter, handleSessionExpired]);
@@ -52,7 +52,7 @@ export default function LeadsPage() {
     <div>
       <PageHeader
         title="Leads"
-        subtitle="Everyone who's booked a call or left an email in chat."
+        subtitle="Everyone who's requested an order or left an email in chat."
         actions={
           <button className="row-action primary" onClick={() => { setCreating(true); navigate("/admin/leads"); }}>
             + New lead
@@ -106,7 +106,7 @@ export default function LeadsPage() {
                   </td>
                   <td>{l.source}</td>
                   <td><span className={`status-pill ${l.status}`}>{l.status}</span></td>
-                  <td>{new Date(l.created_at).toLocaleDateString()}</td>
+                  <td>{new Date(l.createdAt).toLocaleDateString()}</td>
                 </tr>
               ))}
             </tbody>

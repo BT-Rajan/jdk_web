@@ -13,22 +13,19 @@ from app.config import settings
 from app.rate_limit import limiter
 from app.routers import (
     admin_auth,
-    admin_availability,
-    admin_booking,
-    admin_calendar_events,
-    admin_calendar_sync,
     admin_content,
     admin_knowledge,
     admin_leads,
-    admin_services,
+    admin_products,
     admin_settings,
     admin_stats,
     admin_uploads,
     admin_webhooks,
-    public_booking,
     public_chat,
     public_config,
     public_content,
+    public_orders,
+    public_products,
 )
 
 # repo_root/backend/app/main.py -> repo_root
@@ -81,19 +78,16 @@ def create_app() -> FastAPI:
     app.include_router(admin_settings.router)
     app.include_router(admin_content.router)
     app.include_router(admin_uploads.router)
-    app.include_router(admin_booking.router)
-    app.include_router(admin_calendar_sync.router)
-    app.include_router(admin_calendar_events.router)
-    app.include_router(admin_services.router)
-    app.include_router(admin_availability.router)
     app.include_router(admin_webhooks.router)
     app.include_router(admin_leads.router)
+    app.include_router(admin_products.router)
     app.include_router(admin_stats.router)
     app.include_router(admin_knowledge.router)
     app.include_router(public_config.router)
     app.include_router(public_content.router)
-    app.include_router(public_booking.router)
     app.include_router(public_chat.router)
+    app.include_router(public_products.router)
+    app.include_router(public_orders.router)
 
     app.mount("/uploads", StaticFiles(directory=str(settings.UPLOADS_DIR)), name="uploads")
 
@@ -101,7 +95,7 @@ def create_app() -> FastAPI:
     def _start_background_jobs() -> None:
         # Skipped entirely under pytest — the suite spins up a fresh
         # temp-file SQLite DB per run and doesn't want a background
-        # thread polling it (or Google) alongside the tests themselves.
+        # thread polling it alongside the tests themselves.
         import sys
         if "pytest" in sys.modules:
             return

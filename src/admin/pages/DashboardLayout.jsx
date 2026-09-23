@@ -4,10 +4,8 @@ import "./DashboardLayout.css";
 
 const NAV_ITEMS = [
   { to: "/admin", label: "Overview", end: true },
-  { to: "/admin/appointments", label: "Appointments" },
-  { to: "/admin/calendar", label: "Calendar" },
-  { to: "/admin/services", label: "Services" },
   { to: "/admin/leads", label: "Leads" },
+  { to: "/admin/products", label: "Products" },
   { to: "/admin/knowledge", label: "Knowledge Base" },
   { to: "/admin/settings", label: "Settings" },
 ];

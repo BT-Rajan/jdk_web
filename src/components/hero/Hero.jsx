@@ -14,8 +14,8 @@ import "./Hero.css";
 // just renders the site's original layout. Every layout receives the
 // exact same props/data and calls the exact same onNavigate/onEnter
 // handlers — only the arrangement of headline, tagline, quick-chat
-// box, and nav cards differs between them. None of them touch chat,
-// booking, or voice functionality, which all live in ChatWidget.
+// box, and nav cards differs between them. None of them touch chat or
+// voice functionality, which all live in ChatWidget.
 const LAYOUTS = {
   classic: ClassicLayout,
   split: SplitLayout,

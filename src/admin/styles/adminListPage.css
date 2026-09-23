@@ -1,3 +1,9 @@
+/* ──────────────────────────────────────────────────────────
+   Shared list/detail page primitives used across the admin's
+   CRUD pages (Leads, Webhooks, FAQ, Pages, ...): filter rows,
+   empty-state table cells, and the small row-action buttons.
+   ────────────────────────────────────────────────────────── */
+
 .filters-row {
   display: flex;
   gap: var(--space-3);
@@ -69,30 +75,7 @@
   opacity: 0.5;
 }
 
-.appt-pending-actions {
-  display: flex;
-  gap: 6px;
-}
-
-/* Was .appt-answers-row td, styling an inline expandable table row from
-   an earlier layout — appointment answers now render in
-   AppointmentDetailPanel.jsx's side panel instead, so that selector
-   never matched anything. Renamed to .appt-answers-list to match the
-   div AppointmentDetailPanel.jsx actually renders (it had drifted
-   out of sync, leaving that list completely unstyled). */
-.appt-answers-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.appt-answer-item {
-  display: flex;
-  gap: var(--space-2);
-  font-size: 13px;
-}
-
-.appt-answer-label {
-  color: var(--text-faint);
-  min-width: 160px;
+.mono-chip-inline {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
 }

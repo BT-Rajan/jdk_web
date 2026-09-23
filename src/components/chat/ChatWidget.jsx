@@ -28,14 +28,13 @@ function getSpeechRecognitionCtor() {
  * Floating chat popover, docked bottom-right and layered above
  * StickyChat's toggle pill. Mirrors k-g-i.com's "Talk to Sulaiman"
  * widget: named persona + online status in the header, a starter
- * screen of tappable quick questions plus a standalone "Book a call"
- * row before the first message, and a small "Powered by" credit line
- * in the footer. The one chat surface on the site — text by default,
- * with an optional mic (browsers that support SpeechRecognition) for
- * voice in and spoken replies out.
+ * screen of tappable quick questions before the first message, and a
+ * small "Powered by" credit line in the footer. The one chat surface
+ * on the site — text by default, with an optional mic (browsers that
+ * support SpeechRecognition) for voice in and spoken replies out.
  */
-export default function ChatWidget({ open, onClose, onBookingClick, initialMessage, onConsumeInitialMessage }) {
-  const { copy, lang, nav, branding, features } = useLang();
+export default function ChatWidget({ open, onClose, initialMessage, onConsumeInitialMessage }) {
+  const { copy, lang, nav, branding } = useLang();
   const t = copy.chat;
 
   const [messages, setMessages] = useState([]);
@@ -161,15 +160,12 @@ export default function ChatWidget({ open, onClose, onBookingClick, initialMessa
   }
 
   // Starter screen only shows before the visitor has sent anything —
-  // same moment k-g-i.com shows theirs. "Book a call" rides in the
-  // same chip row as the quick questions (not a separate highlighted
-  // row) — that's how their suggestions list actually works.
+  // same moment k-g-i.com shows theirs.
   const showStarter = messages.length <= 1 && !typing;
-  const starterChips = features.bookingEnabled ? [...nav.slice(0, 3), { id: "book", label: t.bookBtn }] : nav.slice(0, 4);
+  const starterChips = nav.slice(0, 4);
 
   function handleChipClick(item) {
-    if (item.id === "book") onBookingClick?.();
-    else sendMessage(item.label);
+    sendMessage(item.label);
   }
 
   const statusLabel = listening ? t.micLabelListening : speaking ? t.micLabelSpeaking : t.onlineStatus;

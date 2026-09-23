@@ -4,20 +4,15 @@ import { useAuth } from "../context/AuthContext.jsx";
 import "./WebhookDetailPanel.css";
 
 const EVENT_CHOICES = [
-  { value: "booking.confirmed", label: "Booking confirmed" },
-  { value: "booking.cancelled", label: "Booking cancelled" },
-  { value: "booking.rescheduled", label: "Booking rescheduled" },
-  { value: "booking.requested", label: "Booking requested (needs confirmation)" },
-  { value: "booking.accepted", label: "Booking request accepted" },
-  { value: "booking.declined", label: "Booking request declined" },
+  { value: "order.created", label: "Order created" },
 ];
 
-const EMPTY_FORM = { url: "", events: ["booking.confirmed"], is_active: true };
+const EMPTY_FORM = { url: "", events: ["order.created"], isActive: true };
 
 export default function WebhookDetailPanel({ mode, webhook, onClose, onCreated, onUpdated, onDeleted }) {
   const { handleSessionExpired } = useAuth();
   const [form, setForm] = useState(
-    mode === "edit" ? { url: webhook.url, events: webhook.events, is_active: webhook.is_active } : EMPTY_FORM
+    mode === "edit" ? { url: webhook.url, events: webhook.events, isActive: webhook.isActive } : EMPTY_FORM
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -129,7 +124,7 @@ export default function WebhookDetailPanel({ mode, webhook, onClose, onCreated, 
       </div>
 
       <label className="webhook-panel-check">
-        <input type="checkbox" checked={form.is_active} onChange={(e) => setForm((f) => ({ ...f, is_active: e.target.checked }))} />
+        <input type="checkbox" checked={form.isActive} onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))} />
         Active
       </label>
 
@@ -156,11 +151,11 @@ export default function WebhookDetailPanel({ mode, webhook, onClose, onCreated, 
             {deliveries?.map((d) => (
               <div key={d.id} className="webhook-delivery-row">
                 <span className="mono-chip">{d.event}</span>
-                <span className={d.response_status && d.response_status < 300 ? "webhook-delivery-ok" : "webhook-delivery-fail"}>
-                  {d.response_status ?? "no response"}
+                <span className={d.responseStatus && d.responseStatus < 300 ? "webhook-delivery-ok" : "webhook-delivery-fail"}>
+                  {d.responseStatus ?? "no response"}
                 </span>
-                <span className="table-subtext">{d.duration_ms}ms</span>
-                <span className="table-subtext">{new Date(d.attempted_at).toLocaleString()}</span>
+                <span className="table-subtext">{d.durationMs}ms</span>
+                <span className="table-subtext">{new Date(d.attemptedAt).toLocaleString()}</span>
               </div>
             ))}
           </div>

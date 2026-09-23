@@ -89,7 +89,7 @@ def test_faq_block_is_woven_into_system_prompt():
         db.flush()
 
         prompt = chat_service._build_system_prompt(
-            db, lang="en", turns_used=1, max_turns=20, lead_captured=True, booking_enabled=False,
+            db, lang="en", turns_used=1, max_turns=20, lead_captured=True,
         )
 
     assert "What is your refund policy?" in prompt

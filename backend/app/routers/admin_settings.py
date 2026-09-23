@@ -92,12 +92,6 @@ def update_settings_for_category(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e))
 
     db.commit()
-    if category == "calendarSync" and "calendarSync.driftPollMinutes" in updated:
-        from app import scheduler
-        scheduler.reschedule(body["calendarSync.driftPollMinutes"])
-    if category == "booking" and "booking.pendingExpiryPollMinutes" in updated:
-        from app import scheduler
-        scheduler.reschedule_pending_expiry(body["booking.pendingExpiryPollMinutes"])
     return {"updated": updated}
 
 

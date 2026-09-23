@@ -3,19 +3,20 @@ from __future__ import annotations
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, Field
+from pydantic import Field
 from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.deps import get_current_admin, require_csrf
 from app.models import AdminUser
+from app.schema_base import CamelModel
 
 router = APIRouter(prefix="/admin/api/webhooks", tags=["admin-webhooks"], dependencies=[Depends(require_csrf)])
 
 
 # ── Schemas ──────────────────────────────────────────────────────────
 
-class WebhookOut(BaseModel):
+class WebhookOut(CamelModel):
     """Never carries `secret` — see webhook_service.py. A GET response
     for a webhook is indistinguishable in shape whether or not the
     caller ever saw the plaintext secret; that's by design."""
@@ -29,11 +30,11 @@ class WebhookCreateOut(WebhookOut):
     secret: str  # present only in the creation response, exactly once
 
 
-class SecretOut(BaseModel):
+class SecretOut(CamelModel):
     secret: str
 
 
-class DeliveryOut(BaseModel):
+class DeliveryOut(CamelModel):
     id: str
     event: str
     payload: dict[str, Any]
@@ -42,13 +43,13 @@ class DeliveryOut(BaseModel):
     attempted_at: str
 
 
-class WebhookCreateIn(BaseModel):
+class WebhookCreateIn(CamelModel):
     url: str = Field(min_length=1, max_length=2048)
     events: list[str] = Field(min_length=1)
     is_active: bool = True
 
 
-class WebhookUpdateIn(BaseModel):
+class WebhookUpdateIn(CamelModel):
     url: str | None = Field(default=None, max_length=2048)
     events: list[str] | None = None
     is_active: bool | None = None

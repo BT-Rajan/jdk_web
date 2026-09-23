@@ -23,23 +23,6 @@ export async function tryFetch(path, options) {
   }
 }
 
-// ---- Mock data used only when no backend is present ----
-const mockAppointments = new Map();
-let mockCounter = 1000;
-
-function genId() {
-  mockCounter += 1;
-  return `PRN-${mockCounter.toString(36).toUpperCase().padStart(8, "0")}`;
-}
-
-function mockSlotsFor(dateStr) {
-  const base = ["09:00", "10:00", "11:00", "13:00", "14:00", "15:30", "16:30"];
-  const date = new Date(dateStr);
-  const isWeekend = date.getDay() === 0 || date.getDay() === 6; // matches the backend's default Mon-Fri workweek
-  if (isWeekend) return [];
-  return base.filter((_, i) => (date.getDate() + i) % 4 !== 0);
-}
-
 export const api = {
   async chat(message, lang, history, leadCaptured) {
     const data = await tryFetch("chat", {
@@ -50,71 +33,34 @@ export const api = {
     // mock fallback: simple canned response
     return {
       reply: lang === "ar"
-        ? "شكرًا لك! سيقوم أحد أعضاء فريقنا بمتابعة رسالتك قريبًا. هل ترغب في حجز موعد؟"
-        : "Thanks for sharing that! Someone from our team will follow up shortly. Would you like to book a time to talk?",
+        ? "شكرًا لك! سيقوم أحد أعضاء فريقنا بمتابعة رسالتك قريبًا."
+        : "Thanks for sharing that! Someone from our team will follow up shortly.",
       leadCaptured: !!leadCaptured,
     };
   },
 
-  // Pass 8 (docs/CALENDAR_MODULE_PLAN.md): the bookable service catalog.
-  // No mock fallback beyond an empty list — a fresh/offline install with
-  // no backend simply shows the old free-text "what are you interested
-  // in?" field, same as before this pass existed.
-  async getServices() {
-    const data = await tryFetch("booking/services");
+  async getProducts() {
+    const data = await tryFetch("products");
     return data || [];
   },
 
-  async getSlots(date, serviceId) {
-    const qs = serviceId ? `booking/slots?date=${date}&serviceId=${serviceId}` : `booking/slots?date=${date}`;
-    const data = await tryFetch(qs);
-    if (data) return data.slots;
-    return mockSlotsFor(date);
-  },
-
-  async createAppointment(payload) {
-    const data = await tryFetch("booking/appointments", {
+  // Unlike the other calls here, a failed order submission must surface
+  // the real reason (a product went inactive, a bad date, ...) rather
+  // than silently falling back to a mock — the visitor needs to know
+  // their order didn't actually go through. So this throws on failure
+  // instead of using tryFetch's swallow-and-mock pattern.
+  async submitOrder(payload) {
+    const res = await fetch(`${API_BASE}/orders`, {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-    if (data) return data;
-    const id = genId();
-    mockAppointments.set(id, { ...payload, id, status: "confirmed" });
-    return { ok: true, id };
-  },
-
-  async lookupAppointment(id, email) {
-    const data = await tryFetch("booking/appointments/lookup", {
-      method: "POST",
-      body: JSON.stringify({ id, email }),
-    });
-    if (data) return data;
-    const appt = mockAppointments.get(id);
-    if (appt && appt.email?.toLowerCase() === email.toLowerCase()) {
-      return { ok: true, appointment: appt };
+    const body = await res.json().catch(() => null);
+    if (!res.ok) {
+      const detail = body?.detail;
+      const message = typeof detail === "string" ? detail : "Something went wrong — please try again.";
+      throw new Error(message);
     }
-    return { ok: false, error: "not_found" };
-  },
-
-  async cancelAppointment(id, email) {
-    const data = await tryFetch("booking/appointments/cancel", {
-      method: "POST",
-      body: JSON.stringify({ id, email }),
-    });
-    if (data) return data;
-    const appt = mockAppointments.get(id);
-    if (appt) appt.status = "cancelled";
-    return { ok: true };
-  },
-
-  async rescheduleAppointment(id, email, date, time) {
-    const data = await tryFetch("booking/appointments/reschedule", {
-      method: "POST",
-      body: JSON.stringify({ id, email, date, time }),
-    });
-    if (data) return data;
-    const appt = mockAppointments.get(id);
-    if (appt) Object.assign(appt, { date, time });
-    return { ok: true };
+    return body;
   },
 };

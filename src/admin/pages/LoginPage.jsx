@@ -30,7 +30,7 @@ export default function LoginPage() {
       <form className="login-card" onSubmit={handleSubmit}>
         <div className="login-mark">P</div>
         <h1>JDK Admin</h1>
-        <p className="login-sub">Sign in to manage bookings, leads, and site settings.</p>
+        <p className="login-sub">Sign in to manage leads and site settings.</p>
 
         <label>
           Username

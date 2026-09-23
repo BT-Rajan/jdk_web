@@ -1,14 +1,13 @@
 """
 Webhook CRUD and outbound delivery. Lets the business wire external
-systems (a CRM, a spreadsheet automation, Slack, ...) into calendar
-events without polling — see docs/CALENDAR_MODULE_PLAN.md (Pass 11).
+systems (a CRM, a spreadsheet automation, Slack, ...) into store events
+without polling.
 
 Dispatch is synchronous and best-effort, mirroring
 notification_service.py's own philosophy: a delivery failure (target
 down, DNS failure, timeout, non-2xx response) is logged and swallowed,
-never raised up to break the booking action that triggered it. No
-retries in this first pass — see PASS11_NOTES.md for why that's a
-deliberate scope decision, not an oversight.
+never raised up to break the action that triggered it. No retries in
+this first pass.
 """
 from __future__ import annotations
 
@@ -27,10 +26,7 @@ from app.models import AuditLog, Webhook, WebhookDelivery
 from app.net_safety import UnsafeUrlError, assert_public_http_url
 from app.security import decrypt_secret, encrypt_secret
 
-EVENT_CHOICES = {
-    "booking.confirmed", "booking.cancelled", "booking.rescheduled",
-    "booking.requested", "booking.accepted", "booking.declined",
-}
+EVENT_CHOICES: set[str] = {"order.created"}
 
 REQUEST_TIMEOUT_SECONDS = 10.0
 _SECRET_BYTES = 32  # matches the entropy of a Fernet key's own token, more than enough for an HMAC secret
@@ -162,7 +158,7 @@ def _sign(secret: str, raw_body: bytes) -> str:
 def _deliver_one(db: Session, webhook: Webhook, event: str, payload: dict) -> WebhookDelivery:
     """Sends one delivery and logs it, regardless of outcome. Never
     raises — a broken receiver on the business's end must not break
-    the booking action that triggered this."""
+    the action that triggered this."""
     started = time.monotonic()
     response_status: int | None = None
 
@@ -211,14 +207,12 @@ def _deliver_one(db: Session, webhook: Webhook, event: str, payload: dict) -> We
     return delivery
 
 
-def dispatch_event(db: Session, event: str, appointment: dict) -> None:
+def dispatch_event(db: Session, event: str, data: dict) -> None:
     """Fires one delivery per active webhook subscribed to `event` -
     never a single batched call across webhooks, and never raises (a
-    delivery failure is logged, not propagated). Call this from the
-    same places notification_service.notify_booking_* is called, one
-    per booking state transition."""
+    delivery failure is logged, not propagated)."""
     payload = {
-        "event": event, "appointment": appointment,
+        "event": event, "data": data,
         "sent_at": datetime.now(timezone.utc).isoformat(),
     }
     stmt = select(Webhook).where(Webhook.is_active.is_(True))
@@ -238,21 +232,15 @@ def dispatch_event(db: Session, event: str, appointment: dict) -> None:
 
 
 def send_test_event(db: Session, webhook_id: str) -> WebhookDelivery:
-    """Fires a synthetic booking.confirmed payload at exactly this one
-    webhook, against a fabricated fixture appointment — lets an admin
-    verify their endpoint before it ever sees a real booking."""
+    """Fires a synthetic test payload at exactly this one webhook, so
+    an admin can verify their endpoint before it ever sees a real
+    event."""
     webhook = db.get(Webhook, webhook_id)
     if webhook is None:
         raise KeyError(f"No webhook {webhook_id!r}")
-    fixture_appointment = {
-        "id": "PRN-TESTTEST", "date": "2030-01-01", "time": "09:00", "slot": "09:00",
-        "name": "Test Appointment", "email": "test@example.com", "phone": "",
-        "service": "Test Service", "serviceId": None, "serviceName": None,
-        "notes": "This is a test delivery triggered from the admin dashboard.",
-        "status": "confirmed", "confirmedAt": None, "answers": [],
-    }
+    fixture_data = {"id": "TEST-00000000", "message": "This is a test delivery triggered from the admin dashboard."}
     payload = {
-        "event": "booking.confirmed", "appointment": fixture_appointment,
+        "event": "test", "data": fixture_data,
         "sent_at": datetime.now(timezone.utc).isoformat(),
     }
-    return _deliver_one(db, webhook, "booking.confirmed", payload)
+    return _deliver_one(db, webhook, "test", payload)

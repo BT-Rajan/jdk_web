@@ -32,10 +32,6 @@ function toCamel(value) {
   return value;
 }
 
-function fillTemplate(template, vars) {
-  return Object.entries(vars).reduce((s, [k, v]) => s.replaceAll(`{${k}}`, v), template ?? "");
-}
-
 // ---- Building the unified shape from the BUNDLED FALLBACK ----------
 
 function localCopyForLang(lang) {
@@ -44,10 +40,6 @@ function localCopyForLang(lang) {
     home: c.home,
     chat: c.chat,
     common: c.common,
-    booking: {
-      ...c.booking,
-      // already functions in the local fallback — used as-is.
-    },
   };
 }
 
@@ -73,32 +65,20 @@ function buildFromLocalFallback(supportedLanguages) {
 // ---- Building the unified shape from the BACKEND API ----------------
 
 function apiCopyForLang(copyBlobs, lang) {
+  // copy.chat defaults to a genuinely empty {} on the backend (see
+  // settings_registry.py) until an admin fills it in via Settings >
+  // On-screen text — unlike copy.home (merged per-field in Hero.jsx's
+  // withHomeFallbacks), nothing filled that gap, so an unconfigured
+  // instance rendered a blank sticky-chat button label, widget header,
+  // starter chips, etc. Falling back to the bundled COPY text per-field
+  // (only for keys the admin hasn't set at all) keeps the widget usable
+  // out of the box, same as the home page already is.
+  const localFallback = COPY[lang] ?? COPY.en;
   const home = toCamel(copyBlobs["copy.home"]?.[lang] ?? {});
-  const chat = toCamel(copyBlobs["copy.chat"]?.[lang] ?? {});
+  const chat = { ...localFallback.chat, ...toCamel(copyBlobs["copy.chat"]?.[lang] ?? {}) };
   const common = toCamel(copyBlobs["copy.common"]?.[lang] ?? {});
-  const bookingRaw = toCamel(copyBlobs["copy.booking"]?.[lang] ?? {});
-  // `errors` keys are backend error codes (e.g. "slot_unavailable"),
-  // looked up verbatim against booking_service.py's return values —
-  // NOT field names, so they must stay snake_case. camelCasing them
-  // above (toCamel is recursive) would silently break every lookup,
-  // since result.error from the API is always snake_case.
-  const rawErrors = copyBlobs["copy.booking"]?.[lang]?.errors ?? {};
 
-  return {
-    home,
-    chat,
-    common,
-    booking: {
-      ...bookingRaw,
-      errors: rawErrors,
-      // Backend stores these as {id}/{date}/{time} template strings
-      // (functions aren't JSON-serializable); rehydrate them into the
-      // callables every booking component already expects.
-      successNew: (id) => fillTemplate(bookingRaw.successNew, { id }),
-      successReschedule: (date, time) => fillTemplate(bookingRaw.successReschedule, { date, time }),
-      successCancel: bookingRaw.successCancel,
-    },
-  };
+  return { home, chat, common };
 }
 
 function buildFromApi(publicConfig, contentPages, faqItems, supportedLanguages) {
@@ -196,7 +176,7 @@ export function buildFallbackSite() {
     supportedLanguages,
     defaultLanguage: "en",
     theme: FALLBACK_THEME,
-    features: { bookingEnabled: true, chatEnabled: true, whatsappWidgetEnabled: false },
+    features: { chatEnabled: true, whatsappWidgetEnabled: false },
     contact: FALLBACK_CONTACT,
     branding: {
       siteNameByLang: { en: BRAND.name, ar: BRAND.wordmarkAr },
@@ -212,7 +192,6 @@ export function buildFallbackSite() {
 
 function apiFeatures(publicConfig) {
   return {
-    bookingEnabled: publicConfig["features.bookingEnabled"],
     chatEnabled: publicConfig["features.chatEnabled"],
     whatsappWidgetEnabled: publicConfig["features.whatsappWidgetEnabled"],
   };
@@ -289,7 +268,7 @@ export async function loadSiteContent() {
     theme: haveFullApiData ? apiTheme(publicConfig) : FALLBACK_THEME,
     features: haveFullApiData
       ? apiFeatures(publicConfig)
-      : { bookingEnabled: true, chatEnabled: true, whatsappWidgetEnabled: false },
+      : { chatEnabled: true, whatsappWidgetEnabled: false },
     contact: haveFullApiData ? apiContact(publicConfig) : FALLBACK_CONTACT,
     branding: {
       siteNameByLang: publicConfig?.["branding.siteName"] ?? { en: BRAND.name, ar: BRAND.wordmarkAr },

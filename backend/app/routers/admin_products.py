@@ -17,6 +17,9 @@ class ProductOut(CamelModel):
     description: str
     price: float
     unit: str
+    image_url: str | None
+    datasheet_url: str | None
+    datasheet_filename: str | None
     is_active: bool
     position: int
     created_at: str
@@ -28,6 +31,9 @@ class ProductCreateIn(CamelModel):
     description: str = ""
     price: float
     unit: str = "unit"
+    image_url: str | None = None
+    datasheet_url: str | None = None
+    datasheet_filename: str | None = None
     is_active: bool = True
 
 
@@ -36,12 +42,20 @@ class ProductUpdateIn(CamelModel):
     description: str | None = None
     price: float | None = None
     unit: str | None = None
+    # None default here does NOT mean "clear the field" — see the
+    # model_fields_set check in update_product below. Only a key the
+    # client actually sent (even as null, to clear it) is passed
+    # through; an omitted key leaves the stored value untouched.
+    image_url: str | None = None
+    datasheet_url: str | None = None
+    datasheet_filename: str | None = None
     is_active: bool | None = None
 
 
 def _serialize(p) -> ProductOut:
     return ProductOut(
         id=p.id, name=p.name, slug=p.slug, description=p.description, price=p.price, unit=p.unit,
+        image_url=p.image_url, datasheet_url=p.datasheet_url, datasheet_filename=p.datasheet_filename,
         is_active=p.is_active, position=p.position,
         created_at=p.created_at.isoformat(), updated_at=p.updated_at.isoformat(),
     )
@@ -57,6 +71,8 @@ def create_product(body: ProductCreateIn, admin: AdminUser = Depends(get_current
     try:
         product = products_service.create_product(
             db, name=body.name, description=body.description, price=body.price, unit=body.unit,
+            image_url=body.image_url, datasheet_url=body.datasheet_url,
+            datasheet_filename=body.datasheet_filename,
             is_active=body.is_active, actor_id=admin.id, actor_username=admin.username,
         )
         db.commit()
@@ -80,10 +96,15 @@ def update_product(
     product_id: str, body: ProductUpdateIn,
     admin: AdminUser = Depends(get_current_admin), db: Session = Depends(get_db),
 ):
+    fields_set = body.model_fields_set
     try:
         product = products_service.update_product(
             db, product_id, name=body.name, description=body.description, price=body.price,
-            unit=body.unit, is_active=body.is_active, actor_id=admin.id, actor_username=admin.username,
+            unit=body.unit,
+            image_url=body.image_url if "image_url" in fields_set else ...,
+            datasheet_url=body.datasheet_url if "datasheet_url" in fields_set else ...,
+            datasheet_filename=body.datasheet_filename,
+            is_active=body.is_active, actor_id=admin.id, actor_username=admin.username,
         )
         db.commit()
     except KeyError as e:

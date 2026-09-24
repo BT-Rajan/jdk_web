@@ -114,6 +114,14 @@ export const adminApi = {
     formData.append("file", file);
     return request("admin/api/uploads/image", { method: "POST", body: formData });
   },
+  // Resolves to { url, filename } — filename is the admin's original
+  // upload name (e.g. "Widget-A-Spec.pdf"), for showing/storing a
+  // nicer label than the random on-disk name in `url`.
+  uploadDocument: (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return request("admin/api/uploads/document", { method: "POST", body: formData });
+  },
 
   // -- webhooks --
   listWebhooks: () => request("admin/api/webhooks"),

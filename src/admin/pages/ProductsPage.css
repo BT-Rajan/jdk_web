@@ -1,1 +1,13 @@
 @import "../styles/adminListPage.css";
+
+.products-table-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  object-fit: cover;
+  display: block;
+}
+.products-table-thumb-empty {
+  background: var(--surface);
+  border: 1px dashed var(--border);
+}

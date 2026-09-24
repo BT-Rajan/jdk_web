@@ -105,6 +105,10 @@ class InfraSettings(BaseSettings):
     # straight off a phone or camera, so they get a higher per-image cap
     # than the brand assets above (logo/favicon).
     MAX_SHOWCASE_IMAGE_BYTES: int = 10 * 1024 * 1024  # 10 MB
+    # Product data sheets (see routers/admin_uploads.py's PDF endpoint,
+    # used by the product catalog's datasheet field) — a real spec sheet
+    # with diagrams can run bigger than a product photo.
+    MAX_UPLOAD_DOCUMENT_BYTES: int = 15 * 1024 * 1024  # 15 MB
 
     @property
     def allowed_origins_list(self) -> list[str]:

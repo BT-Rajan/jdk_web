@@ -259,6 +259,17 @@ class Product(Base):
     description: Mapped[str] = mapped_column(String(500), default="", nullable=False)
     price: Mapped[float] = mapped_column(Float, nullable=False)
     unit: Mapped[str] = mapped_column(String(32), default="unit", nullable=False)
+    # Both are plain URLs (usually /uploads/<token>.<ext> from the admin
+    # uploaders in routers/admin_uploads.py, same trust model as
+    # branding.logoUrl — an admin could also paste an external https://
+    # URL instead of uploading, e.g. a manufacturer's own spec sheet).
+    image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    datasheet_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    # The original filename the admin uploaded (e.g. "Widget-A-Spec.pdf"),
+    # shown as the download link's label instead of datasheet_url's
+    # random server-generated name. Only meaningful alongside an
+    # uploaded (not externally linked) datasheet_url.
+    datasheet_filename: Mapped[str | None] = mapped_column(String(255), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     position: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)

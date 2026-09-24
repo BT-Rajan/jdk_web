@@ -21,6 +21,24 @@ def slugify(value: str) -> str:
     return slug or "product"
 
 
+def _clean_url(value: str | None, *, field: str) -> str | None:
+    """image_url/datasheet_url are rendered straight into <img src>/<a
+    href> on the public site, so only a scheme that's safe there is
+    accepted: our own uploader's /uploads/... path, or an absolute
+    http(s):// URL (an admin linking a manufacturer's own PDF, say).
+    Blocks javascript:/data:/etc. Mirrors src/data/siteContent.js's
+    isSafeHref, which guards the same class of admin-supplied URL on
+    the frontend (hero buttons)."""
+    if value is None:
+        return None
+    value = value.strip()
+    if not value:
+        return None
+    if not re.match(r"^(https?://|/(?!/))", value):
+        raise ValueError(f"{field} must be an https:// URL or an uploaded file path")
+    return value
+
+
 def _unique_slug(db: Session, base: str, *, exclude_id: str | None = None) -> str:
     slug = base
     n = 2
@@ -47,6 +65,7 @@ def get_product(db: Session, product_id: str) -> Product | None:
 
 def create_product(
     db: Session, *, name: str, description: str = "", price: float, unit: str = "unit",
+    image_url: str | None = None, datasheet_url: str | None = None, datasheet_filename: str | None = None,
     is_active: bool = True, actor_id: str | None, actor_username: str | None,
 ) -> Product:
     name = name.strip()
@@ -54,12 +73,16 @@ def create_product(
         raise ValueError("name is required")
     if price < 0:
         raise ValueError("price must not be negative")
+    image_url = _clean_url(image_url, field="imageUrl")
+    datasheet_url = _clean_url(datasheet_url, field="datasheetUrl")
+    datasheet_filename = ((datasheet_filename or "").strip() or None) if datasheet_url else None
 
     max_position = db.scalar(select(Product.position).order_by(Product.position.desc()).limit(1))
     product = Product(
         name=name, slug=_unique_slug(db, slugify(name)), description=description.strip(),
-        price=price, unit=unit.strip() or "unit", is_active=is_active,
-        position=(max_position or 0) + 1,
+        price=price, unit=unit.strip() or "unit",
+        image_url=image_url, datasheet_url=datasheet_url, datasheet_filename=datasheet_filename,
+        is_active=is_active, position=(max_position or 0) + 1,
     )
     db.add(product)
     db.add(AuditLog(actor_id=actor_id, actor_username=actor_username, action="product.create"))
@@ -69,9 +92,15 @@ def create_product(
 
 def update_product(
     db: Session, product_id: str, *, name: str | None = None, description: str | None = None,
-    price: float | None = None, unit: str | None = None, is_active: bool | None = None,
-    actor_id: str | None, actor_username: str | None,
+    price: float | None = None, unit: str | None = None,
+    image_url: str | None = ..., datasheet_url: str | None = ..., datasheet_filename: str | None = None,
+    is_active: bool | None = None, actor_id: str | None, actor_username: str | None,
 ) -> Product:
+    """image_url/datasheet_url default to `...` (not None) so "clear this
+    field" (explicit None/"" from the client) is distinguishable from
+    "leave it as-is" (the key omitted) — unlike name/description/etc,
+    which are never cleared to empty this way, an admin removing an
+    uploaded image or datasheet is a normal, common edit."""
     product = db.get(Product, product_id)
     if product is None:
         raise KeyError(f"No product {product_id!r}")
@@ -91,6 +120,13 @@ def update_product(
         product.price = price
     if unit is not None:
         product.unit = unit.strip() or "unit"
+    if image_url is not ...:
+        product.image_url = _clean_url(image_url, field="imageUrl")
+    if datasheet_url is not ...:
+        product.datasheet_url = _clean_url(datasheet_url, field="datasheetUrl")
+        product.datasheet_filename = (
+            ((datasheet_filename or "").strip() or None) if product.datasheet_url else None
+        )
     if is_active is not None:
         product.is_active = is_active
 

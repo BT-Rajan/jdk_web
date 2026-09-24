@@ -471,6 +471,15 @@ _DEFS: list[SettingDef] = [
                help_text="linksTitle (heading over the page-links column, sourced from Pages below), "
                           "contactTitle (heading over the contact-details column, sourced from Contact "
                           "below), rights (shown after \"© <year> <site name>\")."),
+    SettingDef("copy.products", "copy", "Products page text", SettingType.JSON, {
+        "en": {"emptyState": "No products yet — check back soon.", "datasheetLabel": "Data sheet",
+               "orderCta": "Order"},
+        "ar": {"emptyState": "لا توجد منتجات حالياً — تفقد الصفحة لاحقاً.", "datasheetLabel": "ورقة البيانات",
+               "orderCta": "اطلب"},
+    }, i18n=True,
+               help_text="Text on the public Products page: emptyState (shown when no active products "
+                          "exist), datasheetLabel (link to a product's uploaded data sheet), orderCta "
+                          "(button that opens the order form)."),
     SettingDef("copy.homeHeroButtons", "copy", "Home hero buttons", SettingType.JSON, [],
                help_text="Slim buttons shown on the home screen in place of the tagline. List of "
                           "objects: {\"label\": {\"en\": \"...\", \"ar\": \"...\"}, \"url\": \"...\"}. "

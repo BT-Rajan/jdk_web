@@ -231,6 +231,14 @@
   background: color-mix(in srgb, var(--gold) 8%, transparent);
 }
 
+.order-panel-product-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 2px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
 .order-panel-product-info {
   display: flex;
   flex-direction: column;

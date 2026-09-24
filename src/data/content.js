@@ -124,6 +124,9 @@ export const COPY = {
     footer: {
       linksTitle: "Explore", contactTitle: "Contact", rights: "All rights reserved.",
     },
+    products: {
+      emptyState: "No products yet — check back soon.", datasheetLabel: "Data sheet", orderCta: "Order",
+    },
     home: {
       welcome: "Welcome to JDK Factory",
       tagline: "Visit our V-Lounge for more",
@@ -159,6 +162,9 @@ export const COPY = {
     },
     footer: {
       linksTitle: "استكشف", contactTitle: "تواصل معنا", rights: "جميع الحقوق محفوظة.",
+    },
+    products: {
+      emptyState: "لا توجد منتجات حالياً — تفقد الصفحة لاحقاً.", datasheetLabel: "ورقة البيانات", orderCta: "اطلب",
     },
     home: {
       welcome: "مرحبا بك في JDK Factory",

@@ -5,13 +5,16 @@ import ChatWidget from "./components/chat/ChatWidget.jsx";
 import OrderPanel from "./components/order/OrderPanel.jsx";
 import ContentPage from "./components/pages/ContentPage.jsx";
 import ContactPage from "./components/pages/ContactPage.jsx";
+import ProductsPage from "./components/pages/ProductsPage.jsx";
 import StickyChat from "./components/StickyChat.jsx";
 import Footer from "./components/layout/Footer.jsx";
 
 // Pages with dedicated components — every other page id routes through
 // the generic, Markdown-driven ContentPage, so an admin can add a new
-// page (any slug) with zero code changes on this end.
-const SPECIAL_PAGE_IDS = new Set(["home", "contact"]);
+// page (any slug) with zero code changes on this end. "products" is
+// dedicated because it renders the live catalog (Settings > Products),
+// not just Markdown — see ProductsPage.jsx.
+const SPECIAL_PAGE_IDS = new Set(["home", "contact", "products"]);
 
 function AppShell() {
   const [page, setPage] = useState("home"); // "home" | "contact" | any configured page slug
@@ -48,10 +51,11 @@ function AppShell() {
     setChatOpen(true);
   };
 
-  // Lets ChatWidget's "Place an Order" CTA open the same OrderPanel the
-  // sticky Order button does — same mutual-exclusivity rule (only one
-  // bottom-right popover at a time), just triggered from inside chat.
-  const handleChatOrder = () => {
+  // Lets ChatWidget's "Place an Order" CTA and the Products page's
+  // per-card "Order" button open the same OrderPanel the sticky Order
+  // button does — same mutual-exclusivity rule (only one bottom-right
+  // popover at a time), just triggered from elsewhere in the page.
+  const handleOpenOrder = () => {
     setChatOpen(false);
     setOrderOpen(true);
   };
@@ -74,6 +78,9 @@ function AppShell() {
       <div className={`app-page-content ${anyPopoverOpen ? "app-page-content-dimmed" : ""}`.trim()}>
         {page === "home" && <Hero onEnter={handleHeroEnter} onNavigate={setPage} />}
         {page === "contact" && <ContactPage onBack={() => setPage("home")} onNavigate={setPage} />}
+        {page === "products" && (
+          <ProductsPage onBack={() => setPage("home")} onNavigate={setPage} onOrder={handleOpenOrder} />
+        )}
         {!SPECIAL_PAGE_IDS.has(page) && (
           <ContentPage pageId={page} onBack={() => setPage("home")} onNavigate={setPage} />
         )}
@@ -101,7 +108,7 @@ function AppShell() {
         initialMessage={pendingMessage}
         onConsumeInitialMessage={() => setPendingMessage("")}
         onNavigate={setPage}
-        onOrder={handleChatOrder}
+        onOrder={handleOpenOrder}
       />
 
       <OrderPanel open={orderOpen} onClose={() => setOrderOpen(false)} />

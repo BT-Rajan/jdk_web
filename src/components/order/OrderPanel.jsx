@@ -431,6 +431,9 @@ export default function OrderPanel({ open, onClose }) {
                       return (
                         <div key={p.id}>
                           <div className={`order-panel-product-row${selected ? " selected" : ""}`}>
+                            {p.imageUrl && (
+                              <img src={p.imageUrl} alt="" className="order-panel-product-thumb" />
+                            )}
                             <div className="order-panel-product-info">
                               <span className="order-panel-product-name">{p.name}</span>
                               {p.description && <span className="order-panel-product-desc">{p.description}</span>}

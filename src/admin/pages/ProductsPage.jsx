@@ -61,18 +61,20 @@ export default function ProductsPage() {
           <table>
             <thead>
               <tr>
+                <th></th>
                 <th>Name</th>
                 <th>Price</th>
                 <th>Unit</th>
+                <th>Datasheet</th>
                 <th>Active</th>
               </tr>
             </thead>
             <tbody>
               {products === null && (
-                <tr><td colSpan={4} className="table-empty">Loading…</td></tr>
+                <tr><td colSpan={6} className="table-empty">Loading…</td></tr>
               )}
               {products?.length === 0 && (
-                <tr><td colSpan={4} className="table-empty">No products yet — add your first one.</td></tr>
+                <tr><td colSpan={6} className="table-empty">No products yet — add your first one.</td></tr>
               )}
               {products?.map((p) => (
                 <tr
@@ -82,11 +84,19 @@ export default function ProductsPage() {
                   style={{ cursor: "pointer" }}
                 >
                   <td>
+                    {p.imageUrl ? (
+                      <img src={p.imageUrl} alt="" className="products-table-thumb" />
+                    ) : (
+                      <div className="products-table-thumb products-table-thumb-empty" aria-hidden="true" />
+                    )}
+                  </td>
+                  <td>
                     <div>{p.name}</div>
                     {p.description && <div className="table-subtext">{p.description}</div>}
                   </td>
                   <td>{p.price.toFixed(2)}</td>
                   <td>{p.unit}</td>
+                  <td>{p.datasheetUrl ? "Yes" : "—"}</td>
                   <td>{p.isActive ? "Yes" : "No"}</td>
                 </tr>
               ))}

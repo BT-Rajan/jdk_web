@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import secrets
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 
@@ -37,6 +38,14 @@ def _sniff_image_type(head: bytes) -> tuple[str, str] | None:
     return None
 
 
+def _sniff_pdf(head: bytes) -> bool:
+    # The PDF spec allows up to 1KB of junk before the header in the
+    # wild, but every real-world PDF writer puts it at byte 0 — keeping
+    # this strict (like the image magic-byte checks above) means we
+    # only need to sniff the first few bytes, not buffer-scan the file.
+    return head.startswith(b"%PDF-")
+
+
 @router.post("/image")
 async def upload_image(file: UploadFile, admin: AdminUser = Depends(get_current_admin)):
     body = await file.read(settings.MAX_UPLOAD_IMAGE_BYTES + 1)
@@ -60,3 +69,28 @@ async def upload_image(file: UploadFile, admin: AdminUser = Depends(get_current_
     dest.write_bytes(body)
 
     return {"url": f"/uploads/{filename}"}
+
+
+@router.post("/document")
+async def upload_document(file: UploadFile, admin: AdminUser = Depends(get_current_admin)):
+    """PDF only, for the product catalog's data-sheet field (see
+    routers/admin_products.py). Same storage/random-filename approach
+    as upload_image above, but also hands back the client's original
+    filename (trimmed to a bare name, never a path) — unlike an image,
+    a datasheet is downloaded by the visitor, so the admin panel shows
+    that name instead of the random on-disk one."""
+    body = await file.read(settings.MAX_UPLOAD_DOCUMENT_BYTES + 1)
+    if len(body) > settings.MAX_UPLOAD_DOCUMENT_BYTES:
+        raise HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                             f"File exceeds {settings.MAX_UPLOAD_DOCUMENT_BYTES // (1024*1024)}MB limit")
+    if not body:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Empty file")
+    if not _sniff_pdf(body[:8]):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Unsupported file type — only PDF is accepted.")
+
+    filename = f"{secrets.token_hex(16)}.pdf"
+    dest = settings.UPLOADS_DIR / filename
+    dest.write_bytes(body)
+
+    original_name = Path(file.filename or "datasheet.pdf").name[:255]
+    return {"url": f"/uploads/{filename}", "filename": original_name}

@@ -60,6 +60,39 @@ def _contact_block(db: Session, lang: str) -> str:
     return f"\n\nOfficial contact info: {contact}. If asked how to reach us, or about pricing, share this."
 
 
+MAX_PAGE_CHARS = 4000  # per page, in the block below — see _pages_block
+
+
+def _pages_block(db: Session, lang: str) -> str:
+    """The site's own published pages (About/Products/Services/whatever
+    an admin has added — see content_service.py), so the assistant can
+    answer questions about the site's actual content instead of only
+    the persona text in chat.systemPrompt. Complements _products_block
+    below: this is the narrative/marketing copy, that's the structured
+    catalog data."""
+    pages = content_service.list_pages(db, visible_only=True)
+    if not pages:
+        return ""
+
+    sections = []
+    for page in pages:
+        t = page.translations.get(lang) or page.translations.get("en") or next(iter(page.translations.values()), {})
+        title = (t.get("navLabel") or page.slug).strip()
+        body = (t.get("bodyMarkdown") or "").strip()
+        if not body:
+            continue
+        if len(body) > MAX_PAGE_CHARS:
+            body = body[:MAX_PAGE_CHARS] + "…"
+        sections.append(f"--- PAGE: {title} ---\n{body}\n--- END PAGE ---")
+    if not sections:
+        return ""
+
+    joined = "\n\n".join(sections)
+    if lang == "ar":
+        return "\n\nصفحات الموقع المنشورة (استخدمها كمرجع دقيق عند سؤال الزائر عن محتوى الموقع):\n" + joined
+    return "\n\nTHE SITE'S OWN PUBLISHED PAGES (use as an accurate reference when the visitor asks about site content):\n" + joined
+
+
 def _products_block(db: Session) -> str:
     """The live product catalog (same rows the public order form reads,
     see products_service.py), so the assistant can name real products
@@ -180,6 +213,7 @@ def _build_system_prompt(
         kb_block = f"\n\n{DEFAULT_KNOWLEDGE}"
 
     faq_block = content_service.build_faq_prompt_block(db, lang)
+    pages_block = _pages_block(db, lang)
     products_block = _products_block(db)
 
     contact_block = _contact_block(db, lang)
@@ -189,7 +223,7 @@ def _build_system_prompt(
     brevity_block = _brevity_instructions(lang)
 
     return (
-        f"{base}{kb_block}{faq_block}{products_block}{contact_block}{lead_block}"
+        f"{base}{kb_block}{faq_block}{pages_block}{products_block}{contact_block}{lead_block}"
         f"{ordering_block}{nudge_block}{brevity_block}"
     )
 

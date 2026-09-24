@@ -334,7 +334,12 @@ _DEFS: list[SettingDef] = [
     SettingDef("chat.llmProvider", "chat", "LLM provider", SettingType.ENUM, "none",
                choices=("none", "anthropic", "openai", "deepseek"),
                help_text="'none' disables real LLM calls; the assistant uses the fallback message below."),
-    SettingDef("chat.llmModel", "chat", "Model", SettingType.STRING, "claude-sonnet-4-6"),
+    SettingDef("chat.llmModel", "chat", "Model", SettingType.STRING, "claude-sonnet-4-6",
+               help_text="Must match the provider selected above — switching providers does not change "
+                          "this field automatically. E.g. for Anthropic: claude-sonnet-4-6; for OpenAI: "
+                          "gpt-4o-mini; for DeepSeek: deepseek-chat or deepseek-reasoner. A mismatched "
+                          "model (e.g. an Anthropic model name with DeepSeek selected) makes every "
+                          "request fail and the assistant silently show the fallback message below."),
     SettingDef("chat.llmApiKey", "chat", "API key", SettingType.STRING, "", secret=True),
     SettingDef("chat.maxTokens", "chat", "Max response tokens", SettingType.INT, 512,
                validator=_int_range(16, 4096)),

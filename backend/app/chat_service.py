@@ -10,12 +10,15 @@ routers/public_chat.py a thin HTTP wrapper.
 """
 from __future__ import annotations
 
+import logging
 import re
 
 from sqlalchemy.orm import Session
 
 from app import content_service, knowledge_service, leads_service, llm_client
 from app.settings_service import get_setting
+
+logger = logging.getLogger("jdk.chat")
 
 EMAIL_RE = re.compile(r"[^\s@,;:!?()<>\[\]\"']+@[^\s@,;:!?()<>\[\]\"']+\.[^\s@,;:!?()<>\[\]\"']+")
 
@@ -203,7 +206,14 @@ def get_reply(
                 tools=None,
                 tool_executor=None,
             )
-        except llm_client.LLMError:
+        except llm_client.LLMError as e:
+            # The visitor only ever sees the generic unavailable message
+            # (never a raw provider error), but that means a misconfigured
+            # provider/model/key is otherwise invisible — log the real
+            # reason (never the key itself) so it's diagnosable from the
+            # server logs instead of looking like a silent stock reply.
+            logger.warning("LLM call failed (provider=%s, model=%s): %s",
+                            provider, get_setting(db, "chat.llmModel"), e)
             reply = unavailable
 
     lead_captured_now = lead_captured

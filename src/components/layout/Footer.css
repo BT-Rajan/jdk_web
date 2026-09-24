@@ -1,39 +1,110 @@
+/* ──────────────────────────────────────────────────────────
+   Site footer — the header's counterpart. Reuses the site's own
+   devices rather than introducing new ones:
+   - the header's brushed surface and fading gold hairline
+     (TopBar.css), mirrored to the top edge;
+   - the diamond ornament from .content-tagline-divider
+     (ContentPage.css), centred on that hairline;
+   - gold, tracked small caps for labels, as in the nav
+     (NavMenu.css) and .content-tagline-sub;
+   - the nav's gradient underline on link hover.
+   Aligned to the same --content-max column as page content.
+   ────────────────────────────────────────────────────────── */
 .site-footer {
+  position: relative;
   width: 100%;
-  margin-top: var(--space-7);
-  padding: var(--space-6) var(--space-5) var(--space-4);
-  border-top: 1px solid color-mix(in srgb, var(--gold) 10%, transparent);
-  background: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--brand-bg) 30%, transparent) 100%);
+  margin-top: var(--space-8);
+  padding: var(--space-7) clamp(var(--space-4), 4vw, var(--space-7)) 0;
+  background:
+    linear-gradient(0deg, color-mix(in srgb, white 2.5%, transparent) 0%, transparent 100%),
+    color-mix(in srgb, var(--brand-bg) 78%, transparent);
 }
 
-.site-footer-cols {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-6);
+/* Fading gold hairline across the top edge… */
+.site-footer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--gold) 45%, transparent) 20%,
+    color-mix(in srgb, var(--gold) 75%, transparent) 50%,
+    color-mix(in srgb, var(--gold) 45%, transparent) 80%,
+    transparent 100%
+  );
+}
+/* …with the page headings' diamond sitting on it. */
+.site-footer-ornament {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 9px;
+  height: 9px;
+  background: var(--gold);
+  transform: translate(-50%, -50%) rotate(45deg);
+  box-shadow: 0 0 0 4px var(--brand-bg);
+}
+
+.site-footer-inner {
   max-width: var(--content-max);
   margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-7);
+  align-items: start;
 }
 
-.site-footer-col {
-  flex: 1 1 160px;
-  min-width: 160px;
+/* ── Brand ─────────────────────────────────────────────── */
+.site-footer-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
 }
 
-.site-footer-brand-name {
+.site-footer-logo {
+  display: inline-flex;
+  padding: 0;
+  border-radius: var(--radius-sm);
+}
+.site-footer-logo:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 4px;
+}
+/* Fixed size here: the admin logo-scale setting is tuned for the
+   header bar, and a scaled-up crest would dominate a footer. */
+.site-footer .logo-img {
+  height: 44px;
+  max-height: 44px;
+  max-width: 200px;
+}
+
+.site-footer-intro {
+  margin: 0;
+  max-width: 38ch;
   font-family: var(--font-display);
-  font-size: var(--fs-h2);
-  color: var(--gold);
-  font-weight: 600;
-}
-
-.site-footer-col-title {
-  margin: 0 0 var(--space-3);
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 1.15rem;
+  line-height: 1.5;
   color: var(--muted-strong);
 }
+[dir="rtl"] .site-footer-intro { font-family: var(--font-ar); font-size: var(--fs-body); line-height: 1.8; }
+
+/* ── Link columns ──────────────────────────────────────── */
+.site-footer-col-title {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+/* Arabic has no case and tracking breaks its letter joining. */
+[dir="rtl"] .site-footer-col-title { letter-spacing: 0; text-transform: none; font-size: var(--fs-sm); }
 
 .site-footer-links {
   list-style: none;
@@ -41,39 +112,92 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-3);
+  font-size: var(--fs-body);
 }
 
-.site-footer-links button,
-.site-footer-links a {
-  background: none;
-  border: none;
-  padding: 0;
+.site-footer-link {
+  position: relative;
+  display: inline-block;
+  padding: 2px 0;
   font: inherit;
-  color: var(--muted-strong);
   text-align: start;
+  text-decoration: none;
+  color: color-mix(in srgb, var(--white-soft) 82%, transparent);
+  overflow-wrap: anywhere;
   transition: color var(--dur-fast) var(--ease);
 }
-.site-footer-links button:hover,
-.site-footer-links a:hover {
-  color: var(--gold);
+.site-footer-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  transform: scaleX(0);
+  transition: transform var(--dur-med) var(--ease);
 }
+.site-footer-link:hover,
+.site-footer-link:focus-visible { color: var(--gold); }
+.site-footer-link:hover::after,
+.site-footer-link:focus-visible::after { transform: scaleX(1); }
+.site-footer-link:focus-visible { outline: none; }
 
 .site-footer-address {
   color: var(--muted-strong);
   white-space: pre-line;
+  line-height: 1.6;
 }
 
+/* ── Bottom line ───────────────────────────────────────── */
 .site-footer-bottom {
-  margin-top: var(--space-6);
-  padding-top: var(--space-4);
-  border-top: 1px solid color-mix(in srgb, var(--gold) 8%, transparent);
+  position: relative;
+  max-width: var(--content-max);
+  margin: var(--space-7) auto 0;
+  padding: var(--space-5) 0 calc(var(--space-5) + env(safe-area-inset-bottom));
   text-align: center;
-  font-size: var(--fs-sm);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: var(--muted);
 }
+.site-footer-bottom::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--gold) 22%, transparent), transparent);
+}
+[dir="rtl"] .site-footer-bottom { letter-spacing: 0; text-transform: none; font-size: var(--fs-sm); }
 
-@media (max-width: 640px) {
-  .site-footer-cols { gap: var(--space-5); }
-  .site-footer-col { flex: 1 1 100%; }
+/* ── Responsive ────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .site-footer-inner {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--space-6);
+  }
+  .site-footer-brand { grid-column: 1 / -1; }
+}
+
+@media (max-width: 767px) {
+  .site-footer { margin-top: var(--space-7); padding-top: var(--space-6); }
+  /* The Order/Chat sticky buttons float over the bottom-end corner;
+     start-align the copyright and keep it clear of them. */
+  .site-footer-bottom {
+    text-align: start;
+    padding-inline-end: 80px;
+    padding-bottom: calc(var(--space-7) + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 480px) {
+  .site-footer-inner { grid-template-columns: minmax(0, 1fr); gap: var(--space-6); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-footer-link,
+  .site-footer-link::after { transition: none; }
 }

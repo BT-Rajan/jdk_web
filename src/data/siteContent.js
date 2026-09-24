@@ -226,6 +226,10 @@ function apiContact(publicConfig) {
   };
 }
 
+// Bundled from site.json at module level: loadSiteData() below has a
+// local `site` that shadows the import.
+const BUNDLED_META_DESCRIPTION = site.settings["branding.metaDescription"];
+
 const FALLBACK_CONTACT = {
   email: "", phone: "", whatsappNumber: "", addressByLang: site.settings["contact.address"], googleMapsUrl: "",
 };
@@ -312,7 +316,7 @@ export async function loadSiteContent() {
       logoGlow: publicConfig?.["branding.logoGlow"] ?? 0.5,
       logoGlowColor: publicConfig?.["branding.logoGlowColor"] ?? "#c9a84c",
       faviconUrl: publicConfig?.["branding.faviconUrl"] ?? "/favicon.svg",
-      metaDescriptionByLang: publicConfig?.["branding.metaDescription"] ?? { en: "", ar: "" },
+      metaDescriptionByLang: publicConfig?.["branding.metaDescription"] ?? BUNDLED_META_DESCRIPTION,
       chatAvatarUrl: publicConfig?.["chat.avatarUrl"] ?? "",
     },
     ...site,

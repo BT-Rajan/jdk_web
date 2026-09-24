@@ -35,13 +35,15 @@ SIMPLE_EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
 
 # Minimal built-in company knowledge, used only when the admin hasn't
 # configured any knowledge-base sources — so a fresh install can still
-# answer basic "what is JDK Factory" / "how do I reach you" questions
+# answer basic "what does JDK Factory make" / "how do I order" questions
 # instead of always falling back to the "someone will follow up"
 # message the moment an LLM is configured but nothing else has been.
 DEFAULT_KNOWLEDGE = """
-COMPANY: JDK Factory — AI-powered technology and innovation company.
-TAGLINE: "Solving Today. Shaping Tomorrow."
-MISSION: Practical, affordable AI solutions for today's challenges and tomorrow's opportunities.
+COMPANY: JDK Factory — Kuwait-based cement manufacturer.
+PRODUCTS: Ordinary Portland Cement (OPC) and Sulphate Resisting Cement (SRC), supplied in 50 kg bags and in bulk.
+QUALITY: Controlled production, with production batches tested in the laboratory (fineness, setting time, soundness, compressive strength, chemical composition).
+ORDERING: Visitors can submit an order request with the Order button on the website; the team replies with a firm quote. Prices, delivery dates and certifications are confirmed by the team.
+MISSION: Dependable, consistent-quality cement for construction projects across Kuwait.
 """.strip()
 
 

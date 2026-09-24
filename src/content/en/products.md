@@ -1,21 +1,15 @@
-# Products
+# Our Cement Range
 
-We build AI assistants, automation workflows, and custom digital platforms — tuned to how your team actually works, not the other way around.
+Every JDK Factory cement is produced under controlled conditions and tested before it leaves the plant. Browse the range below, then request an order — our team will confirm availability, delivery and a firm quote.
 
-## AI Assistants
+## Choosing the right cement
 
-Conversational assistants that greet customers, answer FAQs, qualify leads, and hand off to your team at exactly the right moment — bilingual (English/Arabic) out of the box, like the one you're using right now.
+- **Ordinary Portland Cement (OPC)** — the general-purpose choice for structural concrete, slabs, columns, blockwork, plaster and screed
+- **Sulphate Resisting Cement (SRC)** — for foundations, basements and structures in contact with sulphate-bearing soil or groundwater, which is common across Kuwait
 
-## Booking & Appointment Systems
+Not sure which suits your project? Ask our assistant or contact our team — and always confirm the cement type against your engineer's specification.
 
-Self-service scheduling with live slot availability, confirmations, rescheduling, and cancellation — so your team stops playing email tag over calendar links.
+## Supply options
 
-## Automation Workflows
-
-Behind-the-scenes automation that connects your CRM, inbox, and internal tools, so leads and requests move forward without someone manually pushing them.
-
-## Custom Platforms
-
-When an off-the-shelf tool won't cut it, we design and build the platform from scratch — web apps, internal tools, and industry-specific systems. We've shipped manufacturing ERPs and legal practice management systems, among others.
-
-Every product ships on a modern stack, with clean handover documentation, so your team can maintain and extend it long after we're done.
+- **50 kg bags** — convenient for smaller works, site handling and retail
+- **Bulk** — for ready-mix plants, precast yards and large projects

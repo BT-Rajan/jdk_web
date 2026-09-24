@@ -1,196 +1,139 @@
 #!/usr/bin/env python3
 """
-One-time content seed: reads the frontend's existing content (the
-former source of truth, in ../src/content/*.md and the strings that
-used to live in src/data/content.js / pages.js) and writes it into the
-DB as the initial admin-editable content. After this runs, the DB rows
-are authoritative — this script is what performs the migration, not
-something the running app depends on.
+Populates the admin-editable content (Pages, FAQ, on-screen text, chat
+prompt, Products catalog) with JDK Factory's cement content, and rewrites
+any leftover legacy brand text already stored in the database.
 
-Safe to re-run: skips any page/FAQ item/setting that already has a DB
-override, so it never clobbers an admin's edits.
+Content comes from the repo, so the website's bundled fallback and the
+database can never drift apart:
 
-Requires the schema to already exist — run `alembic upgrade head`
-first. This script no longer creates tables itself.
+  * src/content/site.json        nav labels, page taglines, FAQ, home/chat
+                                 copy, chat system prompt, product range
+  * src/content/<lang>/<slug>.md full page bodies (Markdown)
 
-    alembic upgrade head
-    python scripts/seed_content.py
+Modes
+-----
+  python scripts/seed_content.py
+      Safe to re-run any time. Only fills what is MISSING — pages, FAQ
+      items, settings and products that already exist are left exactly as
+      an admin edited them. It ALWAYS runs the rebrand pass (below).
+
+  python scripts/seed_content.py --force
+      Overwrites the seeded pages, FAQ, and the home/chat copy, system
+      prompt, meta description and address with the repo's content. Use
+      once to replace old/AI-company content. Previous page text is kept
+      as a version (Admin > Pages > history) so it can be rolled back.
+      Products are never overwritten (an admin owns prices), and stale
+      pages (e.g. the old "services" page) are hidden, not deleted.
+
+Rebrand pass (every run)
+------------------------
+Replaces the legacy brand name ("Perennia" / Arabic "بيرينيا") with
+"JDK Factory" everywhere text is stored: settings, pages, FAQ items,
+products and knowledge-base sources. Idempotent.
+
+Requires the schema to already exist:  alembic upgrade head
 """
 from __future__ import annotations
 
+import argparse
+import json
+import re
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from app import content_service, products_service
 from app.db import session_scope
-from app.models import ContentPage, FaqItem, SiteSetting
-from app import content_service
-from app.settings_service import set_many
+from app.models import (
+    AuditLog, ContentPage, FaqItem, KnowledgeSource, Product, SiteSetting,
+)
+from app.settings_service import invalidate_cache, set_many
+
+BRAND = "JDK Factory"
 
 FRONTEND_CONTENT_DIR = Path(__file__).resolve().parent.parent.parent / "src" / "content"
+SITE_JSON = FRONTEND_CONTENT_DIR / "site.json"
 
-# navLabel / sectionTitle / sectionBody / tagline_* hand-ported once
-# here from the JS structures that used to hold them (NAV, SECTIONS,
-# PAGE_META in src/data/content.js and pages.js). Full body copy is read
-# directly from the .md files below rather than duplicated inline.
-PAGE_META = {
-    "about": {
-        "en": {"navLabel": "About", "sectionTitle": "About JDK Factory",
-               "sectionBody": "JDK Factory is an AI-powered technology and innovation company. We partner with businesses to design, build, and operate intelligent products — from first concept through to production support.",
-               "taglineLine1": "Who We ", "taglineLine2": "Are", "taglineSub": "AI-POWERED TECHNOLOGY & INNOVATION"},
-        "ar": {"navLabel": "من نحن", "sectionTitle": "عن JDK Factory",
-               "sectionBody": "JDK Factory شركة تقنية وابتكار مدعومة بالذكاء الاصطناعي. نتعاون مع الشركات لتصميم وبناء وتشغيل منتجات ذكية — من الفكرة الأولى وحتى الدعم الإنتاجي.",
-               "taglineLine1": "من ", "taglineLine2": "نحن", "taglineSub": "تقنية وابتكار مدعومان بالذكاء الاصطناعي"},
-    },
-    "products": {
-        "en": {"navLabel": "Products", "sectionTitle": "Products",
-               "sectionBody": "AI assistants, automation workflows, and custom digital platforms — built on modern stacks and tuned to how your team actually works.",
-               "taglineLine1": "What We ", "taglineLine2": "Build", "taglineSub": "PRODUCTS & PLATFORMS"},
-        "ar": {"navLabel": "المنتجات", "sectionTitle": "المنتجات",
-               "sectionBody": "مساعدون بالذكاء الاصطناعي، وأتمتة سير العمل، ومنصات رقمية مخصصة — مبنية على تقنيات حديثة ومصممة لتناسب طريقة عمل فريقك.",
-               "taglineLine1": "ماذا ", "taglineLine2": "نبني", "taglineSub": "المنتجات والمنصات"},
-    },
-    "services": {
-        "en": {"navLabel": "Services", "sectionTitle": "Services",
-               "sectionBody": "Consulting, product design, and full-cycle engineering. We embed with your team or run the build end-to-end, whichever fits your roadmap.",
-               "taglineLine1": "How We ", "taglineLine2": "Work", "taglineSub": "CONSULTING & ENGINEERING"},
-        "ar": {"navLabel": "الخدمات", "sectionTitle": "الخدمات",
-               "sectionBody": "استشارات، وتصميم منتجات، وهندسة متكاملة. نندمج مع فريقك أو ننفذ المشروع بالكامل، وفق ما يناسب خطتك.",
-               "taglineLine1": "كيف ", "taglineLine2": "نعمل", "taglineSub": "استشارات وهندسة"},
-    },
-    "contact": {
-        "en": {"navLabel": "Contact Us", "sectionTitle": "Contact Us",
-               "sectionBody": "Ready to talk? Use \"Talk to Us\" to book time directly, or start a chat below and our assistant will connect you with the right person.",
-               "taglineLine1": "Let's ", "taglineLine2": "Talk", "taglineSub": "GET IN TOUCH"},
-        "ar": {"navLabel": "تواصل معنا", "sectionTitle": "تواصل معنا",
-               "sectionBody": "جاهز للتحدث؟ استخدم \"تحدث إلينا\" لحجز موعد مباشرة، أو ابدأ محادثة أدناه وسيقوم مساعدنا بتوصيلك بالشخص المناسب.",
-               "taglineLine1": "لنتحدث", "taglineLine2": "", "taglineSub": "تواصل معنا"},
-    },
-}
+# Pages the site no longer has; hidden (never deleted) under --force.
+STALE_PAGE_SLUGS = ("services",)
 
-FAQ_SEED = [
-    {"en": {"q": "What services does JDK Factory offer?",
-            "a": "We build AI-powered assistants, automation, and digital products tailored to your business — from concept through to production support."},
-     "ar": {"q": "ما هي الخدمات التي تقدمها JDK Factory؟",
-            "a": "نصمم مساعدين مدعومين بالذكاء الاصطناعي وحلول أتمتة ومنتجات رقمية مخصصة لعملك — من الفكرة وحتى الدعم الإنتاجي."}},
-    {"en": {"q": "How can I book a consultation?",
-            "a": "Tap \"Talk to Us\" above, choose a free slot, and you'll get an instant confirmation by email — no back-and-forth required."},
-     "ar": {"q": "كيف يمكنني حجز استشارة؟",
-            "a": "اضغط على \"تحدث إلينا\" أعلاه، اختر موعدًا متاحًا، وستحصل على تأكيد فوري عبر البريد الإلكتروني."}},
-    {"en": {"q": "Do you support Arabic and English?",
-            "a": "Yes — the whole experience, including this assistant, works fully in both English and Arabic with proper right-to-left layout."},
-     "ar": {"q": "هل تدعمون اللغتين العربية والإنجليزية؟",
-            "a": "نعم — التجربة بأكملها، بما في ذلك هذا المساعد، تعمل بالكامل باللغتين مع تخطيط صحيح من اليمين إلى اليسار."}},
-    {"en": {"q": "Where are you located?",
-            "a": "We work with clients globally and meet either virtually or in person — ask during booking and we'll accommodate you."},
-     "ar": {"q": "أين يقع مقركم؟",
-            "a": "نعمل مع عملاء حول العالم ونلتقي افتراضيًا أو شخصيًا — أخبرنا أثناء الحجز وسنوفر لك ما يناسبك."}},
-]
+ACTOR = "seed_script"
 
-# Must stay in sync with copy.home's default in settings_registry.py —
-# get_setting() only merges copy.home at the top level (per-language,
-# not per-field), so a DB row missing a field here would silently drop
-# that field out of the live response rather than falling through to
-# the registry default. See withHomeFallbacks in Hero.jsx for the
-# frontend-side safety net this is meant to make unnecessary.
-COPY_HOME = {
-    "en": {"welcome": "Welcome to JDK Factory", "tagline": "Visit our V-Lounge for more",
-           "heroStatement": "Practical AI\nBuilt for Businesses",
-           "taglineLine1": "Solving Today.", "taglineLine2": "Shaping Tomorrow.",
-           "supportingText": "Digital products for businesses across India and the GCC.",
-           "examplePrompts": ["What does JDK Factory build?", "How can JDK Factory help my business?",
-                                "Explore our products"],
-           "hint": "Start chatting", "langSwitch": "AR | عربي"},
-    "ar": {"welcome": "مرحبا بك في JDK Factory", "tagline": "زوروا V-Lounge الخاص بنا لمزيد من المعلومات",
-           "heroStatement": "حلول ذكاء اصطناعي عملية ومنتجات رقمية للأعمال",
-           "taglineLine1": "حلول اليوم.", "taglineLine2": "لصناعة الغد.",
-           "supportingText": "منتجات رقمية للشركات في الهند ودول الخليج.",
-           "examplePrompts": ["ما الذي تبنيه JDK Factory؟", "كيف يمكن لـ JDK Factory مساعدة أعمالي؟", "استكشف منتجاتنا"],
-           "hint": "ابدأ المحادثة", "langSwitch": "EN | English"},
-}
 
-COPY_CHAT = {
-    "en": {"taglineLine1": "Solving Today. ", "taglineLine2": "Shaping Tomorrow.",
-           "sub": "AI-POWERED TECHNOLOGY & INNOVATION", "header": "JDK Factory Assistant",
-           "bookBtn": "Talk to Us", "faqTitle": "Quick Questions",
-           "inputPlaceholder": "Type your message…",
-           "welcomeMsg": "Hello! I'm JDK Factory's AI assistant. Before we get started, may I know your name? "
-                          "It helps us build a good relationship with you and follow up properly.",
-           "langSwitch": "AR | عربي"},
-    "ar": {"taglineLine1": "حلول اليوم. ", "taglineLine2": "لصناعة الغد.",
-           "sub": "تقنية وابتكار مدعومان بالذكاء الاصطناعي", "header": "مساعد JDK Factory",
-           "bookBtn": "تحدث إلينا", "faqTitle": "أسئلة سريعة",
-           "inputPlaceholder": "اكتب رسالتك…",
-           "welcomeMsg": "مرحباً! أنا المساعد الذكي لـ JDK Factory. قبل أن نبدأ، هل لي أن أعرف اسمك؟ "
-                          "هذا يساعدنا على بناء علاقة أفضل معك ومتابعة طلبك بشكل صحيح.",
-           "langSwitch": "EN | English"},
-}
+# ── legacy brand rewrite ─────────────────────────────────────────────
 
-COPY_BOOKING = {
-    "en": {"title": "Talk to Us", "subtitle": "Pick a time that works for you — we'll confirm by email.",
-           "tab_new": "New Appointment", "tab_manage": "Manage Booking", "date": "Date",
-           "slot": "Available times", "slot_empty": "Pick a date to see available times",
-           "name": "Name", "email": "Email", "phone": "Phone (optional)",
-           "service": "What are you interested in? (optional)", "notes": "Notes (optional)",
-           "cancel": "Cancel", "confirm": "Confirm Booking", "lookup_id": "Appointment ID",
-           "lookup_email": "Email used to book", "find_btn": "Find My Appointment",
-           "cancel_appt": "Cancel Appointment", "reschedule": "Reschedule",
-           "lookup_different": "Look up a different appointment", "new_date": "New date",
-           "back": "Back", "confirm_new_time": "Confirm New Time",
-           "success_new": "You're booked! Confirmation code: {id}. A confirmation email is on its way.",
-           "success_cancel": "Your appointment has been cancelled.",
-           "success_reschedule": "All set — your appointment is now on {date} at {time}.",
-           "id_placeholder": "PRN-XXXXXXXX",
-           "no_availability": "No availability that day — try another date.",
-           "err_pick_date_slot": "Please pick a date and time.",
-           "err_name": "Please enter your name.",
-           "err_email": "Please enter a valid email.",
-           "err_lookup_both": "Enter both the appointment ID and email.",
-           "err_pick_new_date_slot": "Pick a new date and time.",
-           "errors": {
-               "slot_unavailable": "That time is no longer available — please pick another.",
-               "notice_window_passed": "This is too close to the appointment time to make that change.",
-               "not_found": "We couldn't find a matching appointment.",
-               "invalid_email": "Please enter a valid email.",
-               "invalid_name": "Please enter your name.",
-               "invalid_date": "That date isn't valid.",
-               "already_cancelled": "This appointment has already been cancelled.",
-               "booking_disabled": "Booking is currently unavailable — please check back soon.",
-               "generic": "Something went wrong — please try again.",
-           }},
-    "ar": {"title": "تحدث إلينا", "subtitle": "اختر الوقت المناسب لك — سنؤكد ذلك عبر البريد الإلكتروني.",
-           "tab_new": "موعد جديد", "tab_manage": "إدارة الحجز", "date": "التاريخ",
-           "slot": "الأوقات المتاحة", "slot_empty": "اختر تاريخًا لرؤية الأوقات المتاحة",
-           "name": "الاسم", "email": "البريد الإلكتروني", "phone": "الهاتف (اختياري)",
-           "service": "ما الذي يهمك؟ (اختياري)", "notes": "ملاحظات (اختياري)",
-           "cancel": "إلغاء", "confirm": "تأكيد الحجز", "lookup_id": "رقم الموعد",
-           "lookup_email": "البريد الإلكتروني المستخدم للحجز", "find_btn": "ابحث عن موعدي",
-           "cancel_appt": "إلغاء الموعد", "reschedule": "إعادة الجدولة",
-           "lookup_different": "البحث عن موعد آخر", "new_date": "تاريخ جديد",
-           "back": "رجوع", "confirm_new_time": "تأكيد الوقت الجديد",
-           "success_new": "تم الحجز! رمز التأكيد: {id}. بريد التأكيد في طريقه إليك.",
-           "success_cancel": "تم إلغاء موعدك.",
-           "success_reschedule": "تم! موعدك الآن في {date} الساعة {time}.",
-           "id_placeholder": "PRN-XXXXXXXX",
-           "no_availability": "لا توجد مواعيد متاحة في هذا اليوم — جرّب تاريخًا آخر.",
-           "err_pick_date_slot": "يرجى اختيار تاريخ ووقت.",
-           "err_name": "يرجى إدخال اسمك.",
-           "err_email": "يرجى إدخال بريد إلكتروني صالح.",
-           "err_lookup_both": "أدخل رقم الموعد والبريد الإلكتروني معًا.",
-           "err_pick_new_date_slot": "اختر تاريخًا ووقتًا جديدين.",
-           "errors": {
-               "slot_unavailable": "لم يعد هذا الوقت متاحًا — يرجى اختيار وقت آخر.",
-               "notice_window_passed": "الوقت المتبقي غير كافٍ لإجراء هذا التغيير.",
-               "not_found": "لم نتمكن من العثور على موعد مطابق.",
-               "invalid_email": "يرجى إدخال بريد إلكتروني صالح.",
-               "invalid_name": "يرجى إدخال اسمك.",
-               "invalid_date": "هذا التاريخ غير صالح.",
-               "already_cancelled": "تم إلغاء هذا الموعد بالفعل.",
-               "booking_disabled": "الحجز غير متاح حاليًا — يرجى المحاولة لاحقًا.",
-               "generic": "حدث خطأ ما — يرجى المحاولة مرة أخرى.",
-           }},
-}
+_LEGACY_EN = re.compile(r"perennia", re.IGNORECASE)
+
+
+def rebrand_text(s: str) -> str:
+    # "ل" (for/to) is glued to the name in Arabic; attached to a Latin
+    # word it reads badly, so it becomes "لـ JDK Factory".
+    s = s.replace("لبيرينيا", "لـ " + BRAND).replace("بيرينيا", BRAND)
+    return _LEGACY_EN.sub(BRAND, s)
+
+
+def rebrand_json(value):
+    """Recursively rewrites every string inside a JSON-like value."""
+    if isinstance(value, str):
+        return rebrand_text(value)
+    if isinstance(value, list):
+        return [rebrand_json(v) for v in value]
+    if isinstance(value, dict):
+        return {k: rebrand_json(v) for k, v in value.items()}
+    return value
+
+
+def rebrand_database(db) -> dict[str, int]:
+    counts = {"settings": 0, "pages": 0, "faq": 0, "products": 0, "knowledge": 0}
+
+    for row in db.query(SiteSetting).filter(SiteSetting.is_secret.is_(False)).all():
+        try:
+            current = json.loads(row.value)
+        except ValueError:
+            continue
+        updated = rebrand_json(current)
+        if updated != current:
+            row.value = json.dumps(updated)  # same encoding settings_service uses
+            counts["settings"] += 1
+
+    for page in db.query(ContentPage).all():
+        updated = rebrand_json(page.translations)
+        if updated != page.translations:
+            page.translations = updated  # reassign so SQLAlchemy sees the change
+            counts["pages"] += 1
+
+    for item in db.query(FaqItem).all():
+        updated = rebrand_json(item.translations)
+        if updated != item.translations:
+            item.translations = updated
+            counts["faq"] += 1
+
+    for product in db.query(Product).all():
+        name, desc = rebrand_text(product.name), rebrand_text(product.description)
+        if (name, desc) != (product.name, product.description):
+            product.name, product.description = name, desc
+            counts["products"] += 1
+
+    for src in db.query(KnowledgeSource).all():
+        title, text = rebrand_text(src.title), rebrand_text(src.text or "")
+        if (title, text) != (src.title, src.text or ""):
+            src.title, src.text, src.chars = title, text, len(text)
+            counts["knowledge"] += 1
+
+    if any(counts.values()):
+        db.add(AuditLog(actor_id=None, actor_username=ACTOR, action="content.rebrand",
+                        detail=json.dumps(counts)))
+    db.flush()
+    invalidate_cache()
+    return counts
+
+
+# ── seeding ──────────────────────────────────────────────────────────
+
+def _load_site() -> dict:
+    return json.loads(SITE_JSON.read_text(encoding="utf-8"))
 
 
 def _read_md(lang: str, slug: str) -> str:
@@ -201,45 +144,103 @@ def _read_md(lang: str, slug: str) -> str:
     return path.read_text(encoding="utf-8").strip()
 
 
-def main() -> None:
-    # Schema is owned by Alembic (see alembic/versions/). Run
-    # `alembic upgrade head` before this script. This used to call
-    # Base.metadata.create_all(bind=engine) here, which created tables
-    # directly and left alembic_version unset — the next `alembic
-    # upgrade head` would then fail with "table already exists".
-    with session_scope() as db:
-        # --- pages ---
-        for order, (slug, per_lang) in enumerate(PAGE_META.items()):
-            if db.get(ContentPage, slug) is not None:
-                print(f"Page '{slug}' already exists — skipping.")
-                continue
-            translations = {
-                lang: {**fields, "bodyMarkdown": _read_md(lang, slug)}
-                for lang, fields in per_lang.items()
-            }
-            content_service.upsert_page(db, slug, translations=translations, order=order,
-                                         actor_id=None, actor_username="seed_script")
-            print(f"Seeded page '{slug}'.")
+def seed_pages(db, site: dict, force: bool) -> None:
+    for order, slug in enumerate(site["pageOrder"]):
+        exists = db.get(ContentPage, slug) is not None
+        if exists and not force:
+            print(f"Page '{slug}' already exists — skipping (use --force to overwrite).")
+            continue
+        translations = {
+            lang: {**fields, "bodyMarkdown": _read_md(lang, slug)}
+            for lang, fields in site["pages"][slug].items()
+        }
+        content_service.upsert_page(
+            db, slug, translations=translations, order=order,
+            is_visible=True, show_in_nav=True, actor_id=None, actor_username=ACTOR,
+        )
+        print(f"{'Updated' if exists else 'Seeded'} page '{slug}'.")
 
-        # --- FAQ ---
-        if db.query(FaqItem).count() == 0:
-            for order, translations in enumerate(FAQ_SEED):
-                content_service.create_faq(db, translations=translations, order=order,
-                                            actor_id=None, actor_username="seed_script")
-            print(f"Seeded {len(FAQ_SEED)} FAQ items.")
+    if force:
+        for slug in STALE_PAGE_SLUGS:
+            page = db.get(ContentPage, slug)
+            if page is not None and (page.is_visible or page.show_in_nav):
+                content_service.upsert_page(
+                    db, slug, translations=page.translations,
+                    is_visible=False, show_in_nav=False, actor_id=None, actor_username=ACTOR,
+                )
+                print(f"Hid stale page '{slug}'.")
+
+
+def seed_faq(db, site: dict, force: bool) -> None:
+    existing = content_service.list_faq(db, active_only=False)
+    if existing and not force:
+        print("FAQ items already exist — skipping (use --force to replace).")
+        return
+    for item in existing:
+        content_service.delete_faq(db, item.id, actor_id=None, actor_username=ACTOR)
+    for order, translations in enumerate(site["faq"]):
+        content_service.create_faq(db, translations=translations, order=order,
+                                   actor_id=None, actor_username=ACTOR)
+    print(f"Seeded {len(site['faq'])} FAQ items.")
+
+
+def seed_settings(db, site: dict, force: bool) -> None:
+    wanted = {
+        "copy.home": site["copyHome"],
+        "copy.chat": site["copyChat"],
+        "chat.systemPrompt": site["settings"]["chat.systemPrompt"],
+        "branding.metaDescription": site["settings"]["branding.metaDescription"],
+        "contact.address": site["settings"]["contact.address"],
+    }
+    to_set = {}
+    for key, value in wanted.items():
+        if db.get(SiteSetting, key) is None or force:
+            to_set[key] = value
         else:
-            print("FAQ items already exist — skipping.")
+            print(f"Setting '{key}' already set — skipping (use --force to overwrite).")
+    if to_set:
+        set_many(db, to_set, actor_id=None, actor_username=ACTOR)
+        print(f"Set: {sorted(to_set)}.")
 
-        # --- copy blobs ---
-        to_set = {}
-        for key, value in (("copy.home", COPY_HOME), ("copy.chat", COPY_CHAT), ("copy.booking", COPY_BOOKING)):
-            if db.get(SiteSetting, key) is None:
-                to_set[key] = value
-            else:
-                print(f"Setting '{key}' already overridden — skipping.")
-        if to_set:
-            set_many(db, to_set, actor_id=None, actor_username="seed_script")
-            print(f"Seeded copy blobs: {list(to_set)}.")
+
+def seed_products(db, site: dict) -> None:
+    """Adds any catalog product that doesn't exist yet (matched by slug).
+    Never edits or removes an existing product — prices belong to the admin."""
+    existing = {p.slug for p in products_service.list_products(db)}
+    added = 0
+    for prod in site["products"]:
+        if products_service.slugify(prod["name"]) in existing:
+            continue
+        products_service.create_product(
+            db, name=prod["name"], description=prod["description"], price=float(prod["price"]),
+            unit=prod["unit"], is_active=True, actor_id=None, actor_username=ACTOR,
+        )
+        added += 1
+    print(f"Added {added} product(s) to the catalog." if added else "Products already present — skipping.")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--force", action="store_true",
+                        help="overwrite seeded pages, FAQ, home/chat copy, system prompt, meta description and address")
+    args = parser.parse_args()
+
+    site = _load_site()
+
+    # One transaction: either everything below lands, or nothing does.
+    with session_scope() as db:
+        seed_pages(db, site, args.force)
+        seed_faq(db, site, args.force)
+        seed_settings(db, site, args.force)
+        seed_products(db, site)
+
+        counts = rebrand_database(db)
+        if any(counts.values()):
+            print("Rebranded stored text:", {k: v for k, v in counts.items() if v})
+        else:
+            print("Rebrand pass: no legacy brand text found.")
+
+    print("Done.")
 
 
 if __name__ == "__main__":

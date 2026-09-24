@@ -1,22 +1,53 @@
 import { useEffect, useState } from "react";
 import { useLang } from "../../context/LangContext.jsx";
 import { api } from "../../api/client.js";
+import { FALLBACK_PRODUCTS } from "../../data/content.js";
 import TopBar from "../layout/TopBar.jsx";
 import GlassPanel from "../ui/GlassPanel.jsx";
-import Button from "../ui/Button.jsx";
 import Markdown from "../ui/Markdown.jsx";
+import Button from "../ui/Button.jsx";
 import "./ContentPage.css";
 import "./ProductsPage.css";
+
+// Page-local strings. Shared product strings (currency, data sheet
+// label, Order CTA, empty state) live in COPY.products (content.js) so
+// the order form and chat use the same wording.
+const TEXT = {
+  en: {
+    range: "Our range",
+    loading: "Loading products…",
+    priceOnRequest: "Price on request",
+    order: "Request an Order",
+    contact: "Contact us for a quote",
+    orderHint: "Choose products and quantities and we'll reply with a firm quote.",
+    contactHint: "Get in touch and our team will help you choose and quote.",
+  },
+  ar: {
+    range: "منتجاتنا",
+    loading: "جارٍ تحميل المنتجات…",
+    priceOnRequest: "السعر عند الطلب",
+    order: "قدّم طلب شراء",
+    contact: "تواصل معنا لعرض سعر",
+    orderHint: "اختر المنتجات والكميات وسنردّ عليك بعرض سعر نهائي.",
+    contactHint: "تواصل معنا وسيساعدك فريقنا في الاختيار وعرض السعر.",
+  },
+};
+
+function formatPrice(product, currency, priceOnRequest) {
+  const price = Number(product.price);
+  return price > 0 ? `${price.toFixed(2)} ${currency}` : priceOnRequest;
+}
 
 /**
  * Product detail modal, opened by clicking any card in the grid below.
  * Every field — image, name, description, price, unit, data sheet —
  * comes straight off the clicked product object (the same live catalog
  * row the grid and the admin panel both read), nothing here is
- * hardcoded. "Order now" opens the same order form every other Order
- * CTA on the site does.
+ * hardcoded. The primary action opens the same order form every other
+ * Order CTA on the site does — or, for bundled fallback products that
+ * can't be ordered online, sends the visitor to the Contact page.
  */
-function ProductDetailModal({ product, onClose, onOrder, t, closeLabel }) {
+function ProductDetailModal({ product, onClose, primaryLabel, onPrimary, t, pageText, closeLabel }) {
   useEffect(() => {
     function handleKeyDown(e) {
       if (e.key === "Escape") onClose();
@@ -43,14 +74,15 @@ function ProductDetailModal({ product, onClose, onOrder, t, closeLabel }) {
           <h3 className="product-modal-name">{product.name}</h3>
           {product.description && <p className="product-modal-desc">{product.description}</p>}
           <p className="product-modal-price">
-            {product.price.toFixed(2)} {t.currency} <span>/ {product.unit}</span>
+            {formatPrice(product, t.currency || "KWD", pageText.priceOnRequest)}
+            {product.unit && <span> / {product.unit}</span>}
           </p>
           {product.datasheetUrl && (
             <a href={product.datasheetUrl} target="_blank" rel="noopener noreferrer" className="product-modal-datasheet">
               {t.datasheetLabel}
             </a>
           )}
-          <Button variant="primary" fullWidth onClick={onOrder}>{t.orderCta}</Button>
+          <Button variant="primary" fullWidth onClick={onPrimary}>{primaryLabel}</Button>
         </div>
       </GlassPanel>
     </div>
@@ -58,44 +90,48 @@ function ProductDetailModal({ product, onClose, onOrder, t, closeLabel }) {
 }
 
 /**
- * The public Products page — same header/tagline shell as ContentPage
- * (and still shows the admin's own Markdown intro from Settings >
- * Pages > Products, if they've written one), but the body is the live
- * product catalog (Settings > Products) instead of static text: one
- * card per active product. Clicking a card opens its detail view
- * (ProductDetailModal above) — image, price, and an Order now button.
- * New products show up here the moment an admin adds them — no code
- * change, no redeploy.
+ * The Products page: the admin-editable intro/guidance (Markdown, same as
+ * every other content page) followed by the live product catalog — the
+ * exact list managed under Admin → Products and used by the Order form
+ * (GET /api/products), so a product added, edited, deactivated or
+ * re-priced in the admin panel shows up here with no code change.
+ * Clicking a card opens its detail view (ProductDetailModal above).
+ *
+ * If the catalog can't be loaded or is empty, the bundled range from
+ * site.json is shown instead (display only — ordering needs live
+ * products, so the call to action becomes "contact us" in that case).
  */
 export default function ProductsPage({ onBack, onNavigate, onOrder }) {
-  const { pages, copy } = useLang();
-  const meta = pages.products;
+  const { lang, pages, copy } = useLang();
+  const pageText = TEXT[lang] || TEXT.en;
   const t = copy.products || {};
+  const currency = t.currency || "KWD";
+  const meta = pages.products;
 
-  const [products, setProducts] = useState(null); // null = loading
-  const [selectedId, setSelectedId] = useState(null);
+  const [products, setProducts] = useState(null); // null = still loading
+  const [selected, setSelected] = useState(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
-
-  useEffect(() => {
     let cancelled = false;
     api.getProducts().then((list) => {
-      if (!cancelled) setProducts(list);
+      if (!cancelled) setProducts(Array.isArray(list) ? list : []);
     });
     return () => {
       cancelled = true;
     };
   }, []);
 
-  if (!meta) return null;
+  if (!meta) return null; // page removed/hidden in the admin panel
 
-  const selectedProduct = products?.find((p) => p.id === selectedId) ?? null;
+  const hasLiveProducts = Array.isArray(products) && products.length > 0;
+  const list = products === null ? null : hasLiveProducts ? products : FALLBACK_PRODUCTS;
 
-  function handleOrderNow() {
-    setSelectedId(null);
-    onOrder?.();
+  const primaryLabel = hasLiveProducts ? (t.orderCta || pageText.order) : pageText.contact;
+  function handlePrimary() {
+    setSelected(null);
+    if (hasLiveProducts) onOrder?.();
+    else onNavigate?.("contact");
   }
 
   return (
@@ -112,45 +148,61 @@ export default function ProductsPage({ onBack, onNavigate, onOrder }) {
           <div className="content-tagline-sub">{meta.sub}</div>
         </div>
 
-        {meta.body && (
-          <GlassPanel className="content-shell" as="section">
-            <Markdown source={meta.body} />
-          </GlassPanel>
-        )}
+        <GlassPanel className="content-shell" as="section">
+          <Markdown source={meta.body || ""} />
 
-        {products === null ? (
-          <p className="products-page-status">…</p>
-        ) : products.length === 0 ? (
-          <p className="products-page-status">{t.emptyState}</p>
-        ) : (
-          <div className="products-page-grid">
-            {products.map((p) => (
-              <GlassPanel
-                key={p.id} className="products-page-card" as="button" type="button"
-                onClick={() => setSelectedId(p.id)}
-              >
-                {p.imageUrl ? (
-                  <img src={p.imageUrl} alt="" className="products-page-card-image" />
-                ) : (
-                  <div className="products-page-card-image products-page-card-image-empty" aria-hidden="true" />
-                )}
-                <div className="products-page-card-body">
-                  <h3 className="products-page-card-name">{p.name}</h3>
-                  {p.description && <p className="products-page-card-desc">{p.description}</p>}
-                  <p className="products-page-card-price">
-                    {p.price.toFixed(2)} {t.currency} <span>/ {p.unit}</span>
-                  </p>
-                </div>
-              </GlassPanel>
-            ))}
-          </div>
-        )}
+          <h2 className="products-range-title">{pageText.range}</h2>
+
+          {list === null ? (
+            <p className="products-loading">{pageText.loading}</p>
+          ) : list.length === 0 ? (
+            <p className="products-loading">{t.emptyState}</p>
+          ) : (
+            <ul className="products-grid">
+              {list.map((p) => (
+                <li key={p.id || p.name}>
+                  {/* A real <button> so the whole card is one clickable,
+                      keyboard-reachable target that opens the detail modal. */}
+                  <button type="button" className="product-card" onClick={() => setSelected(p)}>
+                    {p.imageUrl ? (
+                      <img src={p.imageUrl} alt="" className="product-card-image" />
+                    ) : (
+                      <div className="product-card-image product-card-image-empty" aria-hidden="true" />
+                    )}
+                    <div className="product-card-body">
+                      <h3 className="product-card-name">{p.name}</h3>
+                      {p.description && <p className="product-card-desc">{p.description}</p>}
+                      <div className="product-card-meta">
+                        {p.unit && <span className="product-card-unit">{p.unit}</span>}
+                        <span className="product-card-price">
+                          {formatPrice(p, currency, pageText.priceOnRequest)}
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {list !== null && (
+            <div className="products-cta">
+              <p className="products-cta-hint">{hasLiveProducts ? pageText.orderHint : pageText.contactHint}</p>
+              {hasLiveProducts ? (
+                <Button variant="primary" onClick={onOrder}>{pageText.order}</Button>
+              ) : (
+                <Button variant="primary" onClick={() => onNavigate?.("contact")}>{pageText.contact}</Button>
+              )}
+            </div>
+          )}
+        </GlassPanel>
       </main>
 
-      {selectedProduct && (
+      {selected && (
         <ProductDetailModal
-          product={selectedProduct} onClose={() => setSelectedId(null)} onOrder={handleOrderNow}
-          t={t} closeLabel={copy.common?.close || "Close"}
+          product={selected} onClose={() => setSelected(null)}
+          primaryLabel={primaryLabel} onPrimary={handlePrimary}
+          t={t} pageText={pageText} closeLabel={copy.common?.close || "Close"}
         />
       )}
     </div>

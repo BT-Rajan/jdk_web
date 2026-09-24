@@ -160,7 +160,10 @@ _DEFS: list[SettingDef] = [
                help_text="Color of the logo glow — matches the site's own gold by default."),
     SettingDef("branding.faviconUrl", "branding", "Favicon", SettingType.IMAGE, "/favicon.svg"),
     SettingDef("branding.metaDescription", "branding", "Search/share description", SettingType.TEXT,
-               {"en": "JDK Factory — AI-powered technology & innovation.", "ar": ""}, i18n=True,
+               {"en": "JDK Factory — Kuwait-based cement manufacturer. Ordinary Portland and sulphate-resisting cement, "
+                "in bags and in bulk.",
+                "ar": "JDK Factory — مصنع أسمنت كويتي. أسمنت بورتلاندي عادي ومقاوم للكبريتات، في أكياس وسائباً."},
+               i18n=True,
                help_text="Shown in search results and link previews (og:description)."),
 
     # locale ----------------------------------------------------------
@@ -173,7 +176,7 @@ _DEFS: list[SettingDef] = [
     SettingDef("contact.phone", "contact", "Contact phone", SettingType.STRING, ""),
     SettingDef("contact.whatsappNumber", "contact", "WhatsApp number", SettingType.STRING, "",
                help_text="Include country code, digits only, e.g. 96599999999."),
-    SettingDef("contact.address", "contact", "Address", SettingType.TEXT, {"en": "", "ar": ""}, i18n=True),
+    SettingDef("contact.address", "contact", "Address", SettingType.TEXT, {"en": "Kuwait", "ar": "الكويت"}, i18n=True),
     SettingDef("contact.googleMapsUrl", "contact", "Google Maps link", SettingType.STRING, "",
                help_text="Full URL to your location on Google Maps (e.g. from Maps' own \"Share\" button). "
                           "Shown as a map link wherever the site links out to your location — currently the "
@@ -358,12 +361,8 @@ _DEFS: list[SettingDef] = [
                help_text="Shown next to the assistant in the AI Assistant widget and the homepage "
                           "quick-chat box. Leave blank to use a plain initial-letter avatar instead."),
     SettingDef("chat.systemPrompt", "chat", "System prompt", SettingType.TEXT, {
-        "en": "You are JDK Factory's AI assistant. Be warm, concise, and professional. Early in the "
-              "conversation, ask the visitor's name so you can personalize the chat and so the team can "
-              "follow up. Help visitors understand JDK Factory's AI products and services.",
-        "ar": "أنت المساعد الذكي لشركة JDK Factory. كن ودودًا ومختصرًا ومحترفًا. في وقت مبكر من المحادثة، اسأل "
-              "الزائر عن اسمه حتى تتمكن من تخصيص المحادثة ومتابعة الطلب. ساعد الزوار على فهم منتجات وخدمات "
-              "JDK Factory.",
+        "en": "You are JDK Factory's assistant. JDK Factory is a Kuwait-based cement manufacturer. Be warm, concise and professional. Early in the conversation, ask the visitor's name so the team can follow up. Help visitors understand our cement products (Ordinary Portland Cement and Sulphate Resisting Cement, in 50 kg bags and in bulk), our quality and testing, and how to request an order or quote. Do not state prices, delivery dates, certifications or capacities unless they appear in the knowledge provided to you; instead invite the visitor to submit an order request or contact the team. Remind visitors to confirm the cement type against their engineer's specification.",
+        "ar": "أنت المساعد الذكي لشركة JDK Factory، وهي شركة كويتية لتصنيع الأسمنت. كن ودودًا ومختصرًا ومحترفًا. في وقت مبكر من المحادثة، اسأل الزائر عن اسمه ليتمكن الفريق من المتابعة. ساعد الزوار على فهم منتجاتنا من الأسمنت (الأسمنت البورتلاندي العادي والأسمنت المقاوم للكبريتات، في أكياس 50 كجم وسائباً)، وجودتنا وفحوصاتنا، وكيفية طلب الشراء أو عرض السعر. لا تذكر أسعارًا أو مواعيد تسليم أو شهادات أو طاقات إنتاجية ما لم ترد في المعلومات المتوفرة لديك، وادعُ الزائر بدلًا من ذلك إلى تقديم طلب شراء أو التواصل مع الفريق. ذكّر الزوار بالتأكد من نوع الأسمنت مع مواصفات المهندس المسؤول."
     }, i18n=True),
     SettingDef("chat.unavailableMessage", "chat", "Fallback message (LLM unavailable)", SettingType.TEXT, {
         "en": "Thanks for sharing that! Someone from our team will follow up shortly.",
@@ -430,27 +429,34 @@ _DEFS: list[SettingDef] = [
     SettingDef("copy.home", "copy", "Home screen text", SettingType.JSON, {
         "en": {
             "welcome": "Welcome to JDK Factory",
-            "tagline": "Visit our V-Lounge for more",
-            "heroStatement": "Practical AI\nBuilt for Businesses",
-            "taglineLine1": "Solving Today.",
-            "taglineLine2": "Shaping Tomorrow.",
-            "supportingText": "Digital products for businesses across India and the GCC.",
-            "examplePrompts": ["What does JDK Factory build?", "How can JDK Factory help my business?",
-                                 "Explore our products"],
+            "tagline": "Quality cement, in bags and in bulk",
+            "heroStatement": "Quality Cement\nBuilt for Kuwait",
+            "taglineLine1": "Building Today.",
+            "taglineLine2": "Strengthening Tomorrow.",
+            "supportingText": "Portland and sulphate-resisting cement, supplied across Kuwait.",
+            "examplePrompts": [
+                "Which cement is right for my project?",
+                "What's the difference between OPC and SRC?",
+                "How do I request a quote?"
+            ],
             "hint": "Start chatting",
-            "langSwitch": "AR | عربي",
+            "langSwitch": "AR | عربي"
         },
         "ar": {
             "welcome": "مرحبا بك في JDK Factory",
-            "tagline": "زوروا V-Lounge الخاص بنا لمزيد من المعلومات",
-            "heroStatement": "حلول ذكاء اصطناعي عملية ومنتجات رقمية للأعمال",
-            "taglineLine1": "حلول اليوم.",
-            "taglineLine2": "لصناعة الغد.",
-            "supportingText": "منتجات رقمية للشركات في الهند ودول الخليج.",
-            "examplePrompts": ["ما الذي تبنيه JDK Factory؟", "كيف يمكن لـ JDK Factory مساعدة أعمالي؟", "استكشف منتجاتنا"],
+            "tagline": "أسمنت عالي الجودة، في أكياس أو سائباً",
+            "heroStatement": "أسمنت عالي الجودة\nمصنوع للكويت",
+            "taglineLine1": "نبني اليوم.",
+            "taglineLine2": "ونُرسّخ الغد.",
+            "supportingText": "أسمنت بورتلاندي ومقاوم للكبريتات، نورّده إلى مختلف أنحاء الكويت.",
+            "examplePrompts": [
+                "ما نوع الأسمنت المناسب لمشروعي؟",
+                "ما الفرق بين الأسمنت العادي والمقاوم للكبريتات؟",
+                "كيف أطلب عرض سعر؟"
+            ],
             "hint": "ابدأ المحادثة",
-            "langSwitch": "EN | English",
-        },
+            "langSwitch": "EN | English"
+        }
     }, i18n=True,
                help_text="welcome, tagline, hint, langSwitch, heroStatement, taglineLine1, taglineLine2, "
                           "supportingText, examplePrompts. heroStatement types itself out on the homepage "

@@ -1,39 +1,39 @@
 // ──────────────────────────────────────────────────────────
-// Content for the four standalone pages (About / Products /
-// Services / Contact). Each page's body copy lives in its own
-// Markdown file under src/content/<lang>/<page>.md — edit those
-// files to change what's on the page; no component changes
-// needed. `?raw` tells Vite to import the file as a plain string
-// instead of trying to process it as a module.
+// Bundled content for the standalone pages (About / Products /
+// Quality / Contact). This is the *fallback* shown when the backend
+// is unreachable or has no pages yet — the live source of truth is
+// the admin panel (Pages), seeded from these same files by
+// backend/scripts/seed_content.py.
+//
+// - Page bodies: src/content/<lang>/<slug>.md (imported as raw text).
+// - Nav labels, taglines, home teasers: src/content/site.json
+//   (shared with the backend seed so the two can't drift apart).
 // ──────────────────────────────────────────────────────────
+import site from "../content/site.json";
 import aboutEn from "../content/en/about.md?raw";
 import productsEn from "../content/en/products.md?raw";
-import servicesEn from "../content/en/services.md?raw";
+import qualityEn from "../content/en/quality.md?raw";
 import contactEn from "../content/en/contact.md?raw";
 import aboutAr from "../content/ar/about.md?raw";
 import productsAr from "../content/ar/products.md?raw";
-import servicesAr from "../content/ar/services.md?raw";
+import qualityAr from "../content/ar/quality.md?raw";
 import contactAr from "../content/ar/contact.md?raw";
 
 export const PAGE_CONTENT = {
-  en: { about: aboutEn, products: productsEn, services: servicesEn, contact: contactEn },
-  ar: { about: aboutAr, products: productsAr, services: servicesAr, contact: contactAr },
+  en: { about: aboutEn, products: productsEn, quality: qualityEn, contact: contactEn },
+  ar: { about: aboutAr, products: productsAr, quality: qualityAr, contact: contactAr },
 };
 
-// Header tagline shown above each page's content shell — mirrors the
-// chat page's taglineLine1 / taglineLine2 / sub treatment so every
-// page in the app reads as part of the same family.
-export const PAGE_META = {
-  en: {
-    about: { line1: "Who We ", line2: "Are", sub: "AI-POWERED TECHNOLOGY & INNOVATION" },
-    products: { line1: "What We ", line2: "Build", sub: "PRODUCTS & PLATFORMS" },
-    services: { line1: "How We ", line2: "Work", sub: "CONSULTING & ENGINEERING" },
-    contact: { line1: "Let's ", line2: "Talk", sub: "GET IN TOUCH" },
-  },
-  ar: {
-    about: { line1: "من ", line2: "نحن", sub: "تقنية وابتكار مدعومان بالذكاء الاصطناعي" },
-    products: { line1: "ماذا ", line2: "نبني", sub: "المنتجات والمنصات" },
-    services: { line1: "كيف ", line2: "نعمل", sub: "استشارات وهندسة" },
-    contact: { line1: "لنتحدث", line2: "", sub: "تواصل معنا" },
-  },
-};
+// Header tagline shown above each page's content shell (line1 + accent
+// line2 + subtitle), derived from site.json.
+export const PAGE_META = Object.fromEntries(
+  ["en", "ar"].map((lang) => [
+    lang,
+    Object.fromEntries(
+      site.pageOrder.map((slug) => {
+        const p = site.pages[slug][lang];
+        return [slug, { line1: p.taglineLine1, line2: p.taglineLine2, sub: p.taglineSub }];
+      })
+    ),
+  ])
+);

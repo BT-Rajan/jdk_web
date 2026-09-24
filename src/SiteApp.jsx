@@ -45,19 +45,19 @@ function AppShell() {
     setOrderOpen((o) => !o);
   };
 
+  // Opens the order form directly — used by the Products page's "Request
+  // an Order" button and by ChatWidget's "Place an Order" CTA. Unlike the
+  // sticky Order button this never toggles it closed, and it closes chat
+  // since both popovers dock in the same bottom-right corner.
+  const handleOpenOrder = () => {
+    setChatOpen(false);
+    setOrderOpen(true);
+  };
+
   const handleHeroEnter = (initialMessage) => {
     if (initialMessage) setPendingMessage(initialMessage);
     setOrderOpen(false);
     setChatOpen(true);
-  };
-
-  // Lets ChatWidget's "Place an Order" CTA and the Products page's
-  // per-card "Order" button open the same OrderPanel the sticky Order
-  // button does — same mutual-exclusivity rule (only one bottom-right
-  // popover at a time), just triggered from elsewhere in the page.
-  const handleOpenOrder = () => {
-    setChatOpen(false);
-    setOrderOpen(true);
   };
 
   // Lets the Contact page's card open the chat widget directly, same

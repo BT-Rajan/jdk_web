@@ -1,13 +1,18 @@
-# Let's Talk
+# Contact JDK Factory
 
-Ready to start a conversation? Use the button below to book time directly with our team, or start a chat with our AI assistant and it will connect you with the right person.
+## Kuwait
 
-## Ways to reach us
+We supply cement across Kuwait. Whether you need a quotation, want to place an order or need technical advice, our team is ready to help.
 
-- **Book a call** — pick a time that works for you below and we'll confirm by email.
-- **Chat with our assistant** — available around the clock for quick questions.
-- **Email** — reach out any time and we'll get back to you within one business day.
+## How to reach us
 
-## Where we work
+- **Order request** — use the Order button on any page to choose products and quantities; we will reply with a firm quote
+- **Chat** — ask our assistant about products, suitability and supply options
+- **Phone and email** — see the details below
 
-We support clients across India and the GCC, and we meet either virtually or in person — just let us know what works best for you when you book.
+## When you contact us, please include
+
+- The type of cement and the quantity you need
+- Whether you need bags or bulk
+- Your delivery location in Kuwait and the date you need it
+- Your project name and any specification requirements

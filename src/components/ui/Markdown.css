@@ -26,8 +26,26 @@
 }
 
 .markdown-content h1 { font-size: clamp(1.5rem, 2vw + 1rem, 2.25rem); }
-.markdown-content h2 { font-size: clamp(1.2rem, 1.4vw + 0.9rem, 1.55rem); }
-.markdown-content h3 { font-size: 1.1rem; }
+.markdown-content h2 { font-size: clamp(1.3rem, 1.4vw + 1rem, 1.75rem); letter-spacing: 0.01em; }
+.markdown-content h3 { font-size: 1.15rem; }
+
+/* The page's own title inside the panel: sits on a full-width fading
+   gold rule so it reads as the panel's header rather than just the
+   biggest heading in a wall of text. */
+.markdown-content h1 {
+  padding-bottom: var(--space-4);
+  margin-bottom: var(--space-2);
+  border-bottom: 1px solid transparent;
+  border-image: linear-gradient(90deg, color-mix(in srgb, var(--gold) 55%, transparent), transparent 85%) 1;
+}
+[dir="rtl"] .markdown-content h1 {
+  border-image: linear-gradient(270deg, color-mix(in srgb, var(--gold) 55%, transparent), transparent 85%) 1;
+}
+.markdown-content h2,
+.markdown-content h3 { break-after: avoid; }
+.markdown-content h2 { margin-top: var(--space-5); }
+.markdown-content > h2:first-child,
+.markdown-content > h1 + h2 { margin-top: var(--space-4); }
 
 .markdown-content p { max-width: 72ch; }
 
@@ -40,6 +58,9 @@
 }
 .markdown-content li { max-width: 68ch; }
 .markdown-content li::marker { color: var(--gold); }
+/* Small gold diamonds instead of default discs. */
+.markdown-content ul > li::marker { content: "\25C6\00a0\00a0"; font-size: 0.62em; }
+.markdown-content ol > li::marker { font-family: var(--font-display); font-weight: 700; }
 
 .markdown-content a {
   color: var(--blue-light);
@@ -62,4 +83,30 @@
   border: none;
   height: 1px;
   background: var(--glass-border);
+}
+
+/* ── Wide screens: flow the prose into two columns inside a content
+   panel, so a page of short sections fills the panel's width instead
+   of hugging the left edge with half of it empty. The page title
+   spans both columns; sections/lists never split across a column
+   break. Prose caps (72ch) are lifted here because the column width
+   already keeps line length comfortable. Below 1000px it's a single
+   column exactly as before. */
+@media (min-width: 1000px) {
+  .content-shell .markdown-content {
+    column-count: 2;
+    column-gap: clamp(var(--space-6), 5vw, var(--space-8));
+    column-rule: 1px solid color-mix(in srgb, var(--gold) 12%, transparent);
+  }
+  .content-shell .markdown-content > h1 { column-span: all; margin-bottom: var(--space-5); }
+  /* Both columns must start on the same line: the first section
+     heading loses its top margin (a column break already discards it
+     for the second column). */
+  .content-shell .markdown-content > h1 + h2 { margin-top: 0; }
+  .content-shell .markdown-content p,
+  .content-shell .markdown-content li { max-width: none; }
+  .content-shell .markdown-content ul,
+  .content-shell .markdown-content ol,
+  .content-shell .markdown-content p,
+  .content-shell .markdown-content blockquote { break-inside: avoid; }
 }

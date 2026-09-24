@@ -25,11 +25,11 @@
   flex-shrink: 0;
 }
 
-/* Matches the 100px desktop header override in TopBar.css — see the
+/* Matches the desktop header height (--header-h-lg) set in TopBar.css — see the
    comment there on why this can't just go through --header-h. */
 @media (min-width: 1025px) {
-  .hero-page { padding-top: calc(100px + var(--space-6)); }
-  .hero-section { scroll-margin-top: calc(100px + var(--space-4)); }
+  .hero-page { padding-top: calc(var(--header-h-lg) + var(--space-6)); }
+  .hero-section { scroll-margin-top: calc(var(--header-h-lg) + var(--space-4)); }
 }
 
 .hero-center {

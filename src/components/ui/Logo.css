@@ -8,14 +8,20 @@
   /* --logo-scale is set inline per the branding.logo_scale admin
      setting (0.5x–3x) — lets a logo with a lot of built-in padding be
      sized up to actually read next to the header text, without a
-     rebuild. max-height used to be pinned to the same 87px as the
-     unscaled height, which silently capped every scale above 1x right
-     back down to it — zooming in the admin panel visibly did nothing.
-     It's now well above the 1x height, so scaling up actually shows:
-     a logo taller than the 100px header is expected and fine (the
-     header has no overflow:hidden), the same "crest peeks past the
-     nav bar" look plenty of brand headers use. */
-  height: calc(87px * var(--logo-scale, 1));
+     rebuild. */
+
+  /* Desktop (>1024px) — sized to sit inside the 76px --header-h-lg
+     bar with breathing room above and below at 1x. The width cap is
+     generous so a wide lockup isn't squeezed; a square or tall logo is
+     simply bounded by the height instead.
+
+     max-height is deliberately well ABOVE the 1x height: pinning it
+     near the unscaled height silently caps every scale above 1x right
+     back down to it, so zooming in the admin panel visibly does
+     nothing. A logo taller than the header at high scales is expected
+     and fine (the header has no overflow:hidden) — the "crest peeks
+     past the nav bar" look plenty of brand headers use. */
+  height: calc(54px * var(--logo-scale, 1));
   width: auto; /* let width follow the image's natural aspect ratio */
   max-height: 150px;
   max-width: 420px;
@@ -48,12 +54,12 @@
 
 /* Tablet (768px–1024px) */
 @media (max-width: 1024px) {
-  .logo-img { height: calc(40px * var(--logo-scale, 1)); width: auto; max-height: 68px; max-width: 160px; }
+  .logo-img { height: calc(40px * var(--logo-scale, 1)); width: auto; max-height: 68px; max-width: 200px; }
   .logo-word { font-size: 1.1rem; }
 }
 
 /* Mobile (<768px) */
 @media (max-width: 767px) {
-  .logo-img { height: calc(36px * var(--logo-scale, 1)); width: auto; max-height: 58px; max-width: 140px; }
+  .logo-img { height: calc(34px * var(--logo-scale, 1)); width: auto; max-height: 58px; max-width: 160px; }
   .logo-word { font-size: 1.05rem; }
 }

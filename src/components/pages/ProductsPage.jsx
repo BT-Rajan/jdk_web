@@ -39,6 +39,27 @@ function formatPrice(product, currency, priceOnRequest) {
 }
 
 /**
+ * A product's admin-uploaded photo (Admin → Products → Product image),
+ * or the gold placeholder when there's none — or when the file fails
+ * to load (deleted upload, dead external URL), so a visitor never sees
+ * a broken-image icon.
+ */
+function ProductImage({ src, alt, className, lazy = false }) {
+  const [broken, setBroken] = useState(false);
+  useEffect(() => setBroken(false), [src]);
+
+  if (!src || broken) {
+    return <div className={`${className} ${className}-empty`} aria-hidden="true" />;
+  }
+  return (
+    <img
+      src={src} alt={alt} className={className} decoding="async"
+      loading={lazy ? "lazy" : undefined} onError={() => setBroken(true)}
+    />
+  );
+}
+
+/**
  * Product detail modal, opened by clicking any card in the grid below.
  * Every field — image, name, description, price, unit, data sheet —
  * comes straight off the clicked product object (the same live catalog
@@ -64,11 +85,7 @@ function ProductDetailModal({ product, onClose, primaryLabel, onPrimary, t, page
       >
         <button type="button" className="product-modal-close" onClick={onClose} aria-label={closeLabel}>×</button>
 
-        {product.imageUrl ? (
-          <img src={product.imageUrl} alt="" className="product-modal-image" />
-        ) : (
-          <div className="product-modal-image product-modal-image-empty" aria-hidden="true" />
-        )}
+        <ProductImage src={product.imageUrl} alt={product.name} className="product-modal-image" />
 
         <div className="product-modal-body">
           <h3 className="product-modal-name">{product.name}</h3>
@@ -164,11 +181,7 @@ export default function ProductsPage({ onBack, onNavigate, onOrder }) {
                   {/* A real <button> so the whole card is one clickable,
                       keyboard-reachable target that opens the detail modal. */}
                   <button type="button" className="product-card" onClick={() => setSelected(p)}>
-                    {p.imageUrl ? (
-                      <img src={p.imageUrl} alt="" className="product-card-image" />
-                    ) : (
-                      <div className="product-card-image product-card-image-empty" aria-hidden="true" />
-                    )}
+                    <ProductImage src={p.imageUrl} alt="" className="product-card-image" lazy />
                     <div className="product-card-body">
                       <h3 className="product-card-name">{p.name}</h3>
                       {p.description && <p className="product-card-desc">{p.description}</p>}

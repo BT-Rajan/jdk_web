@@ -131,8 +131,8 @@
   font-family: var(--font-ar);
   font-weight: 500;
 }
-.hero-tagline-line1 { font-weight: 600; color: var(--white-soft); }
-.hero-tagline-line2 { font-weight: 700; color: var(--gold); }
+.hero-tagline-line1 { font-weight: 500; color: var(--white-soft); }
+.hero-tagline-line2 { font-weight: 600; color: var(--gold); }
 
 .hero-supporting {
   max-width: 56ch;
@@ -192,7 +192,7 @@
   white-space: nowrap;
   transform-origin: center top;
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 500;
   /* Matches --fs-tagline (not --fs-hero) so the typed statement and
      the permanent tagline it hands off to render at the exact same
      pixel size — they occupy the same grid cell and crossfade in
@@ -479,7 +479,7 @@
 
 .hero-section h2 {
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 500;
   font-size: var(--fs-h2);
   background: linear-gradient(135deg, var(--gold) 0%, var(--gold-shade-2) 50%, var(--blue-light) 100%);
   -webkit-background-clip: text;

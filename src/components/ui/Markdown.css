@@ -11,7 +11,7 @@
 .markdown-content h2,
 .markdown-content h3 {
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.3;
   background: linear-gradient(135deg, var(--gold) 0%, var(--gold-shade-2) 50%, var(--blue-light) 100%);
   -webkit-background-clip: text;
@@ -25,9 +25,9 @@
   font-weight: 500;
 }
 
-.markdown-content h1 { font-size: clamp(1.5rem, 2vw + 1rem, 2.25rem); }
-.markdown-content h2 { font-size: clamp(1.3rem, 1.4vw + 1rem, 1.75rem); letter-spacing: 0.01em; }
-.markdown-content h3 { font-size: 1.15rem; }
+.markdown-content h1 { font-size: clamp(1.45rem, 1.8vw + 1rem, 2rem); }
+.markdown-content h2 { font-size: clamp(1.25rem, 1.2vw + 1rem, 1.6rem); letter-spacing: 0.01em; }
+.markdown-content h3 { font-size: 1.1rem; }
 
 /* The page's own title inside the panel: sits on a full-width fading
    gold rule so it reads as the panel's header rather than just the
@@ -60,7 +60,7 @@
 .markdown-content li::marker { color: var(--gold); }
 /* Small gold diamonds instead of default discs. */
 .markdown-content ul > li::marker { content: "\25C6\00a0\00a0"; font-size: 0.62em; }
-.markdown-content ol > li::marker { font-family: var(--font-display); font-weight: 700; }
+.markdown-content ol > li::marker { font-family: var(--font-display); font-weight: 600; }
 
 .markdown-content a {
   color: var(--blue-light);

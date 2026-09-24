@@ -65,7 +65,7 @@
   font-weight: 500;
 }
 
-.btn-primary {
+.settings-save-btn {
   background: var(--navy-950);
   color: #fff;
   border: none;
@@ -75,11 +75,11 @@
   font-weight: 600;
 }
 
-.btn-primary:hover:not(:disabled) {
+.settings-save-btn:hover:not(:disabled) {
   background: var(--navy-800);
 }
 
-.btn-primary:disabled {
+.settings-save-btn:disabled {
   opacity: 0.5;
   cursor: default;
 }

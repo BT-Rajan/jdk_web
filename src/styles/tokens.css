@@ -64,6 +64,7 @@
 
   /* ---- Derived: text/surface ---------------------------------------- */
   --white-soft: var(--brand-text);
+  --text: var(--brand-text); /* alias — OrderPanel.css reads this name */
   --white-pure: #ffffff;
 
   /* Secondary accents used sparingly for visual richness in gradients —

@@ -1,0 +1,22 @@
+/* Reuses the .logo-zoom-btn / -slider / -pct / -controls styles, which
+   are already loaded by LogoZoomControl.css on the same Settings page. */
+.showcase-scale-field { max-width: 420px; }
+
+.showcase-scale-preview {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 200px;
+  padding: var(--space-3);
+  margin-bottom: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--navy-950);
+  overflow: hidden;
+}
+.showcase-scale-img {
+  width: calc(100% * var(--showcase-scale, 1));
+  height: calc(100% * var(--showcase-scale, 1));
+  object-fit: contain;
+  object-position: left center;
+}
+.showcase-scale-empty { font-size: 12.5px; color: var(--text-faint); }

@@ -9,9 +9,14 @@
   position: fixed;
   z-index: 1000;
   right: calc(32px + env(safe-area-inset-right));
-  bottom: calc(130px + env(safe-area-inset-bottom));
-  width: min(400px, calc(100vw - 32px));
-  height: min(640px, calc(100dvh - 160px));
+  /* The floating Order/AI buttons are two 60px buttons + a 14px gap,
+     32px up from the corner (~166px). Docking at 184px keeps the whole
+     panel — Submit included — clear of them, instead of the old 130px
+     that left their top edge overlapping the panel's bottom. */
+  bottom: calc(184px + env(safe-area-inset-bottom));
+  /* Two columns need the width; the height comes down accordingly. */
+  width: min(760px, calc(100vw - 64px));
+  height: min(560px, calc(100dvh - 230px));
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -76,45 +81,106 @@
 .order-panel-body {
   flex: 1;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.order-panel-body form {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Two columns: tabbed form | products. Each scrolls on its own. */
+.order-panel-cols {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+}
+.order-panel-col {
+  min-height: 0;
   overflow-y: auto;
   padding: var(--space-4);
 }
-.order-panel-body::-webkit-scrollbar { width: 3px; }
-.order-panel-body::-webkit-scrollbar-thumb { background: var(--gold-border); border-radius: 2px; }
+.order-panel-col + .order-panel-col { border-inline-start: 1px solid var(--glass-border); }
+.order-panel-col::-webkit-scrollbar { width: 3px; }
+.order-panel-col::-webkit-scrollbar-thumb { background: var(--gold-border); border-radius: 2px; }
 
-.order-panel-body form {
+/* Tabs */
+.order-panel-tabs {
   display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.order-panel-section {
-  padding-bottom: var(--space-4);
-  margin-bottom: var(--space-4);
+  gap: 4px;
+  margin-bottom: var(--space-2);
   border-bottom: 1px solid var(--glass-border);
 }
-.order-panel-section:last-of-type {
-  border-bottom: none;
-  padding-bottom: 0;
-  margin-bottom: 0;
-}
-
-.order-panel-section-title {
+.order-panel-tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: -1px;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 0.78rem;
-  color: var(--text);
-  margin-bottom: var(--space-2);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
 }
+.order-panel-tab:hover { color: var(--text); }
+.order-panel-tab[aria-selected="true"] { color: var(--text); border-bottom-color: var(--gold); }
+.order-panel-tab:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
+.order-panel-tab-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--danger, #e05252);
+}
+.order-panel-tab-nav { margin-top: var(--space-4); }
 
-.order-panel-label {
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-top: var(--space-3);
+/* Pinned total + Submit bar */
+.order-panel-actions {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--glass-border);
+  background: color-mix(in srgb, var(--brand-bg) 85%, white 3%);
 }
+.order-panel-actions .order-panel-error { flex: 1 0 100%; margin: 0; }
+.order-panel-total { display: flex; flex-direction: column; gap: 2px; }
+.order-panel-total-label { font-size: 0.7rem; color: var(--muted); }
+.order-panel-actions .btn { min-width: 160px; }
+
+/* Field-level validation */
+.order-panel-field-error {
+  margin-top: 4px;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: var(--danger, #e05252);
+}
+.order-panel-body input[aria-invalid="true"],
+.order-panel-body textarea[aria-invalid="true"] { border-color: var(--danger, #e05252); }
+
+/* Quantity is now a typeable field between the − and + buttons */
+.order-panel-body input.order-panel-qty-input {
+  width: 54px;
+  padding: 4px 2px;
+  text-align: center;
+  font-weight: 600;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.order-panel-qty-input::-webkit-outer-spin-button,
+.order-panel-qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
 .order-panel-body input[type="text"],
 .order-panel-body input[type="email"],
@@ -227,17 +293,6 @@
   margin-top: var(--space-2);
 }
 
-.order-panel-total-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-top: var(--space-4);
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--glass-border);
-  font-size: 0.8rem;
-  color: var(--muted);
-}
-
 .order-panel-total-value {
   font-size: 1.1rem;
   font-weight: 700;
@@ -245,11 +300,11 @@
   font-family: var(--font-display);
 }
 
-.order-panel-body button[type="submit"] {
-  margin-top: var(--space-3);
-}
-
 .order-panel-success {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-4);
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -279,13 +334,22 @@
   border-top: 1px solid var(--glass-border);
 }
 
+/* Narrow screens: one column (the column area scrolls), action bar stays pinned. */
+@media (max-width: 640px) {
+  .order-panel-cols { display: block; overflow-y: auto; }
+  .order-panel-col { overflow: visible; }
+  .order-panel-col + .order-panel-col { border-inline-start: none; border-top: 1px solid var(--glass-border); }
+  .order-panel-actions .btn { flex: 1; min-width: 0; }
+}
+
 @media (max-width: 480px) {
   .order-panel {
     right: calc(16px + env(safe-area-inset-right));
     left: calc(16px + env(safe-area-inset-left));
-    bottom: calc(100px + env(safe-area-inset-bottom));
+    /* Buttons are 52px tall here: 2 × 52 + 14 gap + 24 from the corner. */
+    bottom: calc(160px + env(safe-area-inset-bottom));
     width: auto;
-    height: min(78dvh, calc(100dvh - 130px));
+    height: min(78dvh, calc(100dvh - 200px));
   }
   [dir="rtl"] .order-panel { left: calc(16px + env(safe-area-inset-left)); }
 }

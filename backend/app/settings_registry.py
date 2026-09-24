@@ -153,6 +153,11 @@ _DEFS: list[SettingDef] = [
                help_text="Display size of the logo image relative to its default — logos with a lot "
                           "of built-in padding often look small next to the header text at 1.0x.",
                validator=_float_range(0.5, 3.0)),
+    SettingDef("branding.logoGlow", "branding", "Logo glow", SettingType.FLOAT, 0.0,
+               help_text="Soft glow around the header logo. 0 = off; 1 = strongest.",
+               validator=_float_range(0.0, 1.0)),
+    SettingDef("branding.logoGlowColor", "branding", "Logo glow color", SettingType.COLOR, "#ffffff",
+               help_text="Color of the logo glow (white by default)."),
     SettingDef("branding.faviconUrl", "branding", "Favicon", SettingType.IMAGE, "/favicon.svg"),
     SettingDef("branding.metaDescription", "branding", "Search/share description", SettingType.TEXT,
                {"en": "JDK Factory — Kuwait-based cement manufacturer. Ordinary Portland and sulphate-resisting cement, "
@@ -249,6 +254,13 @@ _DEFS: list[SettingDef] = [
                help_text="How long the crossfade from the typed statement to the permanent tagline "
                           "(taglineLine1/taglineLine2) takes, in milliseconds.",
                validator=_int_range(200, 8000)),
+    # Size of the photo inside the homepage showcase (the cement bag).
+    # 1.0 = fills its frame; lower = zoomed out / smaller. Rendered by an
+    # admin slider (see src/admin/components/ShowcaseScaleControl.jsx).
+    SettingDef("theme.showcaseScale", "theme", "Showcase image size", SettingType.FLOAT, 1.0,
+               help_text="Size of the homepage showcase photo (e.g. the cement bag). "
+                          "Lower = smaller / zoomed out.",
+               validator=_float_range(0.3, 1.2)),
     # ── Pass 1 of the whole-page style system (surfaces + buttons).
     # Both are unified, cross-component toggles — one setting changes
     # every covered element at once, not per-component overrides. See
@@ -325,7 +337,12 @@ _DEFS: list[SettingDef] = [
     SettingDef("chat.llmProvider", "chat", "LLM provider", SettingType.ENUM, "none",
                choices=("none", "anthropic", "openai", "deepseek"),
                help_text="'none' disables real LLM calls; the assistant uses the fallback message below."),
-    SettingDef("chat.llmModel", "chat", "Model", SettingType.STRING, "claude-sonnet-4-6"),
+    SettingDef("chat.llmModel", "chat", "Model", SettingType.STRING, "claude-sonnet-4-6",
+               help_text="Must match the provider selected above — switching providers does not change "
+                          "this field automatically. E.g. for Anthropic: claude-sonnet-4-6; for OpenAI: "
+                          "gpt-4o-mini; for DeepSeek: deepseek-chat or deepseek-reasoner. A mismatched "
+                          "model (e.g. an Anthropic model name with DeepSeek selected) makes every "
+                          "request fail and the assistant silently show the fallback message below."),
     SettingDef("chat.llmApiKey", "chat", "API key", SettingType.STRING, "", secret=True),
     SettingDef("chat.maxTokens", "chat", "Max response tokens", SettingType.INT, 512,
                validator=_int_range(16, 4096)),

@@ -215,3 +215,27 @@
     transform: none;
   }
 }
+
+/* ── Arabic / RTL: the floating Order + AI Assistant buttons move to the
+   bottom-LEFT corner. The home showcase is pinned to the start edge,
+   which is the right side in RTL, so leaving these at the physical right
+   put them on top of it. Left also matches where the chat and order
+   popovers already open in RTL (see ChatWidget.css / OrderPanel.css), so
+   the button and the panel it opens now sit in the same corner. Declared
+   last, with :global([dir]) for extra specificity, so these win over the
+   physical `right` values above at every breakpoint. */
+:global([dir="rtl"]) .stickyContainer {
+  right: auto;
+  left: calc(32px + env(safe-area-inset-left));
+  align-items: flex-start;
+}
+:global([dir="rtl"]) .onlineDot {
+  right: auto;
+  left: -3px;
+}
+@media (max-width: 767px) {
+  :global([dir="rtl"]) .stickyContainer { left: calc(28px + env(safe-area-inset-left)); }
+}
+@media (max-width: 480px) {
+  :global([dir="rtl"]) .stickyContainer { left: calc(24px + env(safe-area-inset-left)); }
+}

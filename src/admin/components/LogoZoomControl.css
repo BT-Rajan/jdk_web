@@ -84,3 +84,23 @@
   font-size: 12.5px;
   color: var(--text-muted);
 }
+
+.logo-zoom-preview-img {
+  filter:
+    drop-shadow(0 0 calc(4px + 8px * var(--logo-glow, 0))
+      color-mix(in srgb, var(--logo-glow-color, #fff) calc(var(--logo-glow, 0) * 90%), transparent))
+    drop-shadow(0 0 calc(10px + 26px * var(--logo-glow, 0))
+      color-mix(in srgb, var(--logo-glow-color, #fff) calc(var(--logo-glow, 0) * 65%), transparent));
+}
+.logo-glow-label { display: block; margin-top: var(--space-4); }
+.logo-glow-off { flex: none; font-size: 12px; color: var(--text-faint); }
+.logo-glow-color {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: none;
+  cursor: pointer;
+}

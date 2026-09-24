@@ -18,6 +18,7 @@ from app.routers import (
     admin_leads,
     admin_products,
     admin_settings,
+    admin_showcase,
     admin_stats,
     admin_uploads,
     admin_webhooks,
@@ -26,6 +27,7 @@ from app.routers import (
     public_content,
     public_orders,
     public_products,
+    public_showcase,
 )
 
 # repo_root/backend/app/main.py -> repo_root
@@ -83,11 +85,13 @@ def create_app() -> FastAPI:
     app.include_router(admin_products.router)
     app.include_router(admin_stats.router)
     app.include_router(admin_knowledge.router)
+    app.include_router(admin_showcase.router)
     app.include_router(public_config.router)
     app.include_router(public_content.router)
     app.include_router(public_chat.router)
     app.include_router(public_products.router)
     app.include_router(public_orders.router)
+    app.include_router(public_showcase.router)
 
     app.mount("/uploads", StaticFiles(directory=str(settings.UPLOADS_DIR)), name="uploads")
 

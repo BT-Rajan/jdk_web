@@ -1,0 +1,222 @@
+/* ── Home showcase — looping photo slideshow pinned to the *start*
+   edge of the hero (left in English, right in Arabic), behind the
+   chat/headline column, which is centred on the page and may overlap
+   it (see .hero-body-row / .hero-body-main in Hero.css).
+
+   No background of any kind: no fill, no border, no mask, no panel.
+   Only the photo itself, a physical light bulb hanging above it, and
+   the soft cone of light that bulb throws down over the photo. All
+   colors come from the site's theme tokens.
+
+   Photo size is the admin's Settings > Theme > Showcase image size
+   slider (--showcase-scale, 1 = fills the frame). */
+.home-showcase {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  /* Pulled out to the page's own edge rather than the 1180px content
+     column: 0 when the viewport is narrower than the column, otherwise
+     back out by the side gutter. Logical, so Arabic mirrors it. */
+  inset-inline-start: min(0px, calc((var(--content-max) - 100vw) / 2 + var(--space-4)));
+  width: clamp(220px, 22vw, 380px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 1;
+  pointer-events: none;
+  animation: fade-in 0.8s var(--ease);
+}
+.home-showcase > * { pointer-events: none; }
+.home-showcase .home-showcase-dot { pointer-events: auto; }
+
+@media (max-width: 900px) {
+  .home-showcase {
+    position: relative;
+    inset-inline-start: auto;
+    top: auto;
+    bottom: auto;
+    width: min(100%, 320px);
+    margin-inline: auto;
+    padding-bottom: var(--space-4);
+  }
+}
+
+/* ── The bulb: cord from the top of the hero, glass bulb at the end,
+   and a soft warm halo around it. */
+.home-showcase-bulb {
+  position: relative;
+  flex: none;
+  z-index: 5;
+  height: 105px;
+  display: flex;
+  justify-content: center;
+}
+.home-showcase-bulb svg { display: block; position: relative; z-index: 1; overflow: visible; }
+.home-showcase-bulb-glass { filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.95)); }
+.home-showcase-bulb-halo {
+  position: absolute;
+  left: 50%;
+  bottom: -10px;
+  width: 170px;
+  height: 170px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.85) 0%,
+    rgba(255, 255, 255, 0.45) 18%,
+    rgba(255, 250, 235, 0.20) 38%,
+    rgba(255, 250, 235, 0.07) 58%,
+    rgba(255, 250, 235, 0) 72%
+  );
+  animation: showcase-bulb-glow 4.5s ease-in-out infinite;
+}
+@keyframes showcase-bulb-glow {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
+}
+
+/* Light falling from the bulb: pure white, brightest at the bulb and
+   easing out in every direction so it melts into the page instead of
+   ending in an edge. Two stacked elliptical gradients (a tight bright
+   core + a wide faint spread) with many small alpha steps — no
+   clip-path (a clip cuts the blur off and leaves a hard-edged grey
+   wedge), no hue, no blend mode. */
+.home-showcase-light {
+  position: absolute;
+  z-index: 4;
+  top: 70px;
+  left: 50%;
+  width: 190%;
+  height: min(92%, 720px);
+  transform: translateX(-50%);
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse 22% 62% at 50% 0%,
+      rgba(255, 255, 255, 0.30) 0%,
+      rgba(255, 255, 255, 0.20) 25%,
+      rgba(255, 255, 255, 0.10) 50%,
+      rgba(255, 255, 255, 0.04) 75%,
+      rgba(255, 255, 255, 0) 100%
+    ),
+    radial-gradient(
+      ellipse 46% 92% at 50% 0%,
+      rgba(255, 252, 240, 0.16) 0%,
+      rgba(255, 252, 240, 0.10) 30%,
+      rgba(255, 252, 240, 0.045) 55%,
+      rgba(255, 252, 240, 0.015) 78%,
+      rgba(255, 252, 240, 0) 100%
+    );
+  filter: blur(18px);
+}
+
+.home-showcase-frame {
+  position: relative;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  /* Very wide/tall screens: cap the height rather than grow taller than the viewport. */
+  max-height: 72dvh;
+  background: transparent;
+  isolation: isolate;
+}
+
+/* Slides stack in one spot and are shown purely by opacity. Only one is
+   ever visible (.is-active); every other slide sits at 0. The opacity
+   transition lives on the base rule, so removing .is-active fades the
+   photo OUT and adding it fades the next one IN — with the empty gap
+   between them timed in HomeShowcase.jsx (GAP_MS). */
+.home-showcase-slide {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  z-index: 0;
+  pointer-events: none;
+  transition: opacity var(--showcase-fade-ms, 2000ms) ease-in-out;
+}
+.home-showcase-slide.is-active { opacity: 1; z-index: 2; }
+
+.home-showcase-img {
+  position: relative;
+  display: block;
+  /* Admin size slider: the image box is the frame × --showcase-scale,
+     centred, so lowering it zooms the bag out around its own middle
+     (and keeps it under the bulb). */
+  width: calc(100% * var(--showcase-scale, 1));
+  height: calc(100% * var(--showcase-scale, 1));
+  object-fit: contain;
+  /* Follows the bag's own outline — not a panel. */
+  filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.35));
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.home-showcase-caption {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  padding: var(--space-6) var(--space-5) var(--space-4);
+  /* Extra bottom room when dots are shown beneath it. */
+  padding-bottom: calc(var(--space-4) + 22px);
+  color: var(--white-soft);
+  font-size: var(--fs-body);
+  line-height: 1.4;
+  text-align: start;
+  /* No panel behind the text — a shadow keeps it legible. */
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
+}
+
+.home-showcase-dots {
+  position: absolute;
+  inset-inline: 0;
+  bottom: var(--space-2);
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px;
+  padding-inline: var(--space-3);
+}
+/* 20px hit area around an 8px dot — a bare 8px target is too small to
+   tap reliably on a phone. */
+.home-showcase-dot {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+.home-showcase-dot::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--white-soft) 45%, transparent);
+  transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.home-showcase-dot:hover:not([aria-disabled="true"])::before { background: var(--white-soft); }
+.home-showcase-dot.is-active::before { background: var(--gold); transform: scale(1.25); }
+.home-showcase-dot[aria-disabled="true"] { cursor: default; }
+.home-showcase-dot:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; border-radius: 50%; }
+
+@media (max-width: 900px) {
+  .home-showcase-frame { aspect-ratio: 3 / 4; max-height: 60dvh; flex: none; }
+}
+
+@media (max-width: 600px) {
+  .home-showcase-caption { padding-inline: var(--space-4); font-size: var(--fs-sm); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-showcase { animation: none; }
+  .home-showcase-bulb-halo { animation: none; }
+  .home-showcase-slide { transition: none; }
+}

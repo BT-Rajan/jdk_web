@@ -39,17 +39,21 @@
      content itself instead, with generous but bounded breathing room,
      so identity/statement/tagline/CTA/composer land together in the
      first viewport instead of floating in the middle of one. */
-  min-height: min(78dvh, 720px);
+  /* Top-aligned (was vertically centred inside a ~78dvh box, which
+     pushed the headline a long way down the page). The row's own
+     min-height (.hero-body-row) keeps the showcase tall, so shrinking
+     this block doesn't shrink the bag. */
+  min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   text-align: center;
   gap: var(--space-5);
   max-width: 640px;
   width: 100%;
   position: relative;
-  padding-block: var(--space-7);
+  padding-block: 0 var(--space-7);
 }
 
 /* ── Headline — the page's signature visual now: a single-line,
@@ -73,15 +77,26 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
 }
+/* Hand-off from the typed statement to the permanent tagline.
+   Not a plain same-time crossfade (two half-transparent texts stacked
+   on each other is what made the switch noticeable): the statement
+   eases out and softens slightly, and the tagline starts a beat later,
+   easing in from the same softness — so at no point are two sharp
+   texts fighting for the same spot. Same sine in-out curve on both,
+   one shared duration (admin: theme.headlineDissolveMs). */
 .hero-headline-layer {
+  --hl-ease: cubic-bezier(0.45, 0, 0.55, 1);
   grid-area: 1 / 1;
   opacity: 1;
-  /* Admin-configurable — theme.headline_dissolve_ms (see applyTheme.js),
-     falls back to the site's original 2500ms if unset. */
-  transition: opacity var(--headline-dissolve-ms, 2500ms) var(--ease);
+  filter: blur(0);
+  transition:
+    opacity var(--headline-dissolve-ms, 2500ms) var(--hl-ease),
+    filter var(--headline-dissolve-ms, 2500ms) var(--hl-ease);
+  will-change: opacity, filter;
 }
 .hero-headline-layer.is-hidden {
   opacity: 0;
+  filter: blur(6px);
 }
 .hero-tagline-layer {
   display: flex;
@@ -89,11 +104,18 @@
   align-items: center;
   gap: 0.08em;
   opacity: 0;
-  transition: opacity var(--headline-dissolve-ms, 2500ms) var(--ease);
+  filter: blur(6px);
+  transform: translateY(6px);
+  transition:
+    opacity var(--headline-dissolve-ms, 2500ms) var(--hl-ease) calc(var(--headline-dissolve-ms, 2500ms) * 0.3),
+    filter var(--headline-dissolve-ms, 2500ms) var(--hl-ease) calc(var(--headline-dissolve-ms, 2500ms) * 0.3),
+    transform var(--headline-dissolve-ms, 2500ms) var(--hl-ease) calc(var(--headline-dissolve-ms, 2500ms) * 0.3);
   pointer-events: none;
 }
 .hero-tagline-layer.is-visible {
   opacity: 1;
+  filter: blur(0);
+  transform: translateY(0);
 }
 .hero-welcome-left .hero-tagline-layer { align-items: flex-start; }
 [dir="rtl"] .hero-welcome-left .hero-tagline-layer { align-items: flex-end; }
@@ -152,6 +174,8 @@
   .hero-tagline-layer {
     transition: none;
     animation: none;
+    filter: none;
+    transform: none;
   }
 }
 
@@ -507,6 +531,75 @@
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── hero-body-row — pairs the active layout template's content
+   (headline/quick-chat/nav, whichever template is chosen — see
+   Hero.jsx) with the photo showcase, side by side instead of the
+   showcase sitting stacked underneath. hero-body-main just wraps
+   whatever the layout already renders, so none of the four templates'
+   own markup or CSS changes; it only ever competes for width with the
+   showcase, never with the quick-chat composer inside it. When there's
+   no showcase (no active photos — HomeShowcase renders null) this
+   flex row has a single grown child and looks exactly like the old
+   single-column page.
+
+   The showcase is the row's first child (see Hero.jsx), so it sits at
+   the row's *start* edge — outdented further toward the true page
+   edge via margin-inline-start below, to give the chat/nav content
+   more breathing room instead of the two crowding each other in the
+   middle. Being a logical (inline-start) margin, this pushes the image
+   further left in English and — since the page flips dir="rtl" for
+   Arabic — further right in Arabic, automatically, with no separate
+   rule needed per language. The row's own gap is kept near zero (the
+   outdent above is what makes room on the *outer* side) so the
+   showcase and the chat content sit close together on their shared
+   inner edge instead of leaving a visible band between them. */
+.hero-body-row {
+  width: 100%;
+  min-height: min(78dvh, 720px);
+  max-width: var(--content-max);
+  display: flex;
+  align-items: stretch;
+  gap: clamp(0px, 0.6vw, 8px);
+  padding-top: var(--section-gap);
+  position: relative;
+}
+.hero-body-main {
+  flex: 1 1 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  /* Centred on the page (the showcase is pinned to the start edge
+     behind this column, not beside it), so the headline and chat box
+     sit in the middle and may overlap the showcase image. */
+  align-items: center;
+  /* Empty parts of this full-width column must not swallow clicks
+     meant for the showcase dots underneath; the real controls opt back
+     in below. */
+  pointer-events: none;
+  /* Sits visually in front of, and slightly above, the showcase —
+     it's the content the visitor acts on, so it should read as the
+     top layer of the two rather than two panels pinned at the same
+     height. Transform, not margin, so it doesn't change the row's own
+     stretch-driven height. */
+  position: relative;
+  z-index: 2;
+  transform: translateY(calc(-1 * var(--space-4)));
+}
+/* hero-body-main's own children (hero-center, hero-split-wrap, ...)
+   size themselves; stretch them to fill this column rather than
+   leaving them at their intrinsic centered width. */
+.hero-body-main > * { width: 100%; }
+.hero-body-main :is(a, button, input, textarea, select, label, .hero-quick-chat, .hero-section, .hero-card) {
+  pointer-events: auto;
+}
+
+/* Side-by-side only above tablet width; below it the showcase drops
+   underneath the layout content, same as it always used to sit. */
+@media (max-width: 900px) {
+  .hero-body-row { flex-direction: column; gap: var(--space-6); padding-top: 0; }
+  .hero-body-main { flex-basis: auto; transform: none; z-index: auto; pointer-events: auto; }
 }
 
 @media (max-width: 480px) {

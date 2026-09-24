@@ -81,8 +81,8 @@ export const SECTIONS = perLang((lang) =>
   )
 );
 
-// UI strings that exist only in the bundle (accessibility labels, voice
-// input messages) and are never edited through the admin panel.
+// UI strings that exist only in the bundle (accessibility labels, chat
+// button labels) and are never edited through the admin panel.
 const COMMON = {
   en: {
     close: "Close", back: "Back", send: "Send", quickMenu: "Quick menu",
@@ -97,23 +97,13 @@ const COMMON = {
 const CHAT_EXTRAS = {
   en: {
     poweredBy: "Powered by",
-    micLabel: "Talk",
-    micLabelListening: "Listening…",
-    micLabelSpeaking: "Speaking…",
-    micUnsupported: "Voice input isn't supported in this browser — try Chrome or Edge, or use the text box instead.",
-    micDenied: "Microphone access was blocked. Allow microphone access in your browser settings to talk to the assistant.",
-    muteTts: "Mute replies",
-    unmuteTts: "Unmute replies",
+    viewProductsCta: "View Products",
+    placeOrderCta: "Place an Order",
   },
   ar: {
     poweredBy: "بدعم من",
-    micLabel: "تحدث",
-    micLabelListening: "جارٍ الاستماع…",
-    micLabelSpeaking: "يتحدث الآن…",
-    micUnsupported: "الإدخال الصوتي غير مدعوم في هذا المتصفح — جرّب Chrome أو Edge، أو استخدم مربع الكتابة بدلاً من ذلك.",
-    micDenied: "تم حظر الوصول إلى الميكروفون. يرجى السماح بالوصول إليه من إعدادات المتصفح للتحدث مع المساعد.",
-    muteTts: "كتم الردود الصوتية",
-    unmuteTts: "تفعيل الردود الصوتية",
+    viewProductsCta: "عرض المنتجات",
+    placeOrderCta: "تقديم طلب",
   },
 };
 

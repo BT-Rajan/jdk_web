@@ -16,6 +16,7 @@ import BackgroundIntensityPicker from "../components/BackgroundIntensityPicker.j
 import DensityPicker from "../components/DensityPicker.jsx";
 import SectionRhythmPicker from "../components/SectionRhythmPicker.jsx";
 import LogoZoomControl from "../components/LogoZoomControl.jsx";
+import ShowcaseScaleControl from "../components/ShowcaseScaleControl.jsx";
 import WebhooksPage from "./WebhooksPage.jsx";
 import PagesPage from "./PagesPage.jsx";
 import FaqPage from "./FaqPage.jsx";
@@ -286,6 +287,8 @@ export default function SettingsPage() {
                     // number input for a zoom factor isn't useful without
                     // a live preview next to it.
                     if (field.key === "branding.logoScale") return null;
+                    // Rendered inside LogoZoomControl (right after the logo upload).
+                    if (field.key === "branding.logoGlow" || field.key === "branding.logoGlowColor") return null;
                     // Superseded by the picker galleries above — bare
                     // dropdowns of opaque ids aren't useful without the
                     // mini visual previews.
@@ -299,6 +302,16 @@ export default function SettingsPage() {
                     if (field.key === "theme.backgroundIntensity") return null;
                     if (field.key === "theme.density") return null;
                     if (field.key === "theme.sectionRhythm") return null;
+                    // Slider with live preview instead of a bare number box.
+                    if (field.key === "theme.showcaseScale") {
+                      return (
+                        <ShowcaseScaleControl
+                          key={field.key}
+                          scale={values[field.key]}
+                          onScaleChange={(v) => handleFieldChange(field.key, v)}
+                        />
+                      );
+                    }
                     return (
                       <div key={field.key}>
                         <SettingField
@@ -313,6 +326,10 @@ export default function SettingsPage() {
                             logoUrl={values["branding.logoUrl"]}
                             scale={values["branding.logoScale"]}
                             onScaleChange={(v) => handleFieldChange("branding.logoScale", v)}
+                            glow={values["branding.logoGlow"]}
+                            onGlowChange={(v) => handleFieldChange("branding.logoGlow", v)}
+                            glowColor={values["branding.logoGlowColor"]}
+                            onGlowColorChange={(v) => handleFieldChange("branding.logoGlowColor", v)}
                           />
                         )}
                       </div>

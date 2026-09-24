@@ -6,6 +6,7 @@ import DashboardLayout from "./pages/DashboardLayout.jsx";
 import OverviewPage from "./pages/OverviewPage.jsx";
 import LeadsPage from "./pages/LeadsPage.jsx";
 import ProductsPage from "./pages/ProductsPage.jsx";
+import ShowcasePage from "./pages/ShowcasePage.jsx";
 import SettingsPage from "./pages/SettingsPage.jsx";
 import KnowledgePage from "./pages/KnowledgePage.jsx";
 
@@ -64,6 +65,8 @@ export default function AdminApp() {
             <Route path="leads/:id" element={<LeadsPage />} />
             <Route path="products" element={<ProductsPage />} />
             <Route path="products/:id" element={<ProductsPage />} />
+            <Route path="showcase" element={<ShowcasePage />} />
+            <Route path="showcase/:id" element={<ShowcasePage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="settings/:category" element={<SettingsPage />} />
             <Route path="knowledge" element={<KnowledgePage />} />

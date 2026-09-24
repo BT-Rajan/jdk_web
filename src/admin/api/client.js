@@ -91,6 +91,20 @@ export const adminApi = {
   updateProduct: (id, body) => request(`admin/api/products/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
   deleteProduct: (id) => request(`admin/api/products/${id}`, { method: "DELETE" }),
 
+  // -- home showcase (photos in the public home page slideshow) --
+  listShowcase: () => request("admin/api/showcase"),
+  // Resolves to { created: [...], errors: [{ filename, detail }] } — a bad
+  // file is reported in `errors` without failing the good ones with it.
+  uploadShowcase: (files) => {
+    const formData = new FormData();
+    files.forEach((file) => formData.append("files", file));
+    return request("admin/api/showcase", { method: "POST", body: formData });
+  },
+  updateShowcase: (id, body) => request(`admin/api/showcase/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
+  deleteShowcase: (id) => request(`admin/api/showcase/${id}`, { method: "DELETE" }),
+  reorderShowcase: (orderedIds) =>
+    request("admin/api/showcase/reorder", { method: "POST", body: JSON.stringify({ orderedIds }) }),
+
   listSettingCategories: () => request("admin/api/settings/categories"),
   getSettingCategory: (category) => request(`admin/api/settings/${category}`),
   updateSettingCategory: (category, values) =>

@@ -42,9 +42,10 @@ function AppShell() {
     setOrderOpen((o) => !o);
   };
 
-  // Opens the order form directly (used by the Products page's "Request
-  // an Order" button) — unlike the sticky button this never toggles it
-  // closed, and it closes chat since both dock in the same corner.
+  // Opens the order form directly — used by the Products page's "Request
+  // an Order" button and by ChatWidget's "Place an Order" CTA. Unlike the
+  // sticky Order button this never toggles it closed, and it closes chat
+  // since both popovers dock in the same bottom-right corner.
   const handleOpenOrder = () => {
     setChatOpen(false);
     setOrderOpen(true);
@@ -101,6 +102,8 @@ function AppShell() {
         onClose={() => setChatOpen(false)}
         initialMessage={pendingMessage}
         onConsumeInitialMessage={() => setPendingMessage("")}
+        onNavigate={setPage}
+        onOrder={handleOpenOrder}
       />
 
       <OrderPanel open={orderOpen} onClose={() => setOrderOpen(false)} />

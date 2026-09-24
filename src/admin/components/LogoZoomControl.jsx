@@ -18,8 +18,10 @@ function clamp(v) {
  * Logo.css sizing formula (40px base × scale, capped) so what's shown
  * here matches what actually renders on the live site.
  */
-export default function LogoZoomControl({ logoUrl, scale, onScaleChange }) {
+export default function LogoZoomControl({ logoUrl, scale, onScaleChange, glow, onGlowChange, glowColor, onGlowColorChange }) {
   const safeScale = typeof scale === "number" && !Number.isNaN(scale) ? scale : 1;
+  const safeGlow = typeof glow === "number" && !Number.isNaN(glow) ? Math.min(1, Math.max(0, glow)) : 0;
+  const safeGlowColor = /^#[0-9a-fA-F]{6}$/.test(glowColor || "") ? glowColor : "#ffffff";
 
   function step(delta) {
     onScaleChange(Math.round(clamp(safeScale + delta) * 100) / 100);
@@ -37,7 +39,11 @@ export default function LogoZoomControl({ logoUrl, scale, onScaleChange }) {
         {logoUrl ? (
           <img
             className="logo-zoom-preview-img"
-            style={{ "--logo-scale": safeScale }}
+            style={{
+              "--logo-scale": safeScale,
+              "--logo-glow": safeGlow,
+              "--logo-glow-color": safeGlowColor,
+            }}
             src={logoUrl}
             alt="Logo preview"
           />
@@ -76,6 +82,33 @@ export default function LogoZoomControl({ logoUrl, scale, onScaleChange }) {
           +
         </button>
         <span className="logo-zoom-pct">{Math.round(safeScale * 100)}%</span>
+      </div>
+
+      <label className="setting-label logo-glow-label">Logo glow</label>
+      <p className="setting-help">
+        A soft glow around the logo, following its outline. Slide to 0 to turn it off.
+      </p>
+      <div className="logo-zoom-controls">
+        <span className="logo-glow-off">Off</span>
+        <input
+          type="range"
+          className="logo-zoom-slider"
+          min={0}
+          max={1}
+          step={0.05}
+          value={safeGlow}
+          onChange={(e) => onGlowChange(parseFloat(e.target.value))}
+          aria-label="Logo glow intensity"
+        />
+        <span className="logo-zoom-pct">{Math.round(safeGlow * 100)}%</span>
+        <input
+          type="color"
+          className="logo-glow-color"
+          value={safeGlowColor}
+          onChange={(e) => onGlowColorChange(e.target.value)}
+          aria-label="Logo glow color"
+          title="Glow color"
+        />
       </div>
     </div>
   );

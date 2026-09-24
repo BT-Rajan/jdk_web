@@ -20,7 +20,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-radius: 2px;
+  border-radius: var(--radius-lg);
   transform-origin: bottom right;
   animation: order-panel-in 0.4s var(--ease);
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6), 0 0 0 1px color-mix(in srgb, var(--gold) 8%, transparent);
@@ -46,8 +46,8 @@
 
 .order-panel-title {
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 1rem;
+  font-weight: 700;
+  font-size: 1.2rem;
   line-height: 1.2;
 }
 
@@ -141,7 +141,8 @@
   border-radius: 50%;
   background: var(--danger, #e05252);
 }
-.order-panel-tab-nav { margin-top: var(--space-4); }
+.order-panel-tab-nav { margin-top: var(--space-5); }
+.order-panel-tab-nav .btn { padding: 10px 20px; font-size: var(--fs-sm); }
 
 /* Pinned total + Submit bar */
 .order-panel-actions {
@@ -159,6 +160,33 @@
 .order-panel-total { display: flex; flex-direction: column; gap: 2px; }
 .order-panel-total-label { font-size: 0.7rem; color: var(--muted); }
 .order-panel-actions .btn { min-width: 160px; }
+
+/* Form labels + section heading — these classes were used in the markup
+   but had no rules, so labels rendered as raw 16px browser-default text
+   jammed against the fields below them. */
+.order-panel-label {
+  display: block;
+  margin: var(--space-4) 0 6px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted-strong);
+}
+.order-panel-tab-nav + .order-panel-label,
+.order-panel-tabs + .order-panel-label,
+.order-panel-tabs + * > .order-panel-label:first-child { margin-top: var(--space-3); }
+[dir="rtl"] .order-panel-label { letter-spacing: 0; text-transform: none; font-size: 0.78rem; }
+.order-panel-section-title {
+  margin: 0 0 var(--space-3);
+  padding-bottom: var(--space-2);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--gold);
+  border-bottom: 1px solid var(--glass-border);
+}
+[dir="rtl"] .order-panel-section-title { font-family: var(--font-ar); font-weight: 500; }
 
 /* Field-level validation */
 .order-panel-field-error {
@@ -191,9 +219,9 @@
   border: 1px solid var(--glass-border);
   background: color-mix(in srgb, var(--brand-bg) 90%, white 2%);
   color: var(--text);
-  border-radius: 2px;
-  padding: 8px 10px;
-  font-size: 0.85rem;
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 0.88rem;
   font-family: inherit;
   width: 100%;
 }
@@ -202,6 +230,7 @@
 .order-panel-body textarea:focus {
   outline: none;
   border-color: var(--gold);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 18%, transparent);
 }
 
 .order-panel-empty {
@@ -221,8 +250,8 @@
   justify-content: space-between;
   gap: var(--space-3);
   border: 1px solid var(--glass-border);
-  border-radius: 2px;
-  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
   transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
 }
 
@@ -267,7 +296,7 @@
   width: 24px;
   height: 24px;
   border: 1px solid var(--glass-border);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--brand-bg) 90%, white 2%);
   color: var(--text);
   font-size: 0.9rem;

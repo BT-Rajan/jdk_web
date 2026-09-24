@@ -78,5 +78,16 @@ cd "$BACKEND_DIR"
 echo "==> bootstrap admin account (only if none exists yet)"
 "$VENV_PY" scripts/seed_admin.py
 
+# Fills any MISSING site content (About / Products / Quality / Contact
+# pages, FAQ, on-screen text, product catalog) and rewrites legacy brand
+# text stored in the DB. Safe on every deploy: it never overwrites what an
+# admin has edited (use `scripts/seed_content.py --force` to replace).
+# Non-fatal — a content problem must not block the app itself from deploying.
+echo "==> seed site content"
+if ! "$VENV_PY" scripts/seed_content.py; then
+  echo "WARNING: content seed failed — the site will use its bundled fallback content." >&2
+  echo "         Fix the error above, then run: $VENV_PY $BACKEND_DIR/scripts/seed_content.py" >&2
+fi
+
 echo
 echo "Setup complete."

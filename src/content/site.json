@@ -1,0 +1,236 @@
+{
+  "_readme": "Single source of truth for the site's structured content. Read by BOTH the frontend bundled fallback (src/data/content.js, src/data/pages.js) and the backend seed (backend/scripts/seed_content.py). Page BODIES live in src/content/<lang>/<slug>.md. Edit here + in the .md files, then re-run seed_content.py --force to push to the admin panel.",
+  "pageOrder": ["about", "products", "quality", "contact"],
+  "pages": {
+    "about": {
+      "en": {
+        "navLabel": "About",
+        "sectionTitle": "About JDK Factory",
+        "sectionBody": "JDK Factory is a Kuwait-based cement manufacturer supplying consistent, laboratory-tested cement — in bags and in bulk — to projects across the country.",
+        "taglineLine1": "Who We ",
+        "taglineLine2": "Are",
+        "taglineSub": "CEMENT MANUFACTURER · KUWAIT"
+      },
+      "ar": {
+        "navLabel": "من نحن",
+        "sectionTitle": "عن JDK Factory",
+        "sectionBody": "JDK Factory شركة كويتية لتصنيع الأسمنت، تورّد أسمنتاً متجانس الجودة ومفحوصاً مخبرياً — في أكياس أو سائباً — لمشاريع في مختلف أنحاء الدولة.",
+        "taglineLine1": "من ",
+        "taglineLine2": "نحن",
+        "taglineSub": "مصنع أسمنت · الكويت"
+      }
+    },
+    "products": {
+      "en": {
+        "navLabel": "Products",
+        "sectionTitle": "Products",
+        "sectionBody": "Ordinary Portland and sulphate-resisting cement, supplied in 50 kg bags and in bulk.",
+        "taglineLine1": "Our ",
+        "taglineLine2": "Cement",
+        "taglineSub": "OPC · SULPHATE RESISTING · BAGGED & BULK"
+      },
+      "ar": {
+        "navLabel": "المنتجات",
+        "sectionTitle": "المنتجات",
+        "sectionBody": "الأسمنت البورتلاندي العادي والأسمنت المقاوم للكبريتات، في أكياس 50 كجم وبالتحميل السائب.",
+        "taglineLine1": "منتجات ",
+        "taglineLine2": "الأسمنت",
+        "taglineSub": "عادي · مقاوم للكبريتات · أكياس وسائب"
+      }
+    },
+    "quality": {
+      "en": {
+        "navLabel": "Quality",
+        "sectionTitle": "Quality",
+        "sectionBody": "Controlled production and laboratory-tested batches, so every delivery performs the way your design assumes.",
+        "taglineLine1": "Built on ",
+        "taglineLine2": "Quality",
+        "taglineSub": "TESTED · TRACEABLE · CONSISTENT"
+      },
+      "ar": {
+        "navLabel": "الجودة",
+        "sectionTitle": "الجودة",
+        "sectionBody": "إنتاج خاضع للرقابة ودفعات مفحوصة مخبرياً، ليؤدي كل توريد كما يفترض تصميمك.",
+        "taglineLine1": "نبني على ",
+        "taglineLine2": "الجودة",
+        "taglineSub": "مفحوص · قابل للتتبع · متجانس"
+      }
+    },
+    "contact": {
+      "en": {
+        "navLabel": "Contact Us",
+        "sectionTitle": "Contact Us",
+        "sectionBody": "Request a quote, place an order or get technical advice — our team in Kuwait is ready to help.",
+        "taglineLine1": "Get in ",
+        "taglineLine2": "Touch",
+        "taglineSub": "KUWAIT"
+      },
+      "ar": {
+        "navLabel": "تواصل معنا",
+        "sectionTitle": "تواصل معنا",
+        "sectionBody": "اطلب عرض سعر أو قدّم طلب شراء أو احصل على استشارة فنية — فريقنا في الكويت جاهز لخدمتك.",
+        "taglineLine1": "تواصل ",
+        "taglineLine2": "معنا",
+        "taglineSub": "الكويت"
+      }
+    }
+  },
+  "faq": [
+    {
+      "en": {
+        "q": "What types of cement do you supply?",
+        "a": "We supply Ordinary Portland Cement (OPC) for general construction and Sulphate Resisting Cement (SRC) for foundations and structures exposed to sulphate-bearing soil or groundwater. See the Products page for the current range."
+      },
+      "ar": {
+        "q": "ما أنواع الأسمنت التي توفرونها؟",
+        "a": "نورّد الأسمنت البورتلاندي العادي (OPC) للأعمال الإنشائية العامة، والأسمنت المقاوم للكبريتات (SRC) للأساسات والمنشآت المعرّضة للتربة أو المياه الجوفية الحاوية على الكبريتات. يمكنك الاطلاع على المنتجات الحالية في صفحة المنتجات."
+      }
+    },
+    {
+      "en": {
+        "q": "Do you supply cement in bags and in bulk?",
+        "a": "Yes. Cement is available in 50 kg bags for smaller works and in bulk for ready-mix plants, precast yards and large projects."
+      },
+      "ar": {
+        "q": "هل تورّدون الأسمنت في أكياس وسائباً؟",
+        "a": "نعم. يتوفر الأسمنت في أكياس 50 كجم للأعمال الأصغر، وسائباً لمحطات الخرسانة الجاهزة ومصانع الخرسانة مسبقة الصب والمشاريع الكبيرة."
+      }
+    },
+    {
+      "en": {
+        "q": "Which cement should I use for foundations?",
+        "a": "Sulphate Resisting Cement is commonly specified where the soil or groundwater contains sulphates, which is frequent in Kuwait. OPC suits general structural work. Always confirm the cement type against your engineer's specification."
+      },
+      "ar": {
+        "q": "ما الأسمنت المناسب للأساسات؟",
+        "a": "يُحدَّد الأسمنت المقاوم للكبريتات عادةً عندما تحتوي التربة أو المياه الجوفية على كبريتات، وهو أمر شائع في الكويت. أما الأسمنت العادي فيناسب الأعمال الإنشائية العامة. يرجى دائماً التأكد من نوع الأسمنت مع مواصفات المهندس المسؤول."
+      }
+    },
+    {
+      "en": {
+        "q": "How do I place an order or get a quote?",
+        "a": "Use the Order button on any page to choose products and quantities and tell us when you need them. Our team will reply with a firm quote. You can also chat with our assistant or contact us directly."
+      },
+      "ar": {
+        "q": "كيف أقدّم طلباً أو أحصل على عرض سعر؟",
+        "a": "استخدم زر الطلب في أي صفحة لاختيار المنتجات والكميات وتحديد موعد حاجتك إليها، وسيردّ عليك فريقنا بعرض سعر نهائي. يمكنك أيضاً التحدث مع مساعدنا أو التواصل معنا مباشرة."
+      }
+    },
+    {
+      "en": {
+        "q": "Can I get test results for a delivery?",
+        "a": "Please contact our team with your delivery details and we will help with test results and technical data sheets."
+      },
+      "ar": {
+        "q": "هل يمكنني الحصول على نتائج الفحص لشحنة معيّنة؟",
+        "a": "يرجى التواصل مع فريقنا مع تفاصيل الشحنة، وسنساعدك في الحصول على نتائج الفحص والنشرات الفنية."
+      }
+    },
+    {
+      "en": {
+        "q": "Where are you located?",
+        "a": "We are based in Kuwait and supply projects across the country. See the Contact page for our details."
+      },
+      "ar": {
+        "q": "أين يقع مقركم؟",
+        "a": "مقرنا في الكويت، ونورّد لمشاريع في مختلف أنحاء الدولة. تجد بيانات التواصل في صفحة تواصل معنا."
+      }
+    }
+  ],
+  "copyHome": {
+    "en": {
+      "welcome": "Welcome to JDK Factory",
+      "tagline": "Quality cement, in bags and in bulk",
+      "heroStatement": "Quality Cement\nBuilt for Kuwait",
+      "taglineLine1": "Building Today.",
+      "taglineLine2": "Strengthening Tomorrow.",
+      "supportingText": "Portland and sulphate-resisting cement, supplied across Kuwait.",
+      "examplePrompts": [
+        "Which cement is right for my project?",
+        "What's the difference between OPC and SRC?",
+        "How do I request a quote?"
+      ],
+      "hint": "Start chatting",
+      "langSwitch": "AR | عربي"
+    },
+    "ar": {
+      "welcome": "مرحبا بك في JDK Factory",
+      "tagline": "أسمنت عالي الجودة، في أكياس أو سائباً",
+      "heroStatement": "أسمنت عالي الجودة\nمصنوع للكويت",
+      "taglineLine1": "نبني اليوم.",
+      "taglineLine2": "ونُرسّخ الغد.",
+      "supportingText": "أسمنت بورتلاندي ومقاوم للكبريتات، نورّده إلى مختلف أنحاء الكويت.",
+      "examplePrompts": [
+        "ما نوع الأسمنت المناسب لمشروعي؟",
+        "ما الفرق بين الأسمنت العادي والمقاوم للكبريتات؟",
+        "كيف أطلب عرض سعر؟"
+      ],
+      "hint": "ابدأ المحادثة",
+      "langSwitch": "EN | English"
+    }
+  },
+  "copyChat": {
+    "en": {
+      "taglineLine1": "Building Today. ",
+      "taglineLine2": "Strengthening Tomorrow.",
+      "sub": "CEMENT · KUWAIT",
+      "header": "JDK Factory Assistant",
+      "onlineStatus": "Online · JDK Factory Assistant",
+      "faqTitle": "Quick Questions",
+      "inputPlaceholder": "Ask JDK Factory anything…",
+      "welcomeMsg": "Hello! I'm JDK Factory's assistant. May I know your name? It helps us follow up on your enquiry properly.",
+      "langSwitch": "AR | عربي"
+    },
+    "ar": {
+      "taglineLine1": "نبني اليوم. ",
+      "taglineLine2": "ونُرسّخ الغد.",
+      "sub": "أسمنت · الكويت",
+      "header": "مساعد JDK Factory",
+      "onlineStatus": "متصل الآن · مساعد JDK Factory",
+      "faqTitle": "أسئلة سريعة",
+      "inputPlaceholder": "اسأل JDK Factory أي شيء…",
+      "welcomeMsg": "مرحباً! أنا مساعد JDK Factory. هل لي أن أعرف اسمك؟ يساعدنا ذلك على متابعة استفسارك بشكل صحيح.",
+      "langSwitch": "EN | English"
+    }
+  },
+  "settings": {
+    "branding.metaDescription": {
+      "en": "JDK Factory — Kuwait-based cement manufacturer. Ordinary Portland and sulphate-resisting cement, in bags and in bulk.",
+      "ar": "JDK Factory — مصنع أسمنت كويتي. أسمنت بورتلاندي عادي ومقاوم للكبريتات، في أكياس وسائباً."
+    },
+    "contact.address": {
+      "en": "Kuwait",
+      "ar": "الكويت"
+    },
+    "chat.systemPrompt": {
+      "en": "You are JDK Factory's assistant. JDK Factory is a Kuwait-based cement manufacturer. Be warm, concise and professional. Early in the conversation, ask the visitor's name so the team can follow up. Help visitors understand our cement products (Ordinary Portland Cement and Sulphate Resisting Cement, in 50 kg bags and in bulk), our quality and testing, and how to request an order or quote. Do not state prices, delivery dates, certifications or capacities unless they appear in the knowledge provided to you; instead invite the visitor to submit an order request or contact the team. Remind visitors to confirm the cement type against their engineer's specification.",
+      "ar": "أنت المساعد الذكي لشركة JDK Factory، وهي شركة كويتية لتصنيع الأسمنت. كن ودودًا ومختصرًا ومحترفًا. في وقت مبكر من المحادثة، اسأل الزائر عن اسمه ليتمكن الفريق من المتابعة. ساعد الزوار على فهم منتجاتنا من الأسمنت (الأسمنت البورتلاندي العادي والأسمنت المقاوم للكبريتات، في أكياس 50 كجم وسائباً)، وجودتنا وفحوصاتنا، وكيفية طلب الشراء أو عرض السعر. لا تذكر أسعارًا أو مواعيد تسليم أو شهادات أو طاقات إنتاجية ما لم ترد في المعلومات المتوفرة لديك، وادعُ الزائر بدلًا من ذلك إلى تقديم طلب شراء أو التواصل مع الفريق. ذكّر الزوار بالتأكد من نوع الأسمنت مع مواصفات المهندس المسؤول."
+    }
+  },
+  "products": [
+    {
+      "name": "Ordinary Portland Cement (OPC) — 50 kg bag",
+      "description": "General-purpose Portland cement for structural concrete, slabs, columns, blockwork, plaster and screed. Supplied in 50 kg bags.",
+      "unit": "50 kg bag",
+      "price": 0
+    },
+    {
+      "name": "Ordinary Portland Cement (OPC) — Bulk",
+      "description": "General-purpose Portland cement for ready-mix plants, precast yards and large projects. Supplied in bulk, priced by the tonne.",
+      "unit": "tonne",
+      "price": 0
+    },
+    {
+      "name": "Sulphate Resisting Cement (SRC) — 50 kg bag",
+      "description": "For foundations, basements and structures in contact with sulphate-bearing soil or groundwater. Supplied in 50 kg bags.",
+      "unit": "50 kg bag",
+      "price": 0
+    },
+    {
+      "name": "Sulphate Resisting Cement (SRC) — Bulk",
+      "description": "Sulphate-resisting cement for large foundations, piling and marine or groundwater-exposed works. Supplied in bulk, priced by the tonne.",
+      "unit": "tonne",
+      "price": 0
+    }
+  ]
+}

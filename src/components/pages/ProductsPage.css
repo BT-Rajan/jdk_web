@@ -1,0 +1,94 @@
+.products-range-title {
+  margin-top: var(--space-6);
+}
+
+.products-loading {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+
+.products-grid {
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: var(--space-4);
+}
+
+.product-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--glass) 70%, transparent);
+  border: 1px solid var(--glass-border);
+  border-top: 2px solid var(--gold);
+  transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+.product-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--gold-border);
+  border-top-color: var(--gold);
+}
+
+.product-card-name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--white-pure);
+}
+[dir="rtl"] .product-card-name { font-family: var(--font-ar); }
+
+.product-card-desc {
+  margin: 0;
+  flex: 1;
+  font-size: var(--fs-sm);
+  color: var(--muted-strong);
+  line-height: 1.55;
+}
+
+.product-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid color-mix(in srgb, var(--white-soft) 10%, transparent);
+  font-size: var(--fs-sm);
+}
+.product-card-unit {
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--gold-border);
+  color: var(--gold);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.product-card-price {
+  color: var(--white-soft);
+  font-weight: 600;
+}
+
+.products-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  text-align: center;
+}
+.products-cta-hint {
+  margin: 0;
+  color: var(--muted-strong);
+  font-size: var(--fs-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-card { transition: none; }
+  .product-card:hover { transform: none; }
+}

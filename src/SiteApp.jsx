@@ -5,12 +5,13 @@ import ChatWidget from "./components/chat/ChatWidget.jsx";
 import OrderPanel from "./components/order/OrderPanel.jsx";
 import ContentPage from "./components/pages/ContentPage.jsx";
 import ContactPage from "./components/pages/ContactPage.jsx";
+import ProductsPage from "./components/pages/ProductsPage.jsx";
 import StickyChat from "./components/StickyChat.jsx";
 
 // Pages with dedicated components — every other page id routes through
 // the generic, Markdown-driven ContentPage, so an admin can add a new
 // page (any slug) with zero code changes on this end.
-const SPECIAL_PAGE_IDS = new Set(["home", "contact"]);
+const SPECIAL_PAGE_IDS = new Set(["home", "contact", "products"]);
 
 function AppShell() {
   const [page, setPage] = useState("home"); // "home" | "contact" | any configured page slug
@@ -41,6 +42,14 @@ function AppShell() {
     setOrderOpen((o) => !o);
   };
 
+  // Opens the order form directly (used by the Products page's "Request
+  // an Order" button) — unlike the sticky button this never toggles it
+  // closed, and it closes chat since both dock in the same corner.
+  const handleOpenOrder = () => {
+    setChatOpen(false);
+    setOrderOpen(true);
+  };
+
   const handleHeroEnter = (initialMessage) => {
     if (initialMessage) setPendingMessage(initialMessage);
     setOrderOpen(false);
@@ -65,6 +74,9 @@ function AppShell() {
       <div className={`app-page-content ${anyPopoverOpen ? "app-page-content-dimmed" : ""}`.trim()}>
         {page === "home" && <Hero onEnter={handleHeroEnter} onNavigate={setPage} />}
         {page === "contact" && <ContactPage onBack={() => setPage("home")} onNavigate={setPage} />}
+        {page === "products" && (
+          <ProductsPage onBack={() => setPage("home")} onNavigate={setPage} onOrder={handleOpenOrder} />
+        )}
         {!SPECIAL_PAGE_IDS.has(page) && (
           <ContentPage pageId={page} onBack={() => setPage("home")} onNavigate={setPage} />
         )}

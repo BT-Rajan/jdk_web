@@ -1,209 +1,131 @@
 // ──────────────────────────────────────────────────────────
-// Central content store. In the original app this is admin-
-// editable and served from the backend; here it's a plain data
-// module so the same shape can later be swapped for an API call
-// (see src/api/client.js) without touching any component.
+// Central content store — the bundled *fallback* content. Live
+// content comes from the backend/admin panel (see src/api/ and
+// src/data/siteContent.js); this module is what renders when the
+// backend is unreachable or hasn't been populated yet.
+//
+// Nav labels, home teasers, FAQ and the home/chat copy come from
+// src/content/site.json, which the backend seed
+// (backend/scripts/seed_content.py) reads too — one source of truth.
 // ──────────────────────────────────────────────────────────
+import site from "../content/site.json";
 
 export const BRAND = {
   name: "JDK Factory",
   wordmarkAr: "JDK Factory",
 };
 
+const LANGS = ["en", "ar"];
+const perLang = (fn) => Object.fromEntries(LANGS.map((lang) => [lang, fn(lang)]));
+
 // Top-level site sections, mirrored in the header nav menu and the
 // in-chat quick-access tray so both stay in sync from one place.
-export const NAV = {
-  en: [
-    { id: "about", label: "About" },
-    { id: "products", label: "Products" },
-    { id: "services", label: "Services" },
-    { id: "contact", label: "Contact Us" },
-  ],
-  ar: [
-    { id: "about", label: "من نحن" },
-    { id: "products", label: "المنتجات" },
-    { id: "services", label: "الخدمات" },
-    { id: "contact", label: "تواصل معنا" },
-  ],
-};
+export const NAV = perLang((lang) =>
+  site.pageOrder.map((slug) => ({ id: slug, label: site.pages[slug][lang].navLabel }))
+);
 
 // Homepage "topic" buttons (hero-sections / hero-card-pills). Unlike
-// NAV/SECTIONS above these don't navigate to a page — clicking one
-// hands its `question` straight to the AI Assistant chat (see
-// Hero.jsx handleTopicClick), so the button IS the entry point into
-// a relevant conversation rather than a page link.
+// NAV/SECTIONS these don't navigate to a page — clicking one hands its
+// `question` straight to the assistant chat (see Hero.jsx
+// handleTopicClick), so the button IS the entry point into a relevant
+// conversation rather than a page link.
 export const HOME_TOPICS = {
   en: [
     {
-      id: "artificial-intelligence",
-      label: "Artificial Intelligence",
-      body: "AI assistants, automation, and intelligent workflows tailored to your business.",
-      question: "Tell us about Artificial Intelligence at JDK Factory.",
+      id: "cement-products",
+      label: "Cement Products",
+      body: "Ordinary Portland and sulphate-resisting cement, in 50 kg bags and in bulk.",
+      question: "Tell us about the cement products JDK Factory supplies.",
     },
     {
-      id: "software-development",
-      label: "Software Development",
-      body: "Custom web, mobile, and enterprise software built around how your team actually works.",
-      question: "Tell us about Software Development at JDK Factory.",
+      id: "quality-testing",
+      label: "Quality & Testing",
+      body: "Controlled production and laboratory-tested batches for consistent performance.",
+      question: "How does JDK Factory ensure cement quality and testing?",
     },
     {
-      id: "digital-transformation",
-      label: "Digital Transformation",
-      body: "Modernizing processes and systems to help your organization move faster.",
-      question: "Tell us about Digital Transformation at JDK Factory.",
+      id: "supply-ordering",
+      label: "Supply & Ordering",
+      body: "Bagged and bulk supply across Kuwait — request an order and get a firm quote.",
+      question: "How do I order cement from JDK Factory, in bags or in bulk?",
     },
   ],
   ar: [
     {
-      id: "artificial-intelligence",
-      label: "الذكاء الاصطناعي",
-      body: "مساعدون بالذكاء الاصطناعي وأتمتة وسير عمل ذكي مصمم خصيصًا لعملك.",
-      question: "أخبرنا عن الذكاء الاصطناعي في JDK Factory.",
+      id: "cement-products",
+      label: "منتجات الأسمنت",
+      body: "أسمنت بورتلاندي عادي ومقاوم للكبريتات، في أكياس 50 كجم وسائباً.",
+      question: "أخبرنا عن منتجات الأسمنت التي تورّدها JDK Factory.",
     },
     {
-      id: "software-development",
-      label: "تطوير البرمجيات",
-      body: "برمجيات وتطبيقات ويب وجوال وحلول مؤسسية مصممة وفق طريقة عمل فريقك.",
-      question: "أخبرنا عن تطوير البرمجيات في JDK Factory.",
+      id: "quality-testing",
+      label: "الجودة والفحص",
+      body: "إنتاج خاضع للرقابة ودفعات مفحوصة مخبرياً لأداء متجانس.",
+      question: "كيف تضمن JDK Factory جودة الأسمنت وفحوصاته؟",
     },
     {
-      id: "digital-transformation",
-      label: "التحول الرقمي",
-      body: "تحديث الأنظمة والعمليات لمساعدة مؤسستك على العمل بشكل أسرع.",
-      question: "أخبرنا عن التحول الرقمي في JDK Factory.",
+      id: "supply-ordering",
+      label: "التوريد والطلب",
+      body: "توريد في أكياس وسائباً في مختلف أنحاء الكويت — قدّم طلبك واحصل على عرض سعر نهائي.",
+      question: "كيف أطلب الأسمنت من JDK Factory، في أكياس أو سائباً؟",
     },
   ],
 };
 
-export const SECTIONS = {
+export const SECTIONS = perLang((lang) =>
+  Object.fromEntries(
+    site.pageOrder.map((slug) => [
+      slug,
+      { title: site.pages[slug][lang].sectionTitle, body: site.pages[slug][lang].sectionBody },
+    ])
+  )
+);
+
+// UI strings that exist only in the bundle (accessibility labels, voice
+// input messages) and are never edited through the admin panel.
+const COMMON = {
   en: {
-    about: {
-      title: "About JDK Factory",
-      body: "JDK Factory is an AI-powered technology and innovation company. We partner with businesses to design, build, and operate intelligent products — from first concept through to production support.",
-    },
-    products: {
-      title: "Products",
-      body: "AI assistants, automation workflows, and custom digital platforms — built on modern stacks and tuned to how your team actually works.",
-    },
-    services: {
-      title: "Services",
-      body: "Consulting, product design, and full-cycle engineering. We embed with your team or run the build end-to-end, whichever fits your roadmap.",
-    },
-    contact: {
-      title: "Contact Us",
-      body: "Ready to talk? Start a chat below and our assistant will connect you with the right person.",
-    },
+    close: "Close", back: "Back", send: "Send", quickMenu: "Quick menu",
+    primaryNav: "Primary", goHome: "Go to home", assistantTyping: "Assistant is typing",
   },
   ar: {
-    about: {
-      title: "عن JDK Factory",
-      body: "JDK Factory شركة تقنية وابتكار مدعومة بالذكاء الاصطناعي. نتعاون مع الشركات لتصميم وبناء وتشغيل منتجات ذكية — من الفكرة الأولى وحتى الدعم الإنتاجي.",
-    },
-    products: {
-      title: "المنتجات",
-      body: "مساعدون بالذكاء الاصطناعي، وأتمتة سير العمل، ومنصات رقمية مخصصة — مبنية على تقنيات حديثة ومصممة لتناسب طريقة عمل فريقك.",
-    },
-    services: {
-      title: "الخدمات",
-      body: "استشارات، وتصميم منتجات، وهندسة متكاملة. نندمج مع فريقك أو ننفذ المشروع بالكامل، وفق ما يناسب خطتك.",
-    },
-    contact: {
-      title: "تواصل معنا",
-      body: "جاهز للتحدث؟ ابدأ محادثة أدناه وسيقوم مساعدنا بتوصيلك بالشخص المناسب.",
-    },
+    close: "إغلاق", back: "رجوع", send: "إرسال", quickMenu: "قائمة سريعة",
+    primaryNav: "الأساسية", goHome: "الذهاب إلى الرئيسية", assistantTyping: "المساعد يكتب",
   },
 };
 
-export const COPY = {
+const CHAT_EXTRAS = {
   en: {
-    dir: "ltr",
-    common: {
-      close: "Close", back: "Back", send: "Send", quickMenu: "Quick menu",
-      primaryNav: "Primary", goHome: "Go to home", assistantTyping: "Assistant is typing",
-    },
-    home: {
-      welcome: "Welcome to JDK Factory",
-      tagline: "Visit our V-Lounge for more",
-      heroStatement: "Practical AI\nBuilt for Businesses",
-      taglineLine1: "Solving Today.",
-      taglineLine2: "Shaping Tomorrow.",
-      supportingText: "Digital products for businesses across India and the GCC.",
-      examplePrompts: ["What does JDK Factory build?", "How can JDK Factory help my business?", "Explore our products"],
-      hint: "Start chatting",
-      langSwitch: "AR | عربي",
-    },
-    chat: {
-      taglineLine1: "Solving Today. ",
-      taglineLine2: "Shaping Tomorrow.",
-      sub: "AI-POWERED TECHNOLOGY & INNOVATION",
-      header: "AI Assistant",
-      onlineStatus: "Online · AI Assistant",
-      poweredBy: "Powered by",
-      faqTitle: "Quick Questions",
-      inputPlaceholder: "Ask JDK Factory AI anything…",
-      welcomeMsg:
-        "Hello! I'm JDK Factory's AI assistant. Before we get started, may I know your name? It helps us build a good relationship with you and follow up properly.",
-      langSwitch: "AR | عربي",
-      micLabel: "Talk",
-      micLabelListening: "Listening…",
-      micLabelSpeaking: "Speaking…",
-      micUnsupported: "Voice input isn't supported in this browser — try Chrome or Edge, or use the text box instead.",
-      micDenied: "Microphone access was blocked. Allow microphone access in your browser settings to talk to the assistant.",
-      muteTts: "Mute replies",
-      unmuteTts: "Unmute replies",
-    },
+    poweredBy: "Powered by",
+    micLabel: "Talk",
+    micLabelListening: "Listening…",
+    micLabelSpeaking: "Speaking…",
+    micUnsupported: "Voice input isn't supported in this browser — try Chrome or Edge, or use the text box instead.",
+    micDenied: "Microphone access was blocked. Allow microphone access in your browser settings to talk to the assistant.",
+    muteTts: "Mute replies",
+    unmuteTts: "Unmute replies",
   },
   ar: {
-    dir: "rtl",
-    common: {
-      close: "إغلاق", back: "رجوع", send: "إرسال", quickMenu: "قائمة سريعة",
-      primaryNav: "الأساسية", goHome: "الذهاب إلى الرئيسية", assistantTyping: "المساعد يكتب",
-    },
-    home: {
-      welcome: "مرحبا بك في JDK Factory",
-      tagline: "زوروا V-Lounge الخاص بنا لمزيد من المعلومات",
-      heroStatement: "حلول ذكاء اصطناعي عملية ومنتجات رقمية للأعمال",
-      taglineLine1: "حلول اليوم.",
-      taglineLine2: "لصناعة الغد.",
-      supportingText: "منتجات رقمية للشركات في الهند ودول الخليج.",
-      examplePrompts: ["ما الذي تبنيه JDK Factory؟", "كيف يمكن لـ JDK Factory مساعدة أعمالي؟", "استكشف منتجاتنا"],
-      hint: "ابدأ المحادثة",
-      langSwitch: "EN | English",
-    },
-    chat: {
-      taglineLine1: "حلول اليوم. ",
-      taglineLine2: "لصناعة الغد.",
-      sub: "تقنية وابتكار مدعومان بالذكاء الاصطناعي",
-      header: "المساعد الذكي",
-      onlineStatus: "متصل الآن · مساعد ذكي",
-      poweredBy: "بدعم من",
-      faqTitle: "أسئلة سريعة",
-      inputPlaceholder: "اسأل مساعد JDK Factory أي شيء…",
-      welcomeMsg:
-        "مرحباً! أنا المساعد الذكي لـ JDK Factory. قبل أن نبدأ، هل لي أن أعرف اسمك؟ هذا يساعدنا على بناء علاقة أفضل معك ومتابعة طلبك بشكل صحيح.",
-      langSwitch: "EN | English",
-      micLabel: "تحدث",
-      micLabelListening: "جارٍ الاستماع…",
-      micLabelSpeaking: "يتحدث الآن…",
-      micUnsupported: "الإدخال الصوتي غير مدعوم في هذا المتصفح — جرّب Chrome أو Edge، أو استخدم مربع الكتابة بدلاً من ذلك.",
-      micDenied: "تم حظر الوصول إلى الميكروفون. يرجى السماح بالوصول إليه من إعدادات المتصفح للتحدث مع المساعد.",
-      muteTts: "كتم الردود الصوتية",
-      unmuteTts: "تفعيل الردود الصوتية",
-    },
+    poweredBy: "بدعم من",
+    micLabel: "تحدث",
+    micLabelListening: "جارٍ الاستماع…",
+    micLabelSpeaking: "يتحدث الآن…",
+    micUnsupported: "الإدخال الصوتي غير مدعوم في هذا المتصفح — جرّب Chrome أو Edge، أو استخدم مربع الكتابة بدلاً من ذلك.",
+    micDenied: "تم حظر الوصول إلى الميكروفون. يرجى السماح بالوصول إليه من إعدادات المتصفح للتحدث مع المساعد.",
+    muteTts: "كتم الردود الصوتية",
+    unmuteTts: "تفعيل الردود الصوتية",
   },
 };
 
-export const FAQ = {
-  en: [
-    { q: "What services does JDK Factory offer?", a: "We build AI-powered assistants, automation, and digital products tailored to your business — from concept through to production support." },
-    { q: "How can I get in touch?", a: "Chat with our AI assistant above, or reach out via the contact details on our Contact page — we'll get back to you quickly." },
-    { q: "Do you support Arabic and English?", a: "Yes — the whole experience, including this assistant, works fully in both English and Arabic with proper right-to-left layout." },
-    { q: "Where are you located?", a: "We work with clients globally and meet either virtually or in person — just ask and we'll accommodate you." },
-  ],
-  ar: [
-    { q: "ما هي الخدمات التي تقدمها JDK Factory؟", a: "نصمم مساعدين مدعومين بالذكاء الاصطناعي وحلول أتمتة ومنتجات رقمية مخصصة لعملك — من الفكرة وحتى الدعم الإنتاجي." },
-    { q: "كيف يمكنني التواصل معكم؟", a: "تحدث مع مساعدنا الذكي أعلاه، أو تواصل معنا عبر بيانات التواصل في صفحة اتصل بنا — سنرد عليك بسرعة." },
-    { q: "هل تدعمون اللغتين العربية والإنجليزية؟", a: "نعم — التجربة بأكملها، بما في ذلك هذا المساعد، تعمل بالكامل باللغتين مع تخطيط صحيح من اليمين إلى اليسار." },
-    { q: "أين يقع مقركم؟", a: "نعمل مع عملاء حول العالم ونلتقي افتراضيًا أو شخصيًا — فقط أخبرنا وسنوفر لك ما يناسبك." },
-  ],
-};
+export const COPY = perLang((lang) => ({
+  dir: lang === "ar" ? "rtl" : "ltr",
+  common: COMMON[lang],
+  home: site.copyHome[lang],
+  chat: { ...CHAT_EXTRAS[lang], ...site.copyChat[lang] },
+}));
+
+export const FAQ = perLang((lang) => site.faq.map((item) => item[lang]));
+
+// Bundled copy of the product range, shown on the Products page only
+// when the live catalog (Admin → Products) can't be loaded or is empty.
+export const FALLBACK_PRODUCTS = site.products;

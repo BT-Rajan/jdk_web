@@ -10,6 +10,7 @@
 // ──────────────────────────────────────────────────────────
 import { BRAND, COPY, FAQ, NAV, SECTIONS } from "./content.js";
 import { PAGE_CONTENT, PAGE_META } from "./pages.js";
+import site from "../content/site.json";
 import { fetchContentPages, fetchFaqItems, fetchPublicConfig } from "../api/publicContent.js";
 
 const RTL_LANGS = new Set(["ar", "he", "fa", "ur"]);
@@ -183,7 +184,7 @@ export function buildFallbackSite() {
       logoUrl: "/static/logo.svg",
       logoScale: 1,
       faviconUrl: "/favicon.svg",
-      metaDescriptionByLang: { en: "JDK Factory — AI-powered technology & innovation.", ar: "" },
+      metaDescriptionByLang: site.settings["branding.metaDescription"],
       chatAvatarUrl: "",
     },
     ...buildFromLocalFallback(supportedLanguages),
@@ -208,7 +209,7 @@ function apiContact(publicConfig) {
   };
 }
 
-const FALLBACK_CONTACT = { email: "", phone: "", whatsappNumber: "", addressByLang: { en: "", ar: "" } };
+const FALLBACK_CONTACT = { email: "", phone: "", whatsappNumber: "", addressByLang: site.settings["contact.address"] };
 
 function apiTheme(publicConfig) {
   return {
@@ -260,6 +261,20 @@ export async function loadSiteContent() {
   const site = haveFullApiData
     ? buildFromApi(publicConfig, contentPages, faqItems, supportedLanguages)
     : buildFromLocalFallback(supportedLanguages);
+
+  // The backend can answer successfully with zero content pages (fresh
+  // or unseeded database — scripts/seed_content.py is a separate step).
+  // An empty array is truthy, so without this the site would render no
+  // page links at all: only the always-present Home icon in the nav,
+  // and empty About/Products/Services/Contact pages. Use the bundled
+  // pages/nav for that case; live config, theme and FAQ still come
+  // from the API.
+  if (haveFullApiData && Array.isArray(contentPages) && contentPages.length === 0) {
+    const local = buildFromLocalFallback(supportedLanguages);
+    site.nav = local.nav;
+    site.sections = local.sections;
+    site.pages = local.pages;
+  }
 
   return {
     source: haveFullApiData ? "api" : "fallback",

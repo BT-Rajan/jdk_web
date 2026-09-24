@@ -13,7 +13,7 @@ const TEXT = {
     name: "Name", email: "Email", phone: "Phone (optional)",
     products: "Products", qty: "Qty", noProducts: "No products are available to order right now.",
     requiredDate: "Required by", notes: "Notes (optional)",
-    estimatedTotal: "Estimated total", submit: "Submit order", submitting: "Submitting…",
+    estimatedTotal: "Estimated total", priceOnRequest: "Price on request", submit: "Submit order", submitting: "Submitting…",
     errName: "Please enter your name.", errEmail: "Please enter a valid email.",
     errItems: "Please select at least one product.", errDate: "Please pick a required date.",
     successTitle: "Request received!", successBody: "Thanks — we'll be in touch shortly with a firm quote.",
@@ -27,7 +27,7 @@ const TEXT = {
     name: "الاسم", email: "البريد الإلكتروني", phone: "الهاتف (اختياري)",
     products: "المنتجات", qty: "الكمية", noProducts: "لا توجد منتجات متاحة للطلب حالياً.",
     requiredDate: "التاريخ المطلوب", notes: "ملاحظات (اختياري)",
-    estimatedTotal: "الإجمالي التقديري", submit: "إرسال الطلب", submitting: "جارٍ الإرسال…",
+    estimatedTotal: "الإجمالي التقديري", priceOnRequest: "السعر عند الطلب", submit: "إرسال الطلب", submitting: "جارٍ الإرسال…",
     errName: "يرجى إدخال اسمك.", errEmail: "يرجى إدخال بريد إلكتروني صالح.",
     errItems: "يرجى اختيار منتج واحد على الأقل.", errDate: "يرجى اختيار التاريخ المطلوب.",
     successTitle: "تم استلام طلبك!", successBody: "شكراً لك — سنتواصل معك قريباً بعرض سعر نهائي.",
@@ -133,7 +133,7 @@ export default function OrderPanel({ open, onClose }) {
             lineItems.length > 0 ? (
               <p className="order-panel-cart-badge">
                 {lineItems.length === 1 ? t.itemsOne : t.itemsMany(lineItems.length)}
-                {" · "}{estimatedTotal.toFixed(2)}
+                {estimatedTotal > 0 && <>{" · "}{estimatedTotal.toFixed(2)}</>}
               </p>
             ) : (
               <p className="order-panel-subtitle">{t.subtitle}</p>
@@ -148,9 +148,11 @@ export default function OrderPanel({ open, onClose }) {
           <div className="order-panel-success">
             <p className="order-panel-success-title">{t.successTitle}</p>
             <p>{t.successBody}</p>
-            <p className="order-panel-success-total">
-              {t.estimatedTotal}: {result.estimatedTotal.toFixed(2)}
-            </p>
+            {result.estimatedTotal > 0 && (
+              <p className="order-panel-success-total">
+                {t.estimatedTotal}: {result.estimatedTotal.toFixed(2)}
+              </p>
+            )}
             <Button variant="ghost" onClick={resetForCreate}>{t.newOrder}</Button>
           </div>
         ) : (
@@ -183,7 +185,9 @@ export default function OrderPanel({ open, onClose }) {
                         <div className="order-panel-product-info">
                           <span className="order-panel-product-name">{p.name}</span>
                           {p.description && <span className="order-panel-product-desc">{p.description}</span>}
-                          <span className="order-panel-product-price">{p.price.toFixed(2)} / {p.unit}</span>
+                          <span className="order-panel-product-price">
+                            {p.price > 0 ? `${p.price.toFixed(2)} / ${p.unit}` : `${t.priceOnRequest} · ${p.unit}`}
+                          </span>
                         </div>
                         <div className="order-panel-stepper">
                           <button
@@ -226,10 +230,12 @@ export default function OrderPanel({ open, onClose }) {
 
             {error && <p className="order-panel-error">{error}</p>}
 
-            <div className="order-panel-total-row">
-              <span>{t.estimatedTotal}</span>
-              <span className="order-panel-total-value">{estimatedTotal.toFixed(2)}</span>
-            </div>
+            {estimatedTotal > 0 && (
+              <div className="order-panel-total-row">
+                <span>{t.estimatedTotal}</span>
+                <span className="order-panel-total-value">{estimatedTotal.toFixed(2)}</span>
+              </div>
+            )}
 
             <Button type="submit" variant="primary" fullWidth disabled={submitting}>
               {submitting ? t.submitting : t.submit}

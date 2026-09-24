@@ -156,6 +156,8 @@ export const COPY = {
       langSwitch: "AR | عربي",
       viewProductsCta: "View Products",
       placeOrderCta: "Place an Order",
+      mapCta: "Map",
+      contactCta: "Contact Us",
     },
   },
   ar: {
@@ -199,6 +201,8 @@ export const COPY = {
       langSwitch: "EN | English",
       viewProductsCta: "عرض المنتجات",
       placeOrderCta: "تقديم طلب",
+      mapCta: "الخريطة",
+      contactCta: "تواصل معنا",
     },
   },
 };

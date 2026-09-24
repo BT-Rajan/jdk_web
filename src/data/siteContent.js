@@ -196,8 +196,8 @@ export function buildFallbackSite() {
       siteNameByLang: { en: BRAND.name, ar: BRAND.wordmarkAr },
       logoUrl: "/static/logo.svg",
       logoScale: 1,
-      logoGlow: 0,
-      logoGlowColor: "#ffffff",
+      logoGlow: 0.5,
+      logoGlowColor: "#c9a84c",
       faviconUrl: "/favicon.svg",
       metaDescriptionByLang: { en: "JDK Factory — AI-powered technology & innovation.", ar: "" },
       chatAvatarUrl: "",
@@ -221,10 +221,13 @@ function apiContact(publicConfig) {
     phone: publicConfig["contact.phone"] ?? "",
     whatsappNumber: publicConfig["contact.whatsappNumber"] ?? "",
     addressByLang: publicConfig["contact.address"] ?? { en: "", ar: "" },
+    googleMapsUrl: publicConfig["contact.googleMapsUrl"] ?? "",
   };
 }
 
-const FALLBACK_CONTACT = { email: "", phone: "", whatsappNumber: "", addressByLang: { en: "", ar: "" } };
+const FALLBACK_CONTACT = {
+  email: "", phone: "", whatsappNumber: "", addressByLang: { en: "", ar: "" }, googleMapsUrl: "",
+};
 
 function apiTheme(publicConfig) {
   return {
@@ -291,8 +294,8 @@ export async function loadSiteContent() {
       siteNameByLang: publicConfig?.["branding.siteName"] ?? { en: BRAND.name, ar: BRAND.wordmarkAr },
       logoUrl: publicConfig?.["branding.logoUrl"] ?? "/static/logo.svg",
       logoScale: publicConfig?.["branding.logoScale"] ?? 1,
-      logoGlow: publicConfig?.["branding.logoGlow"] ?? 0,
-      logoGlowColor: publicConfig?.["branding.logoGlowColor"] ?? "#ffffff",
+      logoGlow: publicConfig?.["branding.logoGlow"] ?? 0.5,
+      logoGlowColor: publicConfig?.["branding.logoGlowColor"] ?? "#c9a84c",
       faviconUrl: publicConfig?.["branding.faviconUrl"] ?? "/favicon.svg",
       metaDescriptionByLang: publicConfig?.["branding.metaDescription"] ?? { en: "", ar: "" },
       chatAvatarUrl: publicConfig?.["chat.avatarUrl"] ?? "",

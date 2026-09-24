@@ -3,11 +3,11 @@
    StickyChat's toggle pill. Structure and motion mirror
    k-g-i.com's #agent-chat widget: fixed panel that scales/fades
    in from the trigger, persona header with a live status dot,
-   sharp-cornered gold message bubbles, suggestion chips (incl.
-   "Book a call" as one of them, same as their widget), and a
-   footer credit line. Colors/fonts come from the shared design
-   tokens (see tokens.css) so this isn't a one-off skin — the
-   same gold-on-near-black palette and serif/sans pairing runs
+   sharp-cornered gold message bubbles, a persistent "Place an
+   Order" CTA, and a footer of real links (Products/Map/Contact
+   Us). Colors/fonts come from the shared design tokens (see
+   tokens.css) so this isn't a one-off skin — the same
+   gold-on-near-black palette and serif/sans pairing runs
    through the whole site now.
    ────────────────────────────────────────────────────────── */
 .chat-widget {
@@ -158,35 +158,9 @@
 .chat-widget-conversation::-webkit-scrollbar { width: 3px; }
 .chat-widget-conversation::-webkit-scrollbar-thumb { background: var(--gold-border); border-radius: 2px; }
 
-.chat-widget-starter {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: auto;
-  padding-top: var(--space-3);
-}
-
-/* Suggestion chips — "Book a call" is just one of these, same as
-   k-g-i.com's .chat-suggestion row (no separate highlighted CTA). */
-.chat-widget-chip {
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--gold);
-  border: 1px solid var(--gold-border);
-  background: transparent;
-  border-radius: 2px;
-  padding: 7px 11px;
-  text-align: start;
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
-}
-.chat-widget-chip:hover { background: var(--gold-dim); border-color: var(--gold); }
-
-/* Persistent CTAs (View Products / Place an Order) — one solid, one
-   outlined, so the pair reads as "primary action, secondary action"
-   rather than two equal-weight buttons. Shown above the input for the
-   whole conversation, not just the starter screen. */
+/* Persistent "Place an Order" CTA — shown above the input for the
+   whole conversation, not just the first screen, so a visitor who's
+   already mid-conversation can still jump straight to ordering. */
 .chat-widget-quick-actions {
   flex-shrink: 0;
   display: flex;
@@ -200,30 +174,36 @@
   border-radius: 4px;
   padding: 8px 10px;
   text-align: center;
-  border: 1px solid var(--gold-border);
-  background: transparent;
-  color: var(--gold);
-  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
-}
-.chat-widget-quick-action:hover { background: var(--gold-dim); border-color: var(--gold); }
-.chat-widget-quick-action:first-child {
   background: var(--gold);
   color: var(--brand-bg);
-  border-color: var(--gold);
+  border: 1px solid var(--gold);
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
 }
-.chat-widget-quick-action:first-child:hover { background: var(--gold-dim); color: var(--gold); }
+.chat-widget-quick-action:hover { background: var(--gold-dim); color: var(--gold); }
 
+/* Footer: three real links (Products / Map / Contact Us) rather than a
+   brand credit line — always available, not just on the first screen. */
 .chat-widget-footer {
   flex-shrink: 0;
-  text-align: center;
-  padding: 8px;
-  font-size: 0.58rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: 8px var(--space-3);
   border-top: 1px solid var(--glass-border);
 }
-.chat-widget-footer span { color: var(--gold); }
+.chat-widget-footer-link {
+  background: none;
+  border: none;
+  padding: 2px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted-strong);
+  transition: color var(--dur-fast) var(--ease);
+}
+.chat-widget-footer-link:hover { color: var(--gold); }
 
 @media (max-width: 480px) {
   .chat-widget {

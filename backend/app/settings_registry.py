@@ -153,11 +153,11 @@ _DEFS: list[SettingDef] = [
                help_text="Display size of the logo image relative to its default — logos with a lot "
                           "of built-in padding often look small next to the header text at 1.0x.",
                validator=_float_range(0.5, 3.0)),
-    SettingDef("branding.logoGlow", "branding", "Logo glow", SettingType.FLOAT, 0.0,
+    SettingDef("branding.logoGlow", "branding", "Logo glow", SettingType.FLOAT, 0.5,
                help_text="Soft glow around the header logo. 0 = off; 1 = strongest.",
                validator=_float_range(0.0, 1.0)),
-    SettingDef("branding.logoGlowColor", "branding", "Logo glow color", SettingType.COLOR, "#ffffff",
-               help_text="Color of the logo glow (white by default)."),
+    SettingDef("branding.logoGlowColor", "branding", "Logo glow color", SettingType.COLOR, "#c9a84c",
+               help_text="Color of the logo glow — matches the site's own gold by default."),
     SettingDef("branding.faviconUrl", "branding", "Favicon", SettingType.IMAGE, "/favicon.svg"),
     SettingDef("branding.metaDescription", "branding", "Search/share description", SettingType.TEXT,
                {"en": "JDK Factory — AI-powered technology & innovation.", "ar": ""}, i18n=True,
@@ -174,6 +174,10 @@ _DEFS: list[SettingDef] = [
     SettingDef("contact.whatsappNumber", "contact", "WhatsApp number", SettingType.STRING, "",
                help_text="Include country code, digits only, e.g. 96599999999."),
     SettingDef("contact.address", "contact", "Address", SettingType.TEXT, {"en": "", "ar": ""}, i18n=True),
+    SettingDef("contact.googleMapsUrl", "contact", "Google Maps link", SettingType.STRING, "",
+               help_text="Full URL to your location on Google Maps (e.g. from Maps' own \"Share\" button). "
+                          "Shown as a map link wherever the site links out to your location — currently the "
+                          "chat widget's footer. Leave blank to hide that link."),
 
     # theme — brand identity. Deliberately a SMALL set of base tokens
     # (colors, fonts, a few layout metrics) rather than every CSS custom

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLang } from "../../context/LangContext.jsx";
 import { api } from "../../api/client.js";
+import { isSafeHref } from "../../data/siteContent.js";
 import GlassPanel from "../ui/GlassPanel.jsx";
 import { ChatAvatar } from "../hero/HeroShared.jsx";
 import ChatMessage from "./ChatMessage.jsx";
@@ -11,14 +12,20 @@ import "./ChatWidget.css";
 /**
  * Floating chat popover, docked bottom-right and layered above
  * StickyChat's toggle pill. Mirrors k-g-i.com's "Talk to Sulaiman"
- * widget: named persona + online status in the header, a starter
- * screen of tappable quick questions before the first message, and a
- * small "Powered by" credit line in the footer. Text-only — no mic
- * input or spoken replies.
+ * widget: named persona + online status in the header. Text-only — no
+ * mic input or spoken replies. The footer is a small set of real links
+ * (Products, Map, Contact Us) rather than a brand credit line — a
+ * visitor mid-conversation can jump straight to any of the three
+ * without losing their place, and Products/Contact Us reuse the exact
+ * labels the admin set for those pages in Settings > Pages, so the
+ * wording never drifts from the header/footer nav.
  */
 export default function ChatWidget({ open, onClose, initialMessage, onConsumeInitialMessage, onNavigate, onOrder }) {
-  const { copy, lang, nav, branding } = useLang();
+  const { copy, lang, nav, branding, contact } = useLang();
   const t = copy.chat;
+  const productsLabel = nav.find((item) => item.id === "products")?.label || t.viewProductsCta;
+  const contactLabel = nav.find((item) => item.id === "contact")?.label || t.contactCta;
+  const mapHref = isSafeHref(contact?.googleMapsUrl) ? contact.googleMapsUrl : null;
 
   const [messages, setMessages] = useState([]);
   const [draft, setDraft] = useState("");
@@ -71,15 +78,6 @@ export default function ChatWidget({ open, onClose, initialMessage, onConsumeIni
     setMessages((m) => [...m, { from: "ai", text: reply }]);
   }
 
-  // Starter screen only shows before the visitor has sent anything —
-  // same moment k-g-i.com shows theirs.
-  const showStarter = messages.length <= 1 && !typing;
-  const starterChips = nav.slice(0, 4);
-
-  function handleChipClick(item) {
-    sendMessage(item.label);
-  }
-
   if (!open) return null;
 
   return (
@@ -107,30 +105,13 @@ export default function ChatWidget({ open, onClose, initialMessage, onConsumeIni
           ))}
           {typing && <TypingIndicator label={copy.common.assistantTyping} />}
         </div>
-
-        {showStarter && (
-          <div className="chat-widget-starter">
-            {starterChips.map((item) => (
-              <button key={item.id} className="chat-widget-chip" onClick={() => handleChipClick(item)}>
-                {item.label}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
 
-      {(onNavigate || onOrder) && (
+      {onOrder && (
         <div className="chat-widget-quick-actions">
-          {onNavigate && (
-            <button type="button" className="chat-widget-quick-action" onClick={() => onNavigate("products")}>
-              {t.viewProductsCta}
-            </button>
-          )}
-          {onOrder && (
-            <button type="button" className="chat-widget-quick-action" onClick={onOrder}>
-              {t.placeOrderCta}
-            </button>
-          )}
+          <button type="button" className="chat-widget-quick-action" onClick={onOrder}>
+            {t.placeOrderCta}
+          </button>
         </div>
       )}
 
@@ -143,7 +124,23 @@ export default function ChatWidget({ open, onClose, initialMessage, onConsumeIni
         disabled={typing}
       />
 
-      <footer className="chat-widget-footer">{t.poweredBy} <span>{branding.siteName}</span></footer>
+      <footer className="chat-widget-footer">
+        {onNavigate && (
+          <button type="button" className="chat-widget-footer-link" onClick={() => onNavigate("products")}>
+            {productsLabel}
+          </button>
+        )}
+        {mapHref && (
+          <a href={mapHref} target="_blank" rel="noopener noreferrer" className="chat-widget-footer-link">
+            {t.mapCta}
+          </a>
+        )}
+        {onNavigate && (
+          <button type="button" className="chat-widget-footer-link" onClick={() => onNavigate("contact")}>
+            {contactLabel}
+          </button>
+        )}
+      </footer>
     </GlassPanel>
   );
 }

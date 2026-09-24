@@ -17,8 +17,8 @@ function resolveBranding(branding, lang, defaultLanguage) {
     siteName: pick(branding.siteNameByLang),
     logoUrl: branding.logoUrl,
     logoScale: branding.logoScale || 1,
-    logoGlow: branding.logoGlow || 0,
-    logoGlowColor: branding.logoGlowColor || "#ffffff",
+    logoGlow: branding.logoGlow ?? 0.5,
+    logoGlowColor: branding.logoGlowColor || "#c9a84c",
     faviconUrl: branding.faviconUrl,
     metaDescription: pick(branding.metaDescriptionByLang),
     chatAvatarUrl: branding.chatAvatarUrl || "",
@@ -28,7 +28,10 @@ function resolveBranding(branding, lang, defaultLanguage) {
 function resolveContact(contact, lang, defaultLanguage) {
   const addressByLang = contact.addressByLang || {};
   const address = addressByLang[lang] ?? addressByLang[defaultLanguage] ?? Object.values(addressByLang)[0] ?? "";
-  return { email: contact.email, phone: contact.phone, whatsappNumber: contact.whatsappNumber, address };
+  return {
+    email: contact.email, phone: contact.phone, whatsappNumber: contact.whatsappNumber, address,
+    googleMapsUrl: contact.googleMapsUrl,
+  };
 }
 
 // Built once, synchronously, at module load — this is what the very

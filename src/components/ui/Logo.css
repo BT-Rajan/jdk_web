@@ -6,16 +6,19 @@
 
 .logo-img {
   /* --logo-scale is set inline per the branding.logo_scale admin
-     setting — lets a logo with a lot of built-in padding be sized up
-     to actually read next to the header text, without a rebuild. */
-
-  /* Desktop (>1024px) — matched to the 100px desktop --header-h in
-     tokens.css, with headroom above/below so it reads as a real logo
-     rather than a small icon in a tall bar. */
+     setting (0.5x–3x) — lets a logo with a lot of built-in padding be
+     sized up to actually read next to the header text, without a
+     rebuild. max-height used to be pinned to the same 87px as the
+     unscaled height, which silently capped every scale above 1x right
+     back down to it — zooming in the admin panel visibly did nothing.
+     It's now well above the 1x height, so scaling up actually shows:
+     a logo taller than the 100px header is expected and fine (the
+     header has no overflow:hidden), the same "crest peeks past the
+     nav bar" look plenty of brand headers use. */
   height: calc(87px * var(--logo-scale, 1));
   width: auto; /* let width follow the image's natural aspect ratio */
-  max-height: 87px;
-  max-width: 380px;
+  max-height: 150px;
+  max-width: 420px;
   flex: none;
   object-fit: contain;
   border-radius: var(--radius-sm);
@@ -35,21 +38,22 @@
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 1.2rem;
-  letter-spacing: 0.02em;
-  color: var(--white-pure);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gold, #c9a84c);
   white-space: nowrap;
   text-shadow: 0 1px 12px rgba(0, 0, 0, 0.4);
 }
-[dir="rtl"] .logo-word { font-family: var(--font-ar); font-weight: 600; }
+[dir="rtl"] .logo-word { font-family: var(--font-ar); font-weight: 600; text-transform: none; }
 
 /* Tablet (768px–1024px) */
 @media (max-width: 1024px) {
-  .logo-img { height: calc(40px * var(--logo-scale, 1)); width: auto; max-height: 44px; max-width: 120px; }
+  .logo-img { height: calc(40px * var(--logo-scale, 1)); width: auto; max-height: 68px; max-width: 160px; }
   .logo-word { font-size: 1.1rem; }
 }
 
 /* Mobile (<768px) */
 @media (max-width: 767px) {
-  .logo-img { height: calc(36px * var(--logo-scale, 1)); width: auto; max-height: 40px; max-width: 110px; }
+  .logo-img { height: calc(36px * var(--logo-scale, 1)); width: auto; max-height: 58px; max-width: 140px; }
   .logo-word { font-size: 1.05rem; }
 }

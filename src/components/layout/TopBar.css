@@ -16,16 +16,37 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--space-5);
-  /* Was a literal navy-blue rgba() left over from the site's old
-     palette, mismatched against the current near-black/gold tokens —
-     derived from --brand-bg instead so the header re-themes with
-     everything else. */
-  background: linear-gradient(180deg, color-mix(in srgb, var(--brand-bg) 95%, transparent) 0%, color-mix(in srgb, var(--brand-bg) 85%, transparent) 100%);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid color-mix(in srgb, var(--gold) 15%, transparent);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  padding: 0 clamp(var(--space-4), 4vw, var(--space-7));
+  /* Derived from --brand-bg so the header re-themes with everything
+     else; a touch of white at the top edge reads as light catching
+     the top of a brushed-metal bar rather than a flat dark strip. */
+  background:
+    linear-gradient(180deg, color-mix(in srgb, white 3.5%, transparent) 0%, transparent 100%),
+    color-mix(in srgb, var(--brand-bg) 78%, transparent);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.6);
+}
+
+/* Hairline gold rule along the bottom edge — fades out toward both
+   ends instead of a hard full-width border, which is what made the
+   old header look like a plain divider. */
+.top-bar-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--gold) 45%, transparent) 20%,
+    color-mix(in srgb, var(--gold) 75%, transparent) 50%,
+    color-mix(in srgb, var(--gold) 45%, transparent) 80%,
+    transparent 100%
+  );
+  pointer-events: none;
 }
 
 .top-bar-start {
@@ -38,7 +59,10 @@
 .top-bar-center {
   display: flex;
   align-items: center;
-  justify-content: center;
+  /* Below 1024px only the hamburger lives here — pushed to the end
+     edge so it sits with the language switch instead of floating in
+     the middle of the bar. Desktop re-centers the link row below. */
+  justify-content: flex-end;
   flex: 1;
 }
 
@@ -49,6 +73,26 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   flex-shrink: 0;
+}
+
+/* Language switch — compact, tracked-out pill, quieter than the
+   general-purpose .chip so it doesn't compete with the nav. */
+.top-bar-end .chip {
+  padding: 7px 14px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: transparent;
+  border-color: color-mix(in srgb, var(--gold) 32%, transparent);
+  color: var(--white-soft);
+  box-shadow: none;
+}
+.top-bar-end .chip:hover {
+  background: color-mix(in srgb, var(--gold) 12%, transparent);
+  border-color: color-mix(in srgb, var(--gold) 60%, transparent);
+  color: var(--gold);
+  box-shadow: none;
 }
 
 [dir="rtl"] .top-bar-start .back-btn svg { transform: scaleX(-1); }
@@ -62,16 +106,17 @@
   cursor: pointer;
 }
 
-/* Desktop (>1024px) — header grows to comfortably fit the large
-   87px logo (see Logo.css). Overrides the height property directly
-   rather than the --header-h custom property: applyTheme.js sets
-   --header-h as an *inline* style on <html> (it's admin-configurable
-   at runtime), and inline styles always beat stylesheet rules —
-   media-scoped or not — so a media query targeting the variable
-   itself would silently lose to that inline value. Same technique
-   the existing mobile override below already relies on. */
+/* Desktop (>1024px) — taller bar and a centered link row. Overrides
+   the height property directly rather than the --header-h custom
+   property: applyTheme.js sets --header-h as an *inline* style on
+   <html> (it's admin-configurable at runtime), and inline styles
+   always beat stylesheet rules — media-scoped or not — so a media
+   query targeting the variable itself would silently lose to that
+   inline value. --header-h-lg (tokens.css) is the one number the
+   page-top paddings elsewhere key off. */
 @media (min-width: 1025px) {
-  .top-bar-header { height: 100px; }
+  .top-bar-header { height: var(--header-h-lg); }
+  .top-bar-center { justify-content: center; }
 }
 
 @media (max-width: 767px) {
@@ -79,6 +124,7 @@
     padding: 0 var(--space-3);
     height: 56px;
   }
-  
+
   .top-bar-start, .top-bar-end { gap: var(--space-2); }
+  .top-bar-end .chip { padding: 6px 11px; font-size: 0.68rem; }
 }

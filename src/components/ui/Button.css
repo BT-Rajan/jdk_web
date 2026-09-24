@@ -16,19 +16,45 @@
 .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-shade-2) 50%, var(--gold-shade-3) 100%);
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.04em;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.28) 0%, rgb(255 255 255 / 0) 48%),
+    linear-gradient(135deg, var(--brand-accent) 0%, var(--gold) 45%, var(--gold-shade-2) 100%);
   color: var(--on-gold-text);
-  box-shadow: 0 8px 24px color-mix(in srgb, var(--gold) 35%, transparent), 0 0 12px color-mix(in srgb, var(--gold) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--brand-accent) 55%, transparent);
+  box-shadow:
+    0 10px 26px -6px color-mix(in srgb, var(--gold) 55%, transparent),
+    0 2px 6px rgb(0 0 0 / 0.35),
+    inset 0 1px 0 rgb(255 255 255 / 0.4);
 }
-.btn-primary:not(:disabled):hover { 
-  filter: brightness(1.12);
-  box-shadow: 0 12px 32px color-mix(in srgb, var(--gold) 45%, transparent), 0 0 16px color-mix(in srgb, var(--gold) 25%, transparent);
+/* One soft diagonal sheen sweeps across on hover — a small
+   "this is metal" cue rather than a flat colour change. */
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.35) 50%, transparent 65%);
+  transform: translateX(-120%);
+  transition: transform 0.7s var(--ease);
+  pointer-events: none;
+}
+.btn-primary:not(:disabled):hover {
+  box-shadow:
+    0 16px 34px -6px color-mix(in srgb, var(--gold) 60%, transparent),
+    0 3px 8px rgb(0 0 0 / 0.35),
+    inset 0 1px 0 rgb(255 255 255 / 0.5);
   transform: translateY(-2px);
 }
+.btn-primary:not(:disabled):hover::after { transform: translateX(120%); }
+[dir="rtl"] .btn-primary { letter-spacing: 0; }
+[dir="rtl"] .btn-primary::after { transform: translateX(120%); }
+[dir="rtl"] .btn-primary:not(:disabled):hover::after { transform: translateX(-120%); }
 
 .btn-ghost {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
-  border: 1px solid color-mix(in srgb, var(--gold) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--gold) 28%, transparent);
   color: var(--white-pure);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -46,6 +72,10 @@
 .btn-text:not(:disabled):hover { color: var(--white-pure); }
 
 .btn-full { width: 100%; }
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary::after { transition: none; }
+}
 
 @media (max-width: 480px) {
   .btn { padding: 12px 20px; font-size: var(--fs-sm); }

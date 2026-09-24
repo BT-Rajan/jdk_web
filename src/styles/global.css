@@ -56,10 +56,43 @@ html { -webkit-text-size-adjust: 100%; }
   z-index: 0;
 }
 
-.site-shell button, .site-shell input, .site-shell textarea, .site-shell select { font-family: inherit; color: inherit; }
-.site-shell button { cursor: pointer; background: none; border: none; }
-.site-shell a { color: inherit; text-decoration: none; }
-.site-shell img { max-width: 100%; display: block; }
+/* Ambient light + film grain. A flat near-black fill is what made the
+   page read as a template; this adds a warm pool of light falling from
+   the top of the page, a faint counter-glow low on one side, a soft
+   vignette to pull the eye inward, and a barely-there grain that breaks
+   up gradient banding. z-index: -1 keeps it inside .site-shell's own
+   stacking context — above the shell's background, below every piece
+   of page content — so it can never tint or intercept anything. All
+   colours derive from --gold, so a re-themed site glows in its own
+   primary. Hidden along with the grid when the admin picks the plain
+   "solid" background style. */
+.site-shell::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .075 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+    radial-gradient(70% 55% at 50% -8%, color-mix(in srgb, var(--gold) 17%, transparent) 0%, transparent 70%),
+    radial-gradient(45% 40% at 92% 18%, color-mix(in srgb, var(--gold) 6%, transparent) 0%, transparent 70%),
+    radial-gradient(55% 45% at 6% 100%, color-mix(in srgb, var(--gold) 7%, transparent) 0%, transparent 70%),
+    radial-gradient(130% 100% at 50% 35%, transparent 55%, rgb(0 0 0 / 0.5) 100%);
+  background-size: 180px 180px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+}
+[data-background-style="solid"] .site-shell::after { display: none; }
+
+/* Element resets wrapped in :where() so they carry ZERO specificity.
+   As plain `.site-shell button` (0,1,1) they out-ranked every single-
+   class component rule (0,1,0) — silently stripping the background,
+   border and colour from .btn-primary, .chip, .hero-section cards, the
+   sticky CTAs and anything else that happens to be a <button>, which
+   is a big part of why the page read as flat and unfinished. Now they
+   only apply where a component hasn't said otherwise. */
+:where(.site-shell) :is(button, input, textarea, select) { font-family: inherit; color: inherit; }
+:where(.site-shell) button { cursor: pointer; background: none; border: none; }
+:where(.site-shell) a { color: inherit; text-decoration: none; }
+:where(.site-shell) img { max-width: 100%; display: block; }
 
 .site-shell button:focus-visible, .site-shell a:focus-visible, .site-shell [tabindex]:focus-visible {
   outline: 2px solid var(--gold);

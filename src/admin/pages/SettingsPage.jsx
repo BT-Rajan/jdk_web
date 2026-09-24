@@ -337,7 +337,7 @@ export default function SettingsPage() {
                   })}
 
                   <div className="settings-form-footer">
-                    <button type="submit" className="btn-primary" disabled={saving || Object.keys(fieldErrors).length > 0}>
+                    <button type="submit" className="settings-save-btn" disabled={saving || Object.keys(fieldErrors).length > 0}>
                       {saving ? "Saving…" : "Save changes"}
                     </button>
                     {savedAt && <span className="settings-saved-msg">Saved.</span>}

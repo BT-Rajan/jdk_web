@@ -47,6 +47,14 @@ function AppShell() {
     setChatOpen(true);
   };
 
+  // Lets ChatWidget's "Place an Order" CTA open the same OrderPanel the
+  // sticky Order button does — same mutual-exclusivity rule (only one
+  // bottom-right popover at a time), just triggered from inside chat.
+  const handleChatOrder = () => {
+    setChatOpen(false);
+    setOrderOpen(true);
+  };
+
   const anyPopoverOpen = chatOpen || orderOpen;
 
   return (
@@ -89,6 +97,8 @@ function AppShell() {
         onClose={() => setChatOpen(false)}
         initialMessage={pendingMessage}
         onConsumeInitialMessage={() => setPendingMessage("")}
+        onNavigate={setPage}
+        onOrder={handleChatOrder}
       />
 
       <OrderPanel open={orderOpen} onClose={() => setOrderOpen(false)} />

@@ -144,13 +144,8 @@ export const COPY = {
       welcomeMsg:
         "Hello! I'm JDK Factory's AI assistant. Before we get started, may I know your name? It helps us build a good relationship with you and follow up properly.",
       langSwitch: "AR | عربي",
-      micLabel: "Talk",
-      micLabelListening: "Listening…",
-      micLabelSpeaking: "Speaking…",
-      micUnsupported: "Voice input isn't supported in this browser — try Chrome or Edge, or use the text box instead.",
-      micDenied: "Microphone access was blocked. Allow microphone access in your browser settings to talk to the assistant.",
-      muteTts: "Mute replies",
-      unmuteTts: "Unmute replies",
+      viewProductsCta: "View Products",
+      placeOrderCta: "Place an Order",
     },
   },
   ar: {
@@ -182,13 +177,8 @@ export const COPY = {
       welcomeMsg:
         "مرحباً! أنا المساعد الذكي لـ JDK Factory. قبل أن نبدأ، هل لي أن أعرف اسمك؟ هذا يساعدنا على بناء علاقة أفضل معك ومتابعة طلبك بشكل صحيح.",
       langSwitch: "EN | English",
-      micLabel: "تحدث",
-      micLabelListening: "جارٍ الاستماع…",
-      micLabelSpeaking: "يتحدث الآن…",
-      micUnsupported: "الإدخال الصوتي غير مدعوم في هذا المتصفح — جرّب Chrome أو Edge، أو استخدم مربع الكتابة بدلاً من ذلك.",
-      micDenied: "تم حظر الوصول إلى الميكروفون. يرجى السماح بالوصول إليه من إعدادات المتصفح للتحدث مع المساعد.",
-      muteTts: "كتم الردود الصوتية",
-      unmuteTts: "تفعيل الردود الصوتية",
+      viewProductsCta: "عرض المنتجات",
+      placeOrderCta: "تقديم طلب",
     },
   },
 };

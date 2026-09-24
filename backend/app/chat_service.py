@@ -15,7 +15,7 @@ import re
 
 from sqlalchemy.orm import Session
 
-from app import content_service, knowledge_service, leads_service, llm_client
+from app import content_service, knowledge_service, leads_service, llm_client, products_service
 from app.settings_service import get_setting
 
 logger = logging.getLogger("jdk.chat")
@@ -58,6 +58,45 @@ def _contact_block(db: Session, lang: str) -> str:
     if lang == "ar":
         return f"\n\nمعلومات التواصل الرسمية: {contact}. عند سؤال الزائر عن كيفية التواصل معنا أو الأسعار، زوّده بهذه المعلومات."
     return f"\n\nOfficial contact info: {contact}. If asked how to reach us, or about pricing, share this."
+
+
+def _products_block(db: Session) -> str:
+    """The live product catalog (same rows the public order form reads,
+    see products_service.py), so the assistant can name real products
+    and prices instead of speaking about them only in the abstract."""
+    products = products_service.list_products(db, active_only=True)
+    if not products:
+        return ""
+    lines = "\n".join(
+        f"- {p.name}: {p.price:g}/{p.unit}" + (f" — {p.description}" if p.description else "")
+        for p in products
+    )
+    return (
+        "\n\nCURRENT PRODUCT CATALOG (available to order on the site right now):\n" + lines
+    )
+
+
+def _products_ordering_instructions(lang: str) -> str:
+    """Steers the assistant to proactively surface the product catalog
+    and the ordering flow rather than waiting to be asked — mirrors
+    _lead_capture_instructions/_nudge_text in being a standing
+    instruction rather than a one-off answer, since a visitor who never
+    thinks to ask "what do you sell?" should still get pointed there."""
+    if lang == "ar":
+        return (
+            "\n\nمهم بخصوص المنتجات والطلب: كلما كان ذلك مناسبًا للمحادثة (خصوصًا إذا سأل الزائر "
+            "عن المنتجات أو الأسعار أو أبدى اهتمامًا بشراء شيء)، اذكر منتجًا أو منتجين ذَوَي صلة من "
+            "قائمة المنتجات أعلاه بالاسم، ثم وجّهه بوضوح إلى صفحة \"المنتجات\" لاستعراض الكل، أو زر "
+            "\"الطلبات\" لتقديم طلب مباشرة. لا تُقحم هذا في كل رسالة ولا تكرره إذا رفضه الزائر."
+        )
+    return (
+        "\n\nIMPORTANT about products and ordering: whenever it's relevant to the conversation "
+        "(especially if the visitor asks about products, pricing, or shows interest in buying "
+        "something), name one or two relevant products from the catalog above, then clearly point "
+        "them to the \"Products\" page to browse everything, or the \"Order\" button to place an "
+        "order directly. Don't force this into every message, and drop it if the visitor isn't "
+        "interested."
+    )
 
 
 def _nudge_text(lang: str, turns_used: int, max_turns: int) -> str:
@@ -141,13 +180,18 @@ def _build_system_prompt(
         kb_block = f"\n\n{DEFAULT_KNOWLEDGE}"
 
     faq_block = content_service.build_faq_prompt_block(db, lang)
+    products_block = _products_block(db)
 
     contact_block = _contact_block(db, lang)
     lead_block = "" if lead_captured else _lead_capture_instructions(lang)
+    ordering_block = _products_ordering_instructions(lang) if products_block else ""
     nudge_block = _nudge_text(lang, turns_used, max_turns)
     brevity_block = _brevity_instructions(lang)
 
-    return f"{base}{kb_block}{faq_block}{contact_block}{lead_block}{nudge_block}{brevity_block}"
+    return (
+        f"{base}{kb_block}{faq_block}{products_block}{contact_block}{lead_block}"
+        f"{ordering_block}{nudge_block}{brevity_block}"
+    )
 
 
 def _extract_conversational_lead(reply: str) -> tuple[str, dict | None]:

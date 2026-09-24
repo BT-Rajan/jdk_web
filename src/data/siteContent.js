@@ -40,6 +40,7 @@ function localCopyForLang(lang) {
     home: c.home,
     chat: c.chat,
     common: c.common,
+    footer: c.footer,
   };
 }
 
@@ -77,8 +78,9 @@ function apiCopyForLang(copyBlobs, lang) {
   const home = toCamel(copyBlobs["copy.home"]?.[lang] ?? {});
   const chat = { ...localFallback.chat, ...toCamel(copyBlobs["copy.chat"]?.[lang] ?? {}) };
   const common = toCamel(copyBlobs["copy.common"]?.[lang] ?? {});
+  const footer = { ...localFallback.footer, ...toCamel(copyBlobs["copy.footer"]?.[lang] ?? {}) };
 
-  return { home, chat, common };
+  return { home, chat, common, footer };
 }
 
 function buildFromApi(publicConfig, contentPages, faqItems, supportedLanguages) {

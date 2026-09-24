@@ -121,6 +121,9 @@ export const COPY = {
       close: "Close", back: "Back", send: "Send", quickMenu: "Quick menu",
       primaryNav: "Primary", goHome: "Go to home", assistantTyping: "Assistant is typing",
     },
+    footer: {
+      linksTitle: "Explore", contactTitle: "Contact", rights: "All rights reserved.",
+    },
     home: {
       welcome: "Welcome to JDK Factory",
       tagline: "Visit our V-Lounge for more",
@@ -153,6 +156,9 @@ export const COPY = {
     common: {
       close: "إغلاق", back: "رجوع", send: "إرسال", quickMenu: "قائمة سريعة",
       primaryNav: "الأساسية", goHome: "الذهاب إلى الرئيسية", assistantTyping: "المساعد يكتب",
+    },
+    footer: {
+      linksTitle: "استكشف", contactTitle: "تواصل معنا", rights: "جميع الحقوق محفوظة.",
     },
     home: {
       welcome: "مرحبا بك في JDK Factory",

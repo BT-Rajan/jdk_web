@@ -464,6 +464,13 @@ _DEFS: list[SettingDef] = [
                help_text="Screen-reader labels used across multiple screens (close/back/send buttons, nav "
                           "landmarks) — not visible text, but still shown to assistive-technology users in "
                           "whichever language they're browsing in."),
+    SettingDef("copy.footer", "copy", "Footer text", SettingType.JSON, {
+        "en": {"linksTitle": "Explore", "contactTitle": "Contact", "rights": "All rights reserved."},
+        "ar": {"linksTitle": "استكشف", "contactTitle": "تواصل معنا", "rights": "جميع الحقوق محفوظة."},
+    }, i18n=True,
+               help_text="linksTitle (heading over the page-links column, sourced from Pages below), "
+                          "contactTitle (heading over the contact-details column, sourced from Contact "
+                          "below), rights (shown after \"© <year> <site name>\")."),
     SettingDef("copy.homeHeroButtons", "copy", "Home hero buttons", SettingType.JSON, [],
                help_text="Slim buttons shown on the home screen in place of the tagline. List of "
                           "objects: {\"label\": {\"en\": \"...\", \"ar\": \"...\"}, \"url\": \"...\"}. "

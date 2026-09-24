@@ -6,6 +6,7 @@ import OrderPanel from "./components/order/OrderPanel.jsx";
 import ContentPage from "./components/pages/ContentPage.jsx";
 import ContactPage from "./components/pages/ContactPage.jsx";
 import StickyChat from "./components/StickyChat.jsx";
+import Footer from "./components/layout/Footer.jsx";
 
 // Pages with dedicated components — every other page id routes through
 // the generic, Markdown-driven ContentPage, so an admin can add a new
@@ -76,6 +77,8 @@ function AppShell() {
         {!SPECIAL_PAGE_IDS.has(page) && (
           <ContentPage pageId={page} onBack={() => setPage("home")} onNavigate={setPage} />
         )}
+
+        <Footer onNavigate={setPage} />
       </div>
 
       {/* Sticky action buttons — visible on all pages. The AI Assistant

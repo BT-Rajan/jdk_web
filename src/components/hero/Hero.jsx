@@ -124,8 +124,6 @@ export default function Hero({ onEnter, onNavigate }) {
           />
         </div>
       </div>
-
-      <footer className="hero-footer">© {new Date().getFullYear()} {branding.siteName}</footer>
     </div>
   );
 }

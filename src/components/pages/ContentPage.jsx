@@ -14,7 +14,7 @@ import "./ContentPage.css";
  * renders inside the shell.
  */
 export default function ContentPage({ pageId, onBack, onNavigate }) {
-  const { pages, branding } = useLang();
+  const { pages } = useLang();
   const meta = pages[pageId];
 
   useEffect(() => {
@@ -42,8 +42,6 @@ export default function ContentPage({ pageId, onBack, onNavigate }) {
           <Markdown source={meta.body} />
         </GlassPanel>
       </main>
-
-      <footer className="content-footer">© {new Date().getFullYear()} {branding.siteName}. All rights reserved.</footer>
     </div>
   );
 }

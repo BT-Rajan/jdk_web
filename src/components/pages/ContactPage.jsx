@@ -11,7 +11,7 @@ import "./ContactPage.css";
  * contact details.
  */
 export default function ContactPage({ onBack, onNavigate }) {
-  const { pages, branding, contact } = useLang();
+  const { pages, contact } = useLang();
   const meta = pages.contact;
 
   useEffect(() => {
@@ -56,8 +56,6 @@ export default function ContactPage({ onBack, onNavigate }) {
           )}
         </GlassPanel>
       </main>
-
-      <footer className="content-footer">© {new Date().getFullYear()} {branding.siteName}. All rights reserved.</footer>
     </div>
   );
 }

@@ -9,13 +9,15 @@
      setting — lets a logo with a lot of built-in padding be sized up
      to actually read next to the header text, without a rebuild. */
 
-  /* Desktop (>1024px) — matched to the 100px desktop --header-h in
-     tokens.css, with headroom above/below so it reads as a real logo
-     rather than a small icon in a tall bar. */
-  height: calc(87px * var(--logo-scale, 1));
+  /* Desktop (>1024px) — sized to sit inside the 76px --header-h-lg
+     bar with breathing room above and below (it was 87px in a 100px
+     bar, which made the logo the heaviest thing on the page). The
+     width cap is generous so a wide lockup isn't squeezed; a square or
+     tall logo is simply bounded by the height instead. */
+  height: calc(54px * var(--logo-scale, 1));
   width: auto; /* let width follow the image's natural aspect ratio */
-  max-height: 87px;
-  max-width: 380px;
+  max-height: 64px;
+  max-width: 260px;
   flex: none;
   object-fit: contain;
   border-radius: var(--radius-sm);
@@ -44,12 +46,12 @@
 
 /* Tablet (768px–1024px) */
 @media (max-width: 1024px) {
-  .logo-img { height: calc(40px * var(--logo-scale, 1)); width: auto; max-height: 44px; max-width: 120px; }
+  .logo-img { height: calc(40px * var(--logo-scale, 1)); width: auto; max-height: 46px; max-width: 200px; }
   .logo-word { font-size: 1.1rem; }
 }
 
 /* Mobile (<768px) */
 @media (max-width: 767px) {
-  .logo-img { height: calc(36px * var(--logo-scale, 1)); width: auto; max-height: 40px; max-width: 110px; }
+  .logo-img { height: calc(34px * var(--logo-scale, 1)); width: auto; max-height: 42px; max-width: 160px; }
   .logo-word { font-size: 1.05rem; }
 }

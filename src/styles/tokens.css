@@ -36,6 +36,7 @@
   --font-ar: "Noto Kufi Arabic", "Arial Unicode MS", sans-serif;        /* theme.font_ar */
 
   --header-h: 64px;       /* theme.header_height_px */
+  --header-h-lg: 76px;    /* desktop (>1024px) header — not admin-configurable, so it can't be shadowed by the inline --header-h */
   --content-max: 1180px;  /* theme.content_max_width_px */
   --radius-md: 10px;      /* theme.corner_radius_px — sharper, more editorial than the old 16px */
 

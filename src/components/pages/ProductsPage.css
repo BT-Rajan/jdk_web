@@ -1,6 +1,18 @@
+/* Matches the Markdown h2 above it (this heading lives outside
+   .markdown-content so it doesn't pick that styling up), set off from
+   the intro by a fading gold rule. */
 .products-range-title {
-  margin-top: var(--space-6);
+  margin-top: var(--space-7);
+  padding-top: var(--space-6);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.3rem, 1.4vw + 1rem, 1.75rem);
+  line-height: 1.3;
+  color: var(--gold);
+  border-top: 1px solid transparent;
+  border-image: linear-gradient(90deg, transparent, color-mix(in srgb, var(--gold) 45%, transparent) 50%, transparent) 1;
 }
+[dir="rtl"] .products-range-title { font-family: var(--font-ar); font-weight: 500; }
 
 .products-loading {
   color: var(--muted);
@@ -12,7 +24,7 @@
   margin: var(--space-4) 0 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr));
   gap: var(--space-4);
 }
 
@@ -20,24 +32,39 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  padding: var(--space-4);
+  position: relative;
+  padding: var(--space-5);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--glass) 70%, transparent);
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.05) 0%, rgb(255 255 255 / 0.01) 100%),
+    color-mix(in srgb, var(--brand-bg) 60%, transparent);
   border: 1px solid var(--glass-border);
-  border-top: 2px solid var(--gold);
-  transition: transform var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+  box-shadow: 0 14px 30px -18px rgb(0 0 0 / 0.8);
+  transition: transform var(--dur-med) var(--ease), border-color var(--dur-med) var(--ease), box-shadow var(--dur-med) var(--ease);
+}
+/* Gold crown line — gradient, fading at both ends. */
+.product-card::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: var(--space-4);
+  right: var(--space-4);
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
 }
 .product-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px);
   border-color: var(--gold-border);
-  border-top-color: var(--gold);
+  box-shadow: 0 22px 40px -18px rgb(0 0 0 / 0.85), 0 0 26px -8px color-mix(in srgb, var(--gold) 35%, transparent);
 }
 
 .product-card-name {
   margin: 0;
   font-family: var(--font-display);
-  font-size: var(--fs-body);
-  font-weight: 600;
+  font-size: 1.25rem;
+  line-height: 1.25;
+  font-weight: 700;
   color: var(--white-pure);
 }
 [dir="rtl"] .product-card-name { font-family: var(--font-ar); }
@@ -72,6 +99,7 @@
 .product-card-price {
   color: var(--white-soft);
   font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
 .products-cta {

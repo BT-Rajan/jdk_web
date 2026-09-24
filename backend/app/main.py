@@ -16,6 +16,7 @@ from app.routers import (
     admin_content,
     admin_knowledge,
     admin_leads,
+    admin_page_images,
     admin_products,
     admin_settings,
     admin_showcase,
@@ -83,6 +84,7 @@ def create_app() -> FastAPI:
     app.include_router(admin_webhooks.router)
     app.include_router(admin_leads.router)
     app.include_router(admin_products.router)
+    app.include_router(admin_page_images.router)
     app.include_router(admin_stats.router)
     app.include_router(admin_knowledge.router)
     app.include_router(admin_showcase.router)

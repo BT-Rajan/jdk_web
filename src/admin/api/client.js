@@ -105,6 +105,20 @@ export const adminApi = {
   reorderShowcase: (orderedIds) =>
     request("admin/api/showcase/reorder", { method: "POST", body: JSON.stringify({ orderedIds }) }),
 
+  // -- per-page photo galleries (About's factory photo, Quality's
+  // certification scans, etc. — see PageImagesField.jsx) --
+  listPageImages: (slug) => request(`admin/api/pages/${slug}/images`),
+  uploadPageImages: (slug, files) => {
+    const formData = new FormData();
+    files.forEach((file) => formData.append("files", file));
+    return request(`admin/api/pages/${slug}/images`, { method: "POST", body: formData });
+  },
+  updatePageImage: (slug, id, body) =>
+    request(`admin/api/pages/${slug}/images/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
+  deletePageImage: (slug, id) => request(`admin/api/pages/${slug}/images/${id}`, { method: "DELETE" }),
+  reorderPageImages: (slug, orderedIds) =>
+    request(`admin/api/pages/${slug}/images/reorder`, { method: "POST", body: JSON.stringify({ orderedIds }) }),
+
   listSettingCategories: () => request("admin/api/settings/categories"),
   getSettingCategory: (category) => request(`admin/api/settings/${category}`),
   updateSettingCategory: (category, values) =>

@@ -3,6 +3,33 @@
   min-height: 360px;
 }
 
+.contact-card {
+  flex: 0 0 320px;
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.contact-card-title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: var(--gold);
+  margin: 0;
+}
+[dir="rtl"] .contact-card-title { font-family: var(--font-ar); }
+
+.contact-card-address {
+  font-size: var(--fs-sm);
+  color: var(--muted-strong);
+  white-space: pre-line;
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .contact-card { flex: none; width: 100%; }
+}
+
 .contact-details-list {
   list-style: none;
   margin: var(--space-4) 0 0;

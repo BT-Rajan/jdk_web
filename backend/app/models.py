@@ -302,3 +302,30 @@ class ShowcaseImage(Base):
     updated_by: Mapped[str | None] = mapped_column(String(32), ForeignKey("admin_user.id"), nullable=True)
 
     __table_args__ = (Index("ix_showcase_image_active_position", "is_active", "position"),)
+
+
+class PageImage(Base):
+    """A photo attached to a content page (e.g. a factory photo on
+    About, certification scans on Quality) — same shape and file-
+    handling as ShowcaseImage, just scoped to one page via `page_slug`
+    instead of being global. A page with none renders as plain text;
+    one or more render as a side gallery next to the text (see
+    ContentPage.jsx) — the same mechanism covers both a single hero
+    photo and a multi-image gallery, an admin just uploads however
+    many they want."""
+
+    __tablename__ = "page_image"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_uuid)
+    page_slug: Mapped[str] = mapped_column(
+        String(48), ForeignKey("content_page.slug", ondelete="CASCADE"), nullable=False, index=True
+    )
+    filename: Mapped[str] = mapped_column(String(64), nullable=False)
+    caption: Mapped[str] = mapped_column(String(200), default="", nullable=False)
+    position: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    updated_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
+    updated_by: Mapped[str | None] = mapped_column(String(32), ForeignKey("admin_user.id"), nullable=True)
+
+    __table_args__ = (Index("ix_page_image_slug_active_position", "page_slug", "is_active", "position"),)

@@ -3,6 +3,7 @@ import { useLang } from "../../context/LangContext.jsx";
 import { api } from "../../api/client.js";
 import GlassPanel from "../ui/GlassPanel.jsx";
 import Button from "../ui/Button.jsx";
+import DatePicker from "../ui/DatePicker.jsx";
 import "./OrderPanel.css";
 
 const TEXT = {
@@ -147,8 +148,9 @@ function firstInvalid(errors, products) {
  * the total itself (public_orders.py) — nothing here is trusted.
  */
 export default function OrderPanel({ open, onClose }) {
-  const { lang, dir, branding } = useLang();
+  const { lang, dir, branding, copy } = useLang();
   const t = TEXT[lang] || TEXT.en;
+  const currency = copy.products?.currency || "KWD";
 
   const [products, setProducts] = useState([]);
   const [quantities, setQuantities] = useState({}); // productId -> quantity (string while typing)
@@ -316,7 +318,7 @@ export default function OrderPanel({ open, onClose }) {
             lineItems.length > 0 ? (
               <p className="order-panel-cart-badge">
                 {lineItems.length === 1 ? t.itemsOne : t.itemsMany(lineItems.length)}
-                {" · "}{estimatedTotal.toFixed(2)}
+                {" · "}{estimatedTotal.toFixed(2)} {currency}
               </p>
             ) : (
               <p className="order-panel-subtitle">{t.subtitle}</p>
@@ -332,7 +334,7 @@ export default function OrderPanel({ open, onClose }) {
             <p className="order-panel-success-title">{t.successTitle}</p>
             <p>{t.successBody}</p>
             <p className="order-panel-success-total">
-              {t.estimatedTotal}: {result.estimatedTotal.toFixed(2)}
+              {t.estimatedTotal}: {result.estimatedTotal.toFixed(2)} {currency}
             </p>
             <Button variant="ghost" onClick={resetForCreate}>{t.newOrder}</Button>
           </div>
@@ -397,9 +399,9 @@ export default function OrderPanel({ open, onClose }) {
                   hidden={tab !== "delivery"}
                 >
                   <label className="order-panel-label" htmlFor="order-date">{t.requiredDate}</label>
-                  <input
-                    type="date" min={todayIso} value={requiredDate} required
-                    onChange={(e) => setRequiredDate(e.target.value)} {...fieldProps("requiredDate", "order-date")}
+                  <DatePicker
+                    min={todayIso} value={requiredDate} required
+                    onChange={setRequiredDate} {...fieldProps("requiredDate", "order-date")}
                   />
                   {fieldError("requiredDate")}
 
@@ -437,7 +439,7 @@ export default function OrderPanel({ open, onClose }) {
                             <div className="order-panel-product-info">
                               <span className="order-panel-product-name">{p.name}</span>
                               {p.description && <span className="order-panel-product-desc">{p.description}</span>}
-                              <span className="order-panel-product-price">{p.price.toFixed(2)} / {p.unit}</span>
+                              <span className="order-panel-product-price">{p.price.toFixed(2)} {currency} / {p.unit}</span>
                             </div>
                             <div className="order-panel-stepper">
                               <button
@@ -486,7 +488,7 @@ export default function OrderPanel({ open, onClose }) {
               {error && <p className="order-panel-error" role="alert">{error}</p>}
               <div className="order-panel-total">
                 <span className="order-panel-total-label">{t.estimatedTotal}</span>
-                <span className="order-panel-total-value">{estimatedTotal.toFixed(2)}</span>
+                <span className="order-panel-total-value">{estimatedTotal.toFixed(2)} {currency}</span>
               </div>
               <Button type="submit" variant="primary" disabled={submitting}>
                 {submitting ? t.submitting : t.submit}

@@ -118,7 +118,7 @@ export default function ProductDetailPanel({ mode, product, onClose, onCreated, 
 
       <div className="product-panel-row-2">
         <div>
-          <label className="product-panel-label">Price</label>
+          <label className="product-panel-label">Price (KWD)</label>
           <input
             type="number" min="0" step="0.01" value={form.price}
             onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}

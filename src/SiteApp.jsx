@@ -60,6 +60,13 @@ function AppShell() {
     setOrderOpen(true);
   };
 
+  // Lets the Contact page's card open the chat widget directly, same
+  // mutual-exclusivity rule as handleOpenOrder above.
+  const handleOpenChat = () => {
+    setOrderOpen(false);
+    setChatOpen(true);
+  };
+
   const anyPopoverOpen = chatOpen || orderOpen;
 
   return (
@@ -77,7 +84,9 @@ function AppShell() {
           in-flow content. */}
       <div className={`app-page-content ${anyPopoverOpen ? "app-page-content-dimmed" : ""}`.trim()}>
         {page === "home" && <Hero onEnter={handleHeroEnter} onNavigate={setPage} />}
-        {page === "contact" && <ContactPage onBack={() => setPage("home")} onNavigate={setPage} />}
+        {page === "contact" && (
+          <ContactPage onBack={() => setPage("home")} onNavigate={setPage} onOpenChat={handleOpenChat} />
+        )}
         {page === "products" && (
           <ProductsPage onBack={() => setPage("home")} onNavigate={setPage} onOrder={handleOpenOrder} />
         )}

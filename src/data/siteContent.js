@@ -42,6 +42,7 @@ function localCopyForLang(lang) {
     common: c.common,
     footer: c.footer,
     products: c.products,
+    contact: c.contact,
   };
 }
 
@@ -55,7 +56,10 @@ function buildFromLocalFallback(supportedLanguages) {
     pages[lang] = Object.fromEntries(
       Object.keys(PAGE_META[lang]).map((slug) => [
         slug,
-        { ...PAGE_META[lang][slug], body: PAGE_CONTENT[lang][slug] },
+        // No bundled fallback photos — same reasoning as heroButtons
+        // below: this spot stays empty (plain single-column text) until
+        // an admin uploads one via the live API.
+        { ...PAGE_META[lang][slug], body: PAGE_CONTENT[lang][slug], images: [] },
       ])
     );
   }
@@ -81,8 +85,9 @@ function apiCopyForLang(copyBlobs, lang) {
   const common = toCamel(copyBlobs["copy.common"]?.[lang] ?? {});
   const footer = { ...localFallback.footer, ...toCamel(copyBlobs["copy.footer"]?.[lang] ?? {}) };
   const products = { ...localFallback.products, ...toCamel(copyBlobs["copy.products"]?.[lang] ?? {}) };
+  const contact = { ...localFallback.contact, ...toCamel(copyBlobs["copy.contact"]?.[lang] ?? {}) };
 
-  return { home, chat, common, footer, products };
+  return { home, chat, common, footer, products, contact };
 }
 
 function buildFromApi(publicConfig, contentPages, faqItems, supportedLanguages) {
@@ -108,6 +113,10 @@ function buildFromApi(publicConfig, contentPages, faqItems, supportedLanguages) 
         line2: p.translations[lang]?.taglineLine2 ?? "",
         sub: p.translations[lang]?.taglineSub ?? "",
         body: p.translations[lang]?.bodyMarkdown ?? "",
+        // Language-independent (a photo isn't translated) — same list
+        // under every language key, so ContentPage.jsx never has to
+        // special-case it.
+        images: p.images ?? [],
       }])
     );
 

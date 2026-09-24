@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { adminApi } from "../api/client.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import PageImagesField from "./PageImagesField.jsx";
 import "../styles/detailPanel.css";
 
 const LANGS = ["en", "ar"];
@@ -195,6 +196,15 @@ export default function PageDetailPanel({ mode, page, onClose, onCreated, onUpda
         onChange={handleFileUpload}
         style={{ marginTop: 6 }}
       />
+
+      {mode === "edit" && (
+        <>
+          <label className="service-panel-label">
+            Photos (one becomes a hero photo, several become a gallery — shown beside the text on the public page)
+          </label>
+          <PageImagesField pageSlug={page.slug} onApiError={handleApiError} />
+        </>
+      )}
 
       {error && <div className="service-panel-error">{error}</div>}
 

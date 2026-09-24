@@ -77,7 +77,7 @@ export default function ProductsPage({ onBack, onNavigate, onOrder }) {
                   <h3 className="products-page-card-name">{p.name}</h3>
                   {p.description && <p className="products-page-card-desc">{p.description}</p>}
                   <p className="products-page-card-price">
-                    {p.price.toFixed(2)} <span>/ {p.unit}</span>
+                    {p.price.toFixed(2)} {t.currency} <span>/ {p.unit}</span>
                   </p>
                   <div className="products-page-card-actions">
                     {p.datasheetUrl && (

@@ -12,6 +12,13 @@ import "./ContentPage.css";
  * page in the app feels like one family. `pageId` selects which
  * content record (fetched from the backend, see src/data/siteContent.js)
  * renders inside the shell.
+ *
+ * A page with no uploaded photos (Settings > Pages > that page) stays
+ * exactly the single centered text column it always was. One or more
+ * photos (About's factory shot, Quality's certification scans, ...)
+ * splits the body into two columns, same "showcase beside the main
+ * content" pattern the home page already uses (see HomeShowcase) —
+ * the photos take the start side, the text column fills the rest.
  */
 export default function ContentPage({ pageId, onBack, onNavigate }) {
   const { pages } = useLang();
@@ -22,6 +29,8 @@ export default function ContentPage({ pageId, onBack, onNavigate }) {
   }, [pageId]);
 
   if (!meta) return null; // an admin-removed or not-yet-loaded page id; nothing to render
+
+  const hasImages = meta.images?.length > 0;
 
   return (
     <div className="content-page">
@@ -37,10 +46,19 @@ export default function ContentPage({ pageId, onBack, onNavigate }) {
           <div className="content-tagline-sub">{meta.sub}</div>
         </div>
 
+        <div className={`content-body-row ${hasImages ? "" : "content-body-row-solo"}`.trim()}>
+          {hasImages && (
+            <div className="content-images">
+              {meta.images.map((img, i) => (
+                <img key={i} src={img.url} alt={img.caption || ""} className="content-images-photo" />
+              ))}
+            </div>
+          )}
 
-        <GlassPanel className="content-shell" as="section">
-          <Markdown source={meta.body} />
-        </GlassPanel>
+          <GlassPanel className="content-shell" as="section">
+            <Markdown source={meta.body} />
+          </GlassPanel>
+        </div>
       </main>
     </div>
   );

@@ -126,6 +126,10 @@ export const COPY = {
     },
     products: {
       emptyState: "No products yet — check back soon.", datasheetLabel: "Data sheet", orderCta: "Order",
+      currency: "KWD",
+    },
+    contact: {
+      cardTitle: "Get in touch", chatCta: "Chat with us",
     },
     home: {
       welcome: "Welcome to JDK Factory",
@@ -165,6 +169,10 @@ export const COPY = {
     },
     products: {
       emptyState: "لا توجد منتجات حالياً — تفقد الصفحة لاحقاً.", datasheetLabel: "ورقة البيانات", orderCta: "اطلب",
+      currency: "KWD",
+    },
+    contact: {
+      cardTitle: "تواصل معنا", chatCta: "تحدث معنا",
     },
     home: {
       welcome: "مرحبا بك في JDK Factory",

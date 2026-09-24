@@ -93,19 +93,21 @@ def _pages_block(db: Session, lang: str) -> str:
     return "\n\nTHE SITE'S OWN PUBLISHED PAGES (use as an accurate reference when the visitor asks about site content):\n" + joined
 
 
-def _products_block(db: Session) -> str:
+def _products_block(db: Session, lang: str) -> str:
     """The live product catalog (same rows the public order form reads,
     see products_service.py), so the assistant can name real products
     and prices instead of speaking about them only in the abstract."""
     products = products_service.list_products(db, active_only=True)
     if not products:
         return ""
+    currency = _lang_value(get_setting(db, "copy.products"), lang).get("currency") or "KWD"
     lines = "\n".join(
-        f"- {p.name}: {p.price:g}/{p.unit}" + (f" — {p.description}" if p.description else "")
+        f"- {p.name}: {p.price:g} {currency}/{p.unit}" + (f" — {p.description}" if p.description else "")
         for p in products
     )
     return (
-        "\n\nCURRENT PRODUCT CATALOG (available to order on the site right now):\n" + lines
+        "\n\nCURRENT PRODUCT CATALOG (available to order on the site right now; all prices in "
+        f"{currency}):\n" + lines
     )
 
 
@@ -214,7 +216,7 @@ def _build_system_prompt(
 
     faq_block = content_service.build_faq_prompt_block(db, lang)
     pages_block = _pages_block(db, lang)
-    products_block = _products_block(db)
+    products_block = _products_block(db, lang)
 
     contact_block = _contact_block(db, lang)
     lead_block = "" if lead_captured else _lead_capture_instructions(lang)

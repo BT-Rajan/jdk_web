@@ -94,7 +94,7 @@ export default function ProductsPage() {
                     <div>{p.name}</div>
                     {p.description && <div className="table-subtext">{p.description}</div>}
                   </td>
-                  <td>{p.price.toFixed(2)}</td>
+                  <td>{p.price.toFixed(2)} KWD</td>
                   <td>{p.unit}</td>
                   <td>{p.datasheetUrl ? "Yes" : "—"}</td>
                   <td>{p.isActive ? "Yes" : "No"}</td>

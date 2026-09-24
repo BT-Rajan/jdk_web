@@ -1,0 +1,63 @@
+.page-images-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.page-images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: var(--space-2);
+}
+
+.page-images-cell {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.page-images-cell img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  display: block;
+}
+
+.page-images-cell-actions {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  background: rgba(0, 0, 0, 0.55);
+}
+.page-images-cell-actions button {
+  flex: 1;
+  background: none;
+  border: none;
+  color: #fff;
+  padding: 4px 0;
+  font-size: 12px;
+  cursor: pointer;
+}
+.page-images-cell-actions button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.page-images-cell-delete {
+  color: var(--danger) !important;
+}
+
+.page-images-upload-btn {
+  align-self: flex-start;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface);
+  cursor: pointer;
+}
+.page-images-upload-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}

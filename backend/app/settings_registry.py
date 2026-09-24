@@ -473,13 +473,20 @@ _DEFS: list[SettingDef] = [
                           "below), rights (shown after \"© <year> <site name>\")."),
     SettingDef("copy.products", "copy", "Products page text", SettingType.JSON, {
         "en": {"emptyState": "No products yet — check back soon.", "datasheetLabel": "Data sheet",
-               "orderCta": "Order"},
+               "orderCta": "Order", "currency": "KWD"},
         "ar": {"emptyState": "لا توجد منتجات حالياً — تفقد الصفحة لاحقاً.", "datasheetLabel": "ورقة البيانات",
-               "orderCta": "اطلب"},
+               "orderCta": "اطلب", "currency": "KWD"},
     }, i18n=True,
                help_text="Text on the public Products page: emptyState (shown when no active products "
                           "exist), datasheetLabel (link to a product's uploaded data sheet), orderCta "
-                          "(button that opens the order form)."),
+                          "(button that opens the order form), currency (shown next to every price site-"
+                          "wide — Products page, order form, and the AI assistant's own replies)."),
+    SettingDef("copy.contact", "copy", "Contact page text", SettingType.JSON, {
+        "en": {"cardTitle": "Get in touch", "chatCta": "Chat with us"},
+        "ar": {"cardTitle": "تواصل معنا", "chatCta": "تحدث معنا"},
+    }, i18n=True,
+               help_text="Text on the Contact page's details card: cardTitle (card heading), chatCta "
+                          "(button that opens the AI chat widget)."),
     SettingDef("copy.homeHeroButtons", "copy", "Home hero buttons", SettingType.JSON, [],
                help_text="Slim buttons shown on the home screen in place of the tagline. List of "
                           "objects: {\"label\": {\"en\": \"...\", \"ar\": \"...\"}, \"url\": \"...\"}. "
